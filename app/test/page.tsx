@@ -4,7 +4,9 @@ import DefaultLayout from '../components/defaultLayout/DefaultLayout'
 
 function page() {
   return (
-    <DefaultLayout></DefaultLayout>
+    <DefaultLayout>
+      <p>ini test page</p>
+    </DefaultLayout>
   )
 }
 
