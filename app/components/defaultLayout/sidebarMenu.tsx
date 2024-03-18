@@ -25,20 +25,13 @@ function getItem(
 }
 
 export const items: MenuItem[] = [
-    // getItem('Cabang', 'Cabang', <PieChartOutlined />),
-    // getItem('Pelanggan', '2', <DesktopOutlined />),
-    getItem('Master', 'Master', <DesktopOutlined />, [
-        getItem(<Link href='/master/cabang'>Cabang</Link>, 'Cabang'),
-        getItem(<Link href='/master/pelanggan'>Pelanggan</Link>, 'Pelanggan'),
-        getItem(<Link href='/master/utility'>Utility</Link>, 'Utility'),
-        getItem('Kelompok', 'Kelompok'),
-        getItem('Asset', 'Asset'),
+    getItem(<Link href='/dashboard'>Dashboard</Link>, 'Dashboard', <PieChartOutlined />),
+    getItem(<Link href='/master/cabang'>Cabang</Link>, 'Cabang'),
+    getItem(<Link href='/master/pelanggan'>Pelanggan</Link>, 'Pelanggan'),
+    // getItem(<Link href='/master/utility'>Utility</Link>, 'Utility'),
+    getItem(<Link href='/master/aset'>Aset</Link>, 'Aset'),
+    getItem(<Link href='/master/transaksi'>Transaksi</Link>, 'transaksi', <></>, [
+        getItem(<Link href='/master/transaksi/sewa'>Sewa</Link>, 'Sewa'),
     ]),
-    // getItem('Team', 'sub2', <TeamOutlined />, [getItem('Team 1', '6'), getItem('Team 2', '8')]),
-    // getItem('Files', '9', <FileOutlined />),
-    // getItem('Files1', '91', <FileOutlined />),
-    // getItem('Files2', '92', <FileOutlined />),
-    // getItem('Files3', '93', <FileOutlined />),
-
 ];
 

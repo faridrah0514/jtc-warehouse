@@ -1,19 +1,10 @@
 'use client'
-import DefaultLayout from '@/app/components/defaultLayout/DefaultLayout'
 import React, { useEffect, useState } from 'react'
 
-import { openDB } from '@/helper/db'
-import { Button, Modal, Table, TableProps } from 'antd'
+import { Button, Flex, Form, Modal, Popconfirm, Table, TableProps } from 'antd'
 import AddCabangModal from './AddCabangModal'
-interface DataCabang {
-  id: number,
-  nama_perusahaan: string,
-  alamat: string,
-  kota: string,
-  no_tlp: number,
-  status: string,
-  kwh_rp: number
-}
+import { DataCabang } from '@/app/types/master'
+import { useForm } from 'antd/es/form/Form'
 
 const schemaList: string[] = ['id', 'nama_perusahaan', 'alamat', 'kota', 'no_tlp', 'status', 'kwh_rp']
 
@@ -23,9 +14,11 @@ const column: TableProps<DataCabang>['columns'] = schemaList.map(
   }
 )
 export default function Page() {
-
+  const [form] = Form.useForm()
   const [cabangData, setCabangData] = useState<DataCabang[]>();
   const [openModal, setOpenModal] = useState<boolean>(false)
+  const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
+  const [isEdit, setIsEdit] = useState<boolean>(false)
 
   useEffect(
     () => {
@@ -35,23 +28,59 @@ export default function Page() {
 
         if (data) {
           setCabangData(data.data)
-          // console.log("data dari Effect: ", data.data)
         }
-        // console.log("cabang data: ", cabangData)
-        // console.log("columns ==> ", column)
       }
       getData()
-    }, []
+    }, [triggerRefresh]
   )
   return (
     <>
-      <Button onClick={() => { setOpenModal(true); console.log("diklik niiiii"); console.log("modalState: ", openModal) }}>Tambah Cabang</Button>
-      <AddCabangModal setOpenModal={setOpenModal} openModal={openModal} />
+      <Button onClick={() => { setOpenModal(true); setIsEdit(false) }}>Tambah Cabang</Button>
+      <AddCabangModal isEdit={isEdit} form={form} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
       <Table className='overflow-auto'
-        columns={column}
+        columns={[...column, {
+          title: "Action",
+          key: "action",
+          render: (_, record) => (
+            <Flex gap="small">
+              <Button type="primary" ghost size="small" onClick={
+                () => {
+                  setOpenModal(true)
+                  setIsEdit(true)
+                  form.setFieldsValue(record)
+                }
+              }>
+                Edit
+              </Button>
+              <Popconfirm
+                title="sure to delete?"
+                onConfirm={
+                  async function deleteCabang() {
+                    const result = await fetch('/api/master/cabang/delete', {
+                      method: "POST",
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({id: record.id})
+                    })
+                    if (result.status == 200) {
+                      setTriggerRefresh(!triggerRefresh)
+                    }
+                  }
+                }
+              >
+                <Button size="small" danger>
+                  Delete
+                </Button>
+              </Popconfirm>
+            </Flex>
+          ),
+        },]}
         dataSource={cabangData}
         rowKey='id'
         size='small'
+        loading={ cabangData ? false : true }
+        bordered
       />
     </>
 
