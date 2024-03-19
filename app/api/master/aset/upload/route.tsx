@@ -10,7 +10,6 @@ export async function POST( request: Request, response: Response): Promise<Respo
     const fd = await request.formData()
     const flist: File[] | null = fd.getAll("files[]") as unknown as File[]
     if (flist.length == 0) {
-      console.log("tidak ada file-nya")
       return Response.json({message: "no file uploaded", status: 400})
     } else {
       const cabang = fd.get('aset')

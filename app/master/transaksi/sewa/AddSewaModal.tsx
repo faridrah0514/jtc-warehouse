@@ -59,7 +59,8 @@ export default function AddSewaModal(props: Status) {
             })
             props.setOpenModal(false)
             props.setTriggerRefresh(!props.triggerRefresh)
-            formRef.current.resetFields();
+            if (formRef.current) formRef.current.resetFields();
+            
           }
         }
       >
@@ -78,7 +79,7 @@ export default function AddSewaModal(props: Status) {
           </Select>
         </Form.Item>
         <Form.Item name='id_pelanggan' required label="Nama Pelanggan" rules={[{ required: true }]}>
-          <Select placeholder="Pelanggam" allowClear>
+          <Select placeholder="Pelanggan" allowClear>
             {allData.pelanggan.map(
               (value: any) => <Option key={value.id} value={value.id}>{value.nama}</Option>
             )}

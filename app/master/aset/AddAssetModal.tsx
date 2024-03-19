@@ -1,7 +1,7 @@
 import { Button, Form, Input, Modal, Select, UploadFile, Upload, message, UploadProps, GetProp } from 'antd'
 const { Option } = Select;
 import TextArea from 'antd/es/input/TextArea'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { DataAset, DataCabang } from '@/app/types/master'
 import { UploadOutlined } from '@ant-design/icons';
 
@@ -16,16 +16,17 @@ interface Status {
 
 export default function AddAssetModal(props: Status) {
   const [form] = Form.useForm<DataAset>()
-  const [allCabang, setAllCabang] = useState<string[]>([])
+  const [allCabang, setAllCabang] = useState<{id: number, nama_perusahaan: string}[]>([])
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
+  const formRef = useRef(null);
 
   useEffect(
     () => {
       async function getAllCabang() {
         const response = await fetch('/api/master/cabang', { method: 'GET' })
         const dataCabang = (await response.json()).data.map((value: DataCabang) => {
-          return value.nama_perusahaan 
+          return { id: value.id, nama_perusahaan: value.nama_perusahaan }
         })
         if (dataCabang) {
           setAllCabang(dataCabang)
@@ -60,33 +61,39 @@ export default function AddAssetModal(props: Status) {
                 'Content-Type': 'application/json',
               },
             })
+
+
+            // Upload File to Server            
+            if (fileList.length != 0) {
+              const formData = new FormData()
+              formData.append('aset', value.nama_aset)
+              fileList.forEach(
+                (file) => {
+                  formData.append('files[]', file as FileType)
+                }
+              )
+              setUploading(true)
+              fetch('/api/master/aset/upload', {
+                method: 'POST',
+                body: formData
+              }).then((res) => res.json())
+                .then((res) => {
+                  setFileList([])
+                  if (res.status == 200) {
+                    message.success("upload success")
+                  } else {
+                    message.error("upload failed")
+                  }
+  
+                })
+                .catch(() => message.error("upload failed"))
+                .finally(() => setUploading(false))
+            }
             props.setOpenModal(false)
             props.setTriggerRefresh(!props.triggerRefresh)
-
-            // Upload File to Server
-            const formData = new FormData()
-            formData.append('aset', value.nama_aset)
-            fileList.forEach(
-              (file) => {
-                formData.append('files[]', file as FileType)
-              }
-            )
-            setUploading(true)
-            fetch('/api/master/aset/upload', {
-              method: 'POST',
-              body: formData
-            }).then((res) => res.json())
-              .then((res) => {
-                setFileList([])
-                if (res.status == 200) {
-                  message.success("upload success")
-                } else {
-                  message.error("upload failed")
-                }
-
-              })
-              .catch(() => message.error("upload failed"))
-              .finally(() => setUploading(false))
+            if (formRef.current){
+              formRef.current.resetFields();
+            }
           }
         }
       >
@@ -99,10 +106,10 @@ export default function AddAssetModal(props: Status) {
         <Form.Item name='nama_aset' required label="Nama Aset" rules={[{ required: true }]}>
           <Input placeholder='Nama Asset' />
         </Form.Item>
-        <Form.Item name='cabang' required label="Cabang" rules={[{ required: true }]}>
+        <Form.Item name='id_cabang' required label="Cabang" rules={[{ required: true }]}>
           <Select placeholder="Cabang" allowClear>
             {allCabang.map(
-              (value) => <Option key={value} value={value}>{value}</Option>
+              (value) => <Option key={value.id} value={value.id}>{value.nama_perusahaan}</Option>
             )}
           </Select>
         </Form.Item>

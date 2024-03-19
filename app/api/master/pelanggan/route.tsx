@@ -1,7 +1,8 @@
 import { openDB } from "@/helper/db";
 
 export async function GET() {
-  const conn = await openDB()
-  const data = await conn.all("select * from pelanggan")
+  const conn = openDB()
+  const [data, _] = await conn.execute("select * from pelanggan")
+  conn.end()
   return Response.json({ data })
 }

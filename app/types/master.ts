@@ -31,7 +31,7 @@ export interface DataAset {
   id_aset: string,
   tipe_aset: string,
   nama_aset: string,
-  cabang: string,
+  id_cabang: number,
   alamat: string,
   kota: string,
   status: string

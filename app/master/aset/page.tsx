@@ -3,18 +3,19 @@ import React, { useEffect, useState } from 'react'
 
 import { Button, Flex, Modal, Popconfirm, Table, TableProps } from 'antd'
 import AddAssetModal from './AddAssetModal'
-import { DataCabang } from '@/app/types/master'
+import { DataCabang, DataAset } from '@/app/types/master'
 
-const schemaList: string[] = ['id', 'id_aset', 'tipe_aset', 'nama_aset', 'cabang', 'alamat', 'kota', 'status']
 
-const column: TableProps<DataCabang>['columns'] = schemaList.map(
+const schemaList: string[] = ['id_aset', 'tipe_aset', 'nama_aset', 'cabang', 'alamat', 'kota', 'status']
+
+const column: TableProps<DataAset>['columns'] = schemaList.map(
   (value, i) => {
     return { title: value, dataIndex: value, key: value }
   }
 )
 export default function Page() {
 
-  const [cabangData, setCabangData] = useState<DataCabang[]>();
+  const [asetData, setAsetData] = useState<DataAset[]>();
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
 
@@ -24,7 +25,7 @@ export default function Page() {
         const response = await fetch('/api/master/aset', { method: 'GET' })
         const data = await response.json()
         if (data) {
-          setCabangData(data.data)
+          setAsetData(data.data)
         }
       }
       getData()
@@ -67,10 +68,14 @@ export default function Page() {
             </Flex>
           ),
         }]}
-        dataSource={cabangData}
+        expandable={{
+          expandedRowRender: (record) => <p>{record.nama_aset}</p>,
+          // rowExpandable: (record) => record.nama_aset !== 'Not expandable',
+        }}
+        dataSource={asetData}
         rowKey='id'
         size='small'
-        loading={ cabangData ? false : true }
+        loading={ asetData ? false : true }
         bordered
       />
     </>

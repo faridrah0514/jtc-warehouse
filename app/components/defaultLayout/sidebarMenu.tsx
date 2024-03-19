@@ -1,7 +1,11 @@
 import {
+    CreditCardOutlined,
     DesktopOutlined,
     FileOutlined,
+    FolderOpenOutlined,
+    PartitionOutlined,
     PieChartOutlined,
+    SolutionOutlined,
     TeamOutlined,
     UserOutlined,
 } from '@ant-design/icons';
@@ -26,12 +30,12 @@ function getItem(
 
 export const items: MenuItem[] = [
     getItem(<Link href='/dashboard'>Dashboard</Link>, 'Dashboard', <PieChartOutlined />),
-    getItem(<Link href='/master/cabang'>Cabang</Link>, 'Cabang'),
-    getItem(<Link href='/master/pelanggan'>Pelanggan</Link>, 'Pelanggan'),
+    getItem(<Link href='/master/cabang'>Cabang</Link>, 'Cabang', <PartitionOutlined />),
+    getItem(<Link href='/master/pelanggan'>Pelanggan</Link>, 'Pelanggan', <TeamOutlined/>),
     // getItem(<Link href='/master/utility'>Utility</Link>, 'Utility'),
-    getItem(<Link href='/master/aset'>Aset</Link>, 'Aset'),
-    getItem(<Link href='/master/transaksi'>Transaksi</Link>, 'transaksi', <></>, [
-        getItem(<Link href='/master/transaksi/sewa'>Sewa</Link>, 'Sewa'),
+    getItem(<Link href='/master/aset'>Aset</Link>, 'Aset', <FolderOpenOutlined />),
+    getItem(<Link href='/master/transaksi'>Transaksi</Link>, 'transaksi', <CreditCardOutlined />, [
+        getItem(<Link href='/master/transaksi/sewa'>Sewa</Link>, 'Sewa', <SolutionOutlined />),
     ]),
 ];
 

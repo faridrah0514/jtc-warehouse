@@ -3,11 +3,12 @@ import { DataCabang } from "@/app/types/master";
 
 export async function POST( request: Request, response: Response): Promise<Response> {
   try {
-    const conn = await openDB()
+    const conn = openDB()
     const data = await request.json()
-    await conn.run('delete from aset where id = ?', 
-      data.id
+    await conn.query('delete from aset where id = ?', 
+      [data.id]
     )
+    conn.end()
     return Response.json({status: 200})
   } catch (e) {
     console.log(e)

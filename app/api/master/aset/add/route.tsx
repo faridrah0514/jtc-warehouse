@@ -1,21 +1,23 @@
 import { openDB } from "@/helper/db";
 import { DataAset } from "@/app/types/master";
+import { projectRoot } from "@/app/page";
 
 export async function POST( request: Request, response: Response): Promise<Response> {
   try {
-    const conn = await openDB()
+    const conn = openDB()
     const data: DataAset = await request.json()
-    await conn.run(`insert into aset (
+    await conn.query(`insert into aset (
         id_aset,
         tipe_aset,
         nama_aset,
-        cabang,
+        id_cabang,
         alamat,
         kota,
         status
     ) values (?,?,?,?,?,?,?)`, 
-      data.id_aset, data.tipe_aset, data.nama_aset, data.cabang, data.alamat, data.kota, data.status
+      [data.id_aset, data.tipe_aset, data.nama_aset, data.id_cabang, data.alamat, data.kota, data.status]
     )
+    conn.end()
     return Response.json({status: 200})
   } catch (e) {
     console.log(e)
