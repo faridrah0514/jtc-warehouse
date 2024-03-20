@@ -16,7 +16,7 @@ const schemaList: string[] = [
   'status'
 ]
 
-const column: TableProps<DataCabang>['columns'] = schemaList.map(
+const column = schemaList.map(
   (value, i) => {
     return { title: value, dataIndex: value, key: value }
   }

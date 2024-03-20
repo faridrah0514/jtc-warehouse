@@ -3,7 +3,8 @@ import { DataAset } from "@/app/types/master";
 
 import path from "path";
 import { writeFile } from "fs/promises";
-import { projectRoot } from "@/app/page";
+import { projectRoot } from "@/app/projectRoot";
+import fs from 'fs';
 
 export async function POST( request: Request, response: Response): Promise<Response> {
   try {
@@ -12,14 +13,19 @@ export async function POST( request: Request, response: Response): Promise<Respo
     if (flist.length == 0) {
       return Response.json({message: "no file uploaded", status: 400})
     } else {
-      const cabang = fd.get('aset')
+      const id_aset = fd.get('id_aset') as unknown as string
+      const nama_aset  = fd.get('nama_aset') as unknown as string
+      // console.log("id aset = ", id_aset)
+      // console.log("nama aset = ", nama_aset)
       flist.forEach(
         async (file) => {
           const buffer = Buffer.from(await file.arrayBuffer())
-          const filename = cabang+"_"+file.name.replaceAll(" ", "_") 
+          // const filename = cabang+"_"+file.name.replaceAll(" ", "_") 
+          const filename = file.name.replaceAll(" ", "_") 
           try {
+            // console.log("ini niiiii -----> ", path.join(projectRoot, "/public/docs/" + id_aset.replaceAll(" ", "_") + "_" + nama_aset.replaceAll(" ", "_") + "/" + filename))
             await writeFile(
-              path.join(projectRoot, "public/docs/" + filename),
+              path.join(projectRoot, "/public/docs/" + id_aset.replaceAll(" ", "_") + "_" + nama_aset.replaceAll(" ", "_") + "/" + filename),
               buffer
             )
           } catch (e) {

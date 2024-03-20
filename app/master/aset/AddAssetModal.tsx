@@ -4,6 +4,7 @@ import TextArea from 'antd/es/input/TextArea'
 import React, { useEffect, useRef, useState } from 'react'
 import { DataAset, DataCabang } from '@/app/types/master'
 import { UploadOutlined } from '@ant-design/icons';
+import { projectRoot } from '@/app/projectRoot';
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
 
@@ -19,8 +20,6 @@ export default function AddAssetModal(props: Status) {
   const [allCabang, setAllCabang] = useState<{id: number, nama_perusahaan: string}[]>([])
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
-  const formRef = useRef(null);
-
   useEffect(
     () => {
       async function getAllCabang() {
@@ -62,11 +61,11 @@ export default function AddAssetModal(props: Status) {
               },
             })
 
-
             // Upload File to Server            
             if (fileList.length != 0) {
               const formData = new FormData()
-              formData.append('aset', value.nama_aset)
+              formData.append('nama_aset', value.nama_aset)
+              formData.append('id_aset', value.id_aset)
               fileList.forEach(
                 (file) => {
                   formData.append('files[]', file as FileType)
@@ -91,9 +90,7 @@ export default function AddAssetModal(props: Status) {
             }
             props.setOpenModal(false)
             props.setTriggerRefresh(!props.triggerRefresh)
-            if (formRef.current){
-              formRef.current.resetFields();
-            }
+            form.resetFields()
           }
         }
       >

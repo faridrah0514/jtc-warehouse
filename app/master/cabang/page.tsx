@@ -8,7 +8,7 @@ import { useForm } from 'antd/es/form/Form'
 
 const schemaList: string[] = ['id', 'nama_perusahaan', 'alamat', 'kota', 'no_tlp', 'status', 'kwh_rp']
 
-const column: TableProps<DataCabang>['columns'] = schemaList.map(
+const column = schemaList.map(
   (value, i) => {
     return { title: value, dataIndex: value, key: value }
   }

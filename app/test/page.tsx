@@ -11,7 +11,7 @@ interface FileItem {
   url: string | null
 }
 
-export default function page() {
+export default function Page() {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [uploading, setUploading] = useState(false);
 

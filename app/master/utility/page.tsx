@@ -36,19 +36,22 @@ export default function Page() {
     }, [triggerRefresh]
   )
   return (
-    <>
-      <Button onClick={() => { setOpenModal(true) }}>Tambah Utility</Button>
-      <AddUtilityModal setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
-          <Table className='overflow-auto'
-            columns={column}
-            dataSource={utilityData} 
-            rowKey='id'
-            size='small'
-            loading={ utilityData ? false : true}
-            bordered
-            />
+    <div>
+      Page
+    </div>
+    // <>
+    //   <Button onClick={() => { setOpenModal(true) }}>Tambah Utility</Button>
+    //   <AddUtilityModal setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
+    //       <Table className='overflow-auto'
+    //         columns={column}
+    //         dataSource={utilityData} 
+    //         rowKey='id'
+    //         size='small'
+    //         loading={ utilityData ? false : true}
+    //         bordered
+    //         />
       
-    </>
+    // </>
 
   )
 }

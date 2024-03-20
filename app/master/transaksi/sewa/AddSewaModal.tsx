@@ -21,6 +21,7 @@ export default function AddSewaModal(props: Status) {
   const [allData, setAllData] = useState<{ cabang: any, pelanggan: any, aset: any }>({ cabang: [], pelanggan: [], aset: [] })
   const [tanggalSewa, setTanggalSewa] = useState<{startDate: string, endDate: string}>({startDate:'', endDate:''})
   const formRef = useRef(null);
+  const [form] = Form.useForm<any>()
 
   useEffect(
     () => {
@@ -46,7 +47,7 @@ export default function AddSewaModal(props: Status) {
   )
   return (
     <Modal open={props.openModal} footer={null} title='Form Transaksi Sewa' closeIcon={null}>
-      <Form layout='vertical' ref={formRef}
+      <Form layout='vertical' ref={formRef} form={form}
         onFinish={
           async function addSewa(value) {
             const dateFormat = 'YYYY-MM-DD'
@@ -59,7 +60,8 @@ export default function AddSewaModal(props: Status) {
             })
             props.setOpenModal(false)
             props.setTriggerRefresh(!props.triggerRefresh)
-            if (formRef.current) formRef.current.resetFields();
+            // if (formRef.current) formRef.current.resetFields();
+            form.resetFields()
             
           }
         }

@@ -7,7 +7,7 @@ import { DataPelanggan } from '@/app/types/master'
 
 const schemaList: string[] = ['id', 'nama', 'alamat', 'kota', 'no_tlp', 'contact_person']
 
-const column: TableProps<DataPelanggan>['columns'] = schemaList.map(
+const column = schemaList.map(
   (value, i) => {
     return { title: value, dataIndex: value, key: value }
   }
