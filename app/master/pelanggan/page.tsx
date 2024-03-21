@@ -22,7 +22,7 @@ export default function Page() {
   useEffect(
     () => {
       async function getData() {
-        const response = await fetch('/api/master/pelanggan', { method: 'GET' })
+        const response = await fetch('/api/master/pelanggan', { method: 'GET', cache: 'no-store' })
         const data = await response.json()
 
         if (data) {

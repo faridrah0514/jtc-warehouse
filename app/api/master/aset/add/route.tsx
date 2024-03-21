@@ -10,8 +10,6 @@ export async function POST( request: Request, response: Response): Promise<Respo
     const data: DataAset = await request.json()
     const folderPath = data.id_aset.replaceAll(" ", "_") + "_" + data.nama_aset.replaceAll(" ", "_") 
     const publicPath = '/public/docs/'
-    // console.log("project root ---> ", projectRoot)
-    // console.log("folderPath ---> ", folderPath)
     const fullPath = path.join(projectRoot, publicPath + folderPath)
     if (!fs.existsSync(fullPath)){
       fs.mkdirSync(fullPath)

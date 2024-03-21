@@ -21,7 +21,7 @@ export default function Page() {
   useEffect(
     () => {
       async function getData() {
-        const response = await fetch('/api/master/utility', { method: 'GET' })
+        const response = await fetch('/api/master/utility', { method: 'GET', cache: 'no-store' })
         const data: DataUtility[] = (await response.json()).data
         if (data) {
           data.map(

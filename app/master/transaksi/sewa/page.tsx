@@ -30,7 +30,7 @@ export default function Page() {
   useEffect(
     () => {
       async function getData() {
-        const response = await fetch('/api/master/transaksi/sewa', { method: 'GET' })
+        const response = await fetch('/api/master/transaksi/sewa', { method: 'GET', cache: 'no-store' })
         const data = await response.json()
         if (data) {
           setCabangData(data.data)

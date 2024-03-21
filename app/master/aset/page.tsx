@@ -27,11 +27,10 @@ export default function Page() {
   const [asetData, setAsetData] = useState<DataAset[]>();
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
-  // console.log("column ---> ", column)
   useEffect(
     () => {
       async function getData() {
-        const response = await fetch('/api/master/aset', { method: 'GET' })
+        const response = await fetch('/api/master/aset', { method: 'GET', cache: 'no-store' })
         const data = await response.json()
         if (data) {
           setAsetData(data.data)
@@ -94,9 +93,6 @@ export default function Page() {
                 title: 'File', dataIndex: 'file', key: 'file',
                 render(value, record, index) {
                   const newRecord = record as {key: number, url: string, file: string}
-                  // console.log("value", value)
-                  // console.log("Record: ", record)
-                  // console.log("index", index)
                   return <a href={`/docs/${newRecord.url}/${value}`} target="_blank" rel="noopener noreferrer">{value}</a>
                 },
               },
@@ -120,7 +116,6 @@ export default function Page() {
             const dataSource = newRec.list_files.map(
               (value, key) => { return { key: key, file: value, url: record.id_aset.replaceAll(" ", "_") + "_" + record.nama_aset.replaceAll(" ", "_") } }
             )
-            // console.log("record ---> ", dataSource)
             return <Table columns={columns} dataSource={dataSource} pagination={false} />
             // return <>
             //   {record.list_files.map((values, key) => <div><a key={key} href={`/docs/${record.id_aset.replaceAll(" ", "_")}_${record.nama_aset.replaceAll(" ", "_")}/${values}`} target="_blank" rel="noopener noreferrer">

@@ -26,9 +26,9 @@ export default function AddSewaModal(props: Status) {
   useEffect(
     () => {
       async function getAllData() {
-        const allCabang = await fetch('/api/master/cabang', { method: 'GET' })
-        const allPelanggan = await fetch('/api/master/pelanggan', { method: 'GET' })
-        const allAset = await fetch('/api/master/aset', { method: 'GET' })
+        const allCabang = await fetch('/api/master/cabang', { method: 'GET', cache: 'no-store' })
+        const allPelanggan = await fetch('/api/master/pelanggan', { method: 'GET', cache: 'no-store' })
+        const allAset = await fetch('/api/master/aset', { method: 'GET', cache: 'no-store' })
         const dataCabang = (await allCabang.json()).data.map((value: DataCabang) => {
           return { id: value.id, nama_perusahaan: value.nama_perusahaan }
         })
