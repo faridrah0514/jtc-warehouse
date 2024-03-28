@@ -38,6 +38,7 @@ export default function AddPelangganModal(props: Status) {
             }
             props.setOpenModal(false)
             props.setTriggerRefresh(!props.triggerRefresh)
+            props.form.resetFields()
           }
         }
       >
@@ -64,7 +65,10 @@ export default function AddPelangganModal(props: Status) {
         </Form.Item>
         <div className="flex justify-end gap-2">
           <Form.Item>
-            <Button onClick={() => { props.setOpenModal(false) }}>Cancel</Button>
+            <Button onClick={() => {
+              props.setOpenModal(false);
+              props.form.resetFields()
+            }}>Cancel</Button>
           </Form.Item>
           <Form.Item>
             <Button htmlType="submit" type="primary">Submit</Button>

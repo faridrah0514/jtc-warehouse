@@ -15,13 +15,15 @@ export async function POST( request: Request, response: Response): Promise<Respo
     } else {
       const id_aset = fd.get('id_aset') as unknown as string
       const nama_aset  = fd.get('nama_aset') as unknown as string
+      const doc_list = fd.get('doc_list') as unknown as string
+      // doc_list.
       flist.forEach(
         async (file) => {
           const buffer = Buffer.from(await file.arrayBuffer())
           const filename = file.name.replaceAll(" ", "_") 
           try {
             await writeFile(
-              path.join(projectRoot, "/public/docs/" + id_aset.replaceAll(" ", "_") + "_" + nama_aset.replaceAll(" ", "_") + "/" + filename),
+              path.join(projectRoot, "/public/docs/" + id_aset.replaceAll(" ", "_") + "_" + nama_aset.replaceAll(" ", "_") + "/",doc_list, filename),
               buffer
             )
           } catch (e) {

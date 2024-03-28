@@ -38,5 +38,5 @@ next-env.d.ts
 # public docs
 public/docs/
 
-db/
+# db/
 notes/

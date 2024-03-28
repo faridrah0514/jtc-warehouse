@@ -41,6 +41,7 @@ export default function AddCabangModal(props: Status) {
             }
             props.setOpenModal(false)
             props.setTriggerRefresh(!props.triggerRefresh)
+            props.form.resetFields()
           }
         }
       >
@@ -64,12 +65,15 @@ export default function AddCabangModal(props: Status) {
         <Form.Item name='status' required label='Status' rules={[{ required: true }]}>
           <Input placeholder='Status' />
         </Form.Item>
-        <Form.Item name='kwh_rp' required label='Kwh Rp' rules={[{ required: true }]}>
+        <Form.Item name='kwh_rp' required label='Kwh Rp' rules={[{ required: true, pattern: new RegExp(/^[0-9]+$/), message: 'Input Kwh tidak valid'  }]}>
           <Input placeholder='Kwh Rp' />
         </Form.Item>
         <div className="flex justify-end gap-2">
           <Form.Item>
-            <Button onClick={() => { props.setOpenModal(false) }}>Cancel</Button>
+            <Button onClick={() => {
+              props.setOpenModal(false);
+              props.form.resetFields()
+            }}>Cancel</Button>
           </Form.Item>
           <Form.Item>
             <Button htmlType="submit" type="primary">Submit</Button>

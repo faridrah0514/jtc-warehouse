@@ -1,26 +1,31 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 
-import { Button, Dropdown, Flex, Modal, Popconfirm, Space, Table, TableProps } from 'antd'
+import { Button, ConfigProvider, Dropdown, Flex, Modal, Popconfirm, Space, Table, TableProps } from 'antd'
 import AddAssetModal from './AddAssetModal'
 import { DataCabang, DataAset } from '@/app/types/master'
 import Link from 'next/link'
 import type { TableColumnsType } from 'antd';
 import { DownOutlined } from '@ant-design/icons'
+import Title from 'antd/es/typography/Title'
 
 interface ExpandedDataType {
   key: React.Key;
-  file: string;
+  file: string[];
+  fileType: string[];
+  url: string,
 }
 
-
-const schemaList: string[] = ['id_aset', 'tipe_aset', 'nama_aset', 'cabang', 'alamat', 'kota', 'status']
-
-const column = schemaList.map(
-  (value, i) => {
-    return { title: value, dataIndex: value, key: value }
-  }
-)
+const column = [
+  { title: "Nomor", dataIndex: 'no', key: 'no' },
+  { title: "ID Aset", dataIndex: 'id_aset', key: 'id_aset' },
+  { title: "Tipe Aset", dataIndex: 'tipe_aset', key: 'tipe_aset' },
+  { title: "Nama Aset", dataIndex: 'nama_aset', key: 'nama_aset' },
+  { title: "Cabang", dataIndex: 'cabang', key: 'cabang' },
+  { title: "Alamat", dataIndex: 'alamat', key: 'alamat' },
+  { title: "Kota", dataIndex: 'kota', key: 'kota' },
+  { title: "Status", dataIndex: 'status', key: 'status' },
+]
 
 export default function Page() {
 
@@ -33,6 +38,9 @@ export default function Page() {
         const response = await fetch('/api/master/aset', { method: 'GET', cache: 'no-store' })
         const data = await response.json()
         if (data) {
+          data.data.map(
+            (value: DataAset, index: number) => value.no = index + 1
+          )
           setAsetData(data.data)
         }
       }
@@ -40,9 +48,10 @@ export default function Page() {
     }, [triggerRefresh]
   )
   return (
-    
+
     <>
-      <Button onClick={() => { setOpenModal(true) }}>Tambah Aset</Button>
+      <Title level={3}>Halaman Data Master Aset</Title>
+      <Button className="mb-5" onClick={() => { setOpenModal(true) }}>Tambah Aset</Button>
       <AddAssetModal setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
       <Table className='overflow-auto'
         columns={[...column, {
@@ -50,6 +59,20 @@ export default function Page() {
           key: "action",
           render: (_, record) => (
             <Flex gap="small">
+              <ConfigProvider
+                theme={{
+                  components: {
+                    Button: {
+                      colorPrimary: '#00b96b',
+                      colorPrimaryHover: '#00db7f'
+                    }
+                  }
+                }}
+              >
+                <Button type='primary' ghost size='small'>
+                  View
+                </Button>
+              </ConfigProvider>
               <Button type="primary" ghost size="small">
                 Edit
               </Button>
@@ -82,18 +105,26 @@ export default function Page() {
           ),
         }]}
         expandable={{
-          // expandedRowRender: (record) =>
-          //   {record.list_files.map((value) => (
-          //     <p>{value}</p>
-          //   ))}
-          // ,
           expandedRowRender: (record) => {
-            const columns: TableColumnsType<ExpandedDataType> = [
+            console.log("record ---> ", record)
+            const columns = [
+              {
+                title: 'Jenis Dokumen', dataIndex: 'fileType', key: 'fileType',
+              },
               {
                 title: 'File', dataIndex: 'file', key: 'file',
-                render(value, record, index) {
-                  const newRecord = record as {key: number, url: string, file: string}
-                  return <a href={`/docs/${newRecord.url}/${value}`} target="_blank" rel="noopener noreferrer">{value}</a>
+                render(value: string[], record: ExpandedDataType) {
+                  return <ul>
+                    {record.file.map(
+                      (value, idx) => {
+                        return (
+                          <li key={idx}>
+                            <a href={`/docs/${record.url}/${value}`} target="_blank" rel="noopener noreferrer">{value}</a>
+                          </li>
+                        )
+                      }
+                    )}
+                  </ul>
                 },
               },
               {
@@ -109,22 +140,21 @@ export default function Page() {
             ]
 
             interface a extends DataAset {
-              list_files: string[]
+              list_files: string[],
+              list_dir: string[],
+              list_dir_files: any[]
             }
             const newRec = record as a
 
-            const dataSource = newRec.list_files.map(
-              (value, key) => { return { key: key, file: value, url: record.id_aset.replaceAll(" ", "_") + "_" + record.nama_aset.replaceAll(" ", "_") } }
+            const newDataSource: ExpandedDataType[] = newRec.list_dir_files.map(
+              (value, idx) => {
+                return {
+                  fileType: Object.keys(value), key: idx, file: Object.values(value).flat() as string[], url: record.id_aset.replaceAll(" ", "_") + "_" + record.nama_aset.replaceAll(" ", "_") + "/" + Object.keys(value)
+                }
+              }
             )
-            return <Table columns={columns} dataSource={dataSource} pagination={false} />
-            // return <>
-            //   {record.list_files.map((values, key) => <div><a key={key} href={`/docs/${record.id_aset.replaceAll(" ", "_")}_${record.nama_aset.replaceAll(" ", "_")}/${values}`} target="_blank" rel="noopener noreferrer">
-            //     {values}
-            //   </a></div>)}
-            // </>
+            return <Table columns={columns} dataSource={newDataSource} pagination={false} />
           }
-
-          // rowExpandable: (record) => record.nama_aset !== 'Not expandable',
         }}
         dataSource={asetData}
         rowKey='id'
