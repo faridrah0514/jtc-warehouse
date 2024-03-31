@@ -15,7 +15,7 @@ CREATE TABLE `cabang` (
 
 CREATE TABLE `aset` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `id_aset` varchar(100) DEFAULT NULL,
+  `id_aset` varchar(100) DEFAULT NULL UNIQUE,
   `tipe_aset` varchar(100) DEFAULT NULL,
   `nama_aset` varchar(100) DEFAULT NULL,
   `id_cabang` int NOT NULL,
@@ -23,6 +23,13 @@ CREATE TABLE `aset` (
   `kota` varchar(100) DEFAULT NULL,
   `status` varchar(100) DEFAULT NULL,
   `folder_path` varchar(255) DEFAULT NULL,
+  `no_tlp` varchar(100) DEFAULT NULL,
+  `no_rek_air` varchar(100) DEFAULT NULL,
+  `no_rek_listrik` varchar(100) DEFAULT NULL,
+  `no_pbb` varchar(100) default null,
+  `tipe_sertifikat` varchar(50) default null,
+  `no_sertifikat` varchar(100) default null,
+  `tanggal_akhir_hgb` varchar(50) default null
   PRIMARY KEY (`id`),
   FOREIGN KEY (`id_cabang`) REFERENCES `cabang` (`id`)
 ) ;

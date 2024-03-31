@@ -4,23 +4,25 @@ import { rimraf } from "rimraf";
 import path from "path";
 import { projectRoot } from "@/app/projectRoot";
 
-export async function POST( request: Request, response: Response): Promise<Response> {
+export async function POST(request: Request, response: Response): Promise<Response> {
   try {
     const conn = openDB()
     const data = await request.json()
-    const folderPath = path.join(projectRoot, "/public/docs/" + data.id_aset.replaceAll(" ", "_") + "_" + data.nama_aset.replaceAll(" ", "_"))
-    await conn.query('delete from aset where id = ?', 
-      [data.id]
-    )
+    const folderPath = (data.requestType === 'delete_folder_doc') ? path.join(projectRoot, "/public/docs/" + data.folder) : path.join(projectRoot, "/public/docs/" + data.id_aset.replaceAll(" ", "_"))
+    if (data.id) {
+      await conn.query('delete from aset where id = ?',
+        [data.id]
+      )
+    }
     conn.end()
     rimraf(folderPath).then((result) => {
       console.log(`Folder '${folderPath}' deleted successfully.`);
     }).catch((e) => {
       console.error(`Error deleting folder '${folderPath}':`, e);
     });
-    return Response.json({status: 200})
+    return Response.json({ status: 200 })
   } catch (e) {
     console.log(e)
-    return Response.json({status: 500})
+    return Response.json({ status: 500 })
   }
 }

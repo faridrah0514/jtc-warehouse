@@ -23,7 +23,7 @@ export async function POST( request: Request, response: Response): Promise<Respo
           const filename = file.name.replaceAll(" ", "_") 
           try {
             await writeFile(
-              path.join(projectRoot, "/public/docs/" + id_aset.replaceAll(" ", "_") + "_" + nama_aset.replaceAll(" ", "_") + "/",doc_list, filename),
+              path.join(projectRoot, "/public/docs/" + id_aset.replaceAll(" ", "_") + "/",doc_list, filename),
               buffer
             )
           } catch (e) {

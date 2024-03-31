@@ -1,4 +1,4 @@
-import { Button, Form, Input, Modal, Select, UploadFile, Upload, message, UploadProps, GetProp, Col, Row, Flex } from 'antd'
+import { Button, FormInstance, Form, Input, Modal, Select, UploadFile, Upload, message, UploadProps, GetProp, Col, Row, Flex, DatePicker } from 'antd'
 const { Option } = Select;
 import TextArea from 'antd/es/input/TextArea'
 import React, { useEffect, useRef, useState } from 'react'
@@ -12,8 +12,12 @@ interface Status {
   openModal: boolean,
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>,
   triggerRefresh: boolean,
-  setTriggerRefresh: React.Dispatch<React.SetStateAction<boolean>>
+  setTriggerRefresh: React.Dispatch<React.SetStateAction<boolean>>,
+  form: FormInstance,
+  isEdit: boolean
+  maxId: number
 }
+
 
 export default function AddAssetModal(props: Status) {
   const [form] = Form.useForm<DataAset>()
@@ -40,11 +44,26 @@ export default function AddAssetModal(props: Status) {
   async function addAset(value: any) {
     //Insert Data to Database
     value.doc_list = [...inputs]
-    const result = await fetch('/api/master/aset/add', {
-      method: 'POST', body: JSON.stringify(value), headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    if (props.isEdit) {
+      const result = await fetch('/api/master/aset/add', {
+        method: 'POST', body: JSON.stringify({
+          requestType: 'edit',
+          data: value
+        }), headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    } else {
+      const result = await fetch('/api/master/aset/add', {
+        method: 'POST', body: JSON.stringify({
+          requestType: 'add',
+          data: value
+        }), headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    }
+
     inputs.forEach(
       (input, idx) => {
         const formData = new FormData()
@@ -76,6 +95,7 @@ export default function AddAssetModal(props: Status) {
     )
     props.setOpenModal(false)
     props.setTriggerRefresh(!props.triggerRefresh)
+    props.form.resetFields()
     form.resetFields()
     setInputs([])
     setFileList([])
@@ -99,86 +119,180 @@ export default function AddAssetModal(props: Status) {
   };
 
   return (
-    <Modal open={props.openModal} footer={null} title='Form Tambah Aset' closeIcon={null} width={1500}>
-      <Form form={form} layout='horizontal' labelAlign='left' labelCol={{ span: 9 }} labelWrap wrapperCol={{ span: 14 }} onFinish={addAset} name="parent_form">
+    <Modal open={props.openModal} footer={null} title='Form Tambah Aset' closeIcon={null} width={2000}>
+      <Form 
+      fields={(props.isEdit) ? []: [{
+        "name": ["id_aset"],
+        "value":'AS-'+props.maxId.toString().padStart(4, "0")
+      }]}
+      form={props.form} layout='horizontal' labelAlign='left' labelCol={{ span: 7 }} labelWrap wrapperCol={{ span: 15 }} onFinish={addAset} name="parent_form">
         <Row gutter={20}>
-          <Col span={10} className='border p-4'>
-            <Form.Item name='id_aset' required label="ID Aset" rules={[{ required: true }]}>
-              <Input placeholder='ID Aset' />
-            </Form.Item>
-            <Form.Item name='tipe_aset' required label="Tipe / Kelompok Aset" rules={[{ required: true }]}>
-              <Select placeholder='Tipe Aset' allowClear>
-                <Option value='Gudang'>Gudang</Option>
-                <Option value='Hotel'>Hotel</Option>
-                <Option value='Rumah'>Rumah</Option>
-                <Option value='SPBU'>SPBU</Option>
-                <Option value='Wisma'>Wisma</Option>
-                <Option value='Ruko'>Ruko</Option>
-              </Select>
-            </Form.Item>
-            <Form.Item name='nama_aset' required label="Nama Aset" rules={[{ required: true }]}>
-              <Input placeholder='Nama Asset' />
-            </Form.Item>
-            <Form.Item name='id_cabang' required label="Cabang" rules={[{ required: true }]}>
-              <Select placeholder="Cabang" allowClear>
-                {allCabang.map(
-                  (value) => <Option key={value.id} value={value.id}>{value.nama_perusahaan}</Option>
-                )}
-              </Select>
-            </Form.Item>
-            <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]}>
-              <TextArea rows={4} placeholder='Alamat' />
-            </Form.Item>
-            <Form.Item name='kota' required label='Kota' rules={[{ required: true }]}>
-              <Input placeholder='Kota' />
-            </Form.Item>
-            <Form.Item name='status' required label='Status' rules={[{ required: true }]}>
-              <Input placeholder='Status' />
-            </Form.Item>
+        {props.isEdit &&
+          <Form.Item name='id' required label="id" rules={[{ required: true }]} hidden>
+            <Input placeholder='id' />
+          </Form.Item>
+        }
+          <Col span={13} className='border p-4'>
+            <Row>
+            <Col span={12}>
+                <Form.Item name='tipe_aset' required label="Tipe Aset" rules={[{ required: true }]}>
+                  <Select placeholder='Tipe Aset' allowClear>
+                    <Option value='Gudang'>Gudang</Option>
+                    <Option value='Hotel'>Hotel</Option>
+                    <Option value='Rumah'>Rumah</Option>
+                    <Option value='SPBU'>SPBU</Option>
+                    <Option value='Wisma'>Wisma</Option>
+                    <Option value='Ruko'>Ruko</Option>
+                    <Option value='Lain-Lain'>Lain-Lain</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name='id_aset' label="ID Aset">
+                  <Input disabled/>
+                </Form.Item>
+              </Col>
+
+            </Row>
+            <Row>
+              <Col span={12}>
+                <Form.Item name='nama_aset' required label="Nama Aset" rules={[{ required: true }]} >
+                  <Input placeholder='Nama Asset' />
+                </Form.Item>
+              </Col>
+
+            </Row>
+            <Row>
+              <Col span={12}>
+                <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]} >
+                  <TextArea rows={3} placeholder='Alamat' />
+                </Form.Item>
+              </Col>
+
+            </Row>
+            <Row>
+              <Col span={12}>
+                <Form.Item name='kota' required label='Kota' rules={[{ required: true }]} >
+                  <Input placeholder='Kota' />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name='id_cabang' required label="Cabang" rules={[{ required: true }]}>
+                  <Select placeholder="Cabang" allowClear>
+                    {allCabang.map(
+                      (value) => <Option key={value.id} value={value.id}>{value.nama_perusahaan}</Option>
+                    )}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row>
+              <Col span={12}>
+                <Form.Item name='no_tlp' required label='No. Telepon' rules={[{ required: true }]}>
+                  <Input placeholder='No. Telepon' />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name='no_rek_air' required label='No. Rek. Air' rules={[{ required: true }]}>
+                  <Input placeholder='No. Rek. Air' />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row>
+              <Col span={12}>
+                <Form.Item name='no_rek_listrik' required label='No. Rek. Listrik' rules={[{ required: true }]}>
+                  <Input placeholder='No. Rek. Listrik' />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name='no_pbb' required label='No. PBB' rules={[{ required: true }]}>
+                  <Input placeholder='No. PBB' />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row>
+              <Col span={12}>
+                <Form.Item name='tipe_sertifikat' required label="Tipe Sertifikat" rules={[{ required: true }]}>
+                  <Select placeholder='Tipe Aset' allowClear>
+                    <Option value='SHM'>SHM</Option>
+                    <Option value='HGB'>HGB</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item name='no_sertifikat' required label="No. Sertifikat" rules={[{ required: true }]}>
+                  <Input placeholder='No. Sertifikat' />
+                </Form.Item>
+              </Col>
+
+            </Row>
+            <Row>
+              <Col span={12}>
+                {/* <Form.Item name='tanggal_akhir_hgb' required label='Tgl. Akhir HGB' rules={[{ required: true }]} labelCol={{ span: 7 }} wrapperCol={{ span: 15 }}>
+                  <DatePicker allowClear={false}></DatePicker>
+                </Form.Item> */}
+              </Col>
+              <Col span={12}>
+                <Form.Item name='status' required label='Status' rules={[{ required: true }]}>
+                  <Select placeholder='Status' allowClear>
+                    <Option value='Aktif'>Aktif</Option>
+                    <Option value='Tidak-Aktif'>Tidak Aktif</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
           </Col>
-          <Col span={14} className='border p-4'>
+          <Col span={11} className='border p-4'>
             {inputs.map((input, index) => (
-              <Flex gap='small' key={index}>
-                <Form.Item name={'doc-' + index} label='Jenis Dokumen' labelCol={{ span: 10 }} wrapperCol={{ span: 200 }} rules={[{ required: true }]}>
-                  <Input
-                    onChange={(e) => handleInputChange(index, e.target.value)}
-                    placeholder='(Contoh: IMB, PBB, dll)'
-                  />
-                </Form.Item>
-                <Button icon={<DeleteOutlined />} ghost danger shape="circle" onClick={() => handleDeleteInput(index)} className='border-0'></Button>
-                <Form.Item name={input}>
-                  <Upload
-                    onRemove={(file) => {
-                      setFileList(
-                        fileList.map(
-                          (v, i) => {
-                            if (i == index) {
-                              return v.filter(
-                                (k, j) => file.uid !== k.uid && file.name !== k.name
-                              )
+              <Row key={index} gutter={10}>
+                <Col span={10}>
+                <Flex gap="small">
+                <Form.Item name={'doc-' + index} label='Jenis Dokumen' labelCol={{ span: 11 }} wrapperCol={{ span: 200 }} rules={[{ required: true }]}>
+                    <Input
+                      onChange={(e) => handleInputChange(index, e.target.value)}
+                      placeholder='(Contoh: IMB, PBB, dll)'
+                    />
+                  </Form.Item>
+                  <Button icon={<DeleteOutlined />} ghost danger shape="circle" onClick={() => handleDeleteInput(index)} className='border-0'></Button>
+                </Flex>
+                
+                </Col>
+                <Col span={14}>
+                  <Form.Item name={input}>
+                    <Upload
+                      onRemove={(file) => {
+                        setFileList(
+                          fileList.map(
+                            (v, i) => {
+                              if (i == index) {
+                                return v.filter(
+                                  (k, j) => file.uid !== k.uid && file.name !== k.name
+                                )
+                              }
+                              return v
                             }
-                            return v
-                          }
+                          )
                         )
-                      )
-                    }}
-                    beforeUpload={(file) => {
-                      setFileList(
-                        fileList.map(
-                          (v, i) => {
-                            if (i == index) {
-                              return [...v, file]
-                            } return v
-                          }
+                      }}
+                      beforeUpload={(file) => {
+                        setFileList(
+                          fileList.map(
+                            (v, i) => {
+                              if (i == index) {
+                                return [...v, file]
+                              } return v
+                            }
+                          )
                         )
-                      )
-                      return false
-                    }}
-                  >
-                    <Button icon={<UploadOutlined />}>Upload</Button>
-                  </Upload>
-                </Form.Item>
-              </Flex>
+                        return false
+                      }}
+                    >
+                      <Button icon={<UploadOutlined />}>Upload</Button>
+                    </Upload>
+                  </Form.Item>
+                </Col>
+              </Row>
             ))}
             <Button type="primary" onClick={handleAddInput}>
               Tambah Dokumen
@@ -190,6 +304,7 @@ export default function AddAssetModal(props: Status) {
             <Button onClick={() => {
               props.setOpenModal(false)
               form.resetFields()
+              props.form.resetFields()
               setInputs([])
               setFileList([])
 
@@ -200,9 +315,6 @@ export default function AddAssetModal(props: Status) {
           </Form.Item>
         </div>
       </Form>
-      <Upload>
-        <Button>Coba</Button>
-      </Upload>
     </Modal>
   )
 }

@@ -38,5 +38,13 @@ export interface DataAset {
   alamat: string,
   kota: string,
   status: string,
-  doc_list: string[]
+  doc_list: string[],
+  no_tlp: string,
+  no_rek_air: string,
+  no_rek_listrik: string,
+  no_pbb: string,
+  tipe_sertifikat: string,
+  no_sertifikat: string,
+  tanggal_akhir_hgb: string,
+  list_dir: string[]
 }

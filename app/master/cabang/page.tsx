@@ -70,9 +70,9 @@ export default function Page() {
                   }
                 }}
               >
-                <Button type='primary' ghost size='small'>
+                {/* <Button type='primary' ghost size='small'>
                   View
-                </Button>
+                </Button> */}
               </ConfigProvider>
               <Button type="primary" ghost size="small" onClick={
                 () => {

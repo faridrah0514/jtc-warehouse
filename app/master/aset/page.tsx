@@ -1,19 +1,21 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 
-import { Button, ConfigProvider, Dropdown, Flex, Modal, Popconfirm, Space, Table, TableProps } from 'antd'
+import { Button, ConfigProvider, Dropdown, Flex, Form, Modal, Popconfirm, Select, Space, Table, TableProps } from 'antd'
 import AddAssetModal from './AddAssetModal'
 import { DataCabang, DataAset } from '@/app/types/master'
 import Link from 'next/link'
 import type { TableColumnsType } from 'antd';
 import { DownOutlined } from '@ant-design/icons'
 import Title from 'antd/es/typography/Title'
+import { ExpandAction } from 'antd/es/tree/DirectoryTree'
 
 interface ExpandedDataType {
   key: React.Key;
   file: string[];
   fileType: string[];
   url: string,
+  id_aset: string
 }
 
 const column = [
@@ -24,14 +26,31 @@ const column = [
   { title: "Cabang", dataIndex: 'cabang', key: 'cabang' },
   { title: "Alamat", dataIndex: 'alamat', key: 'alamat' },
   { title: "Kota", dataIndex: 'kota', key: 'kota' },
-  { title: "Status", dataIndex: 'status', key: 'status' },
+  { title: "No. tlp", dataIndex: 'no_tlp', key: 'no_tlp' },
+  { title: "No. Rek. Air", dataIndex: 'no_rek_air', key: 'no_rek_air' },
+  { title: "No. Rek. Listrik", dataIndex: 'no_rek_listrik', key: 'no_rek_listrik' },
+  { title: "No. PBB", dataIndex: 'no_pbb', key: 'no_pbb' },
+  { title: "Tipe Sertifikat", dataIndex: 'tipe_sertifikat', key: 'tipe_sertifikat' },
+  { title: "No. Sertifikat", dataIndex: 'no_sertifikat', key: 'no_sertifikat' },
+  { title: "Tgl. Akhir HGB", dataIndex: 'tanggal_akhir_hgb', key: 'tanggal_akhir_hgb' },
 ]
 
-export default function Page() {
+const OPTIONS = column.map((v, i) => v.title).filter(v => ((v !== 'Nomor') && (v !== 'Nama Aset')))
 
+export default function Page() {
+  const [form] = Form.useForm()
   const [asetData, setAsetData] = useState<DataAset[]>();
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
+  const [isEdit, setIsEdit] = useState<boolean>(false)
+  const [maxId, setMaxId] = useState<number>(0)
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+  const filteredOptions = OPTIONS.filter((o) => !selectedItems.includes(o));
+  // const newColumns = (column as .map((item) => ({
+  //   ...item,
+  //   hidden: !checkedList.includes(item.key as string),
+  // }));
   useEffect(
     () => {
       async function getData() {
@@ -41,6 +60,7 @@ export default function Page() {
           data.data.map(
             (value: DataAset, index: number) => value.no = index + 1
           )
+          setMaxId(data.maxId[0].max_id)
           setAsetData(data.data)
         }
       }
@@ -51,9 +71,27 @@ export default function Page() {
 
     <>
       <Title level={3}>Halaman Data Master Aset</Title>
-      <Button className="mb-5" onClick={() => { setOpenModal(true) }}>Tambah Aset</Button>
-      <AddAssetModal setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
+      <AddAssetModal maxId={maxId} isEdit={isEdit} form={form} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
+      <Flex className='pb-5' gap={'small'} vertical={false}>
+        <Button onClick={() => { setOpenModal(true); setIsEdit(false) }}>Tambah Aset</Button>
+
+        {/* <Select
+          mode="multiple"
+          placeholder="Filter Column"
+          value={selectedItems}
+          onChange={setSelectedItems}
+          // style={{ width: '100%' }}
+          className='min-w-40'
+          options={filteredOptions.map((item) => ({
+            value: item,
+            label: item,
+          }))}
+        /> */}
+      </Flex>
+
       <Table className='overflow-auto'
+        scroll={{ x: 3000 }}
+        // scroll=true
         columns={[...column, {
           title: "Action",
           key: "action",
@@ -69,17 +107,28 @@ export default function Page() {
                   }
                 }}
               >
-                <Button type='primary' ghost size='small'>
-                  View
-                </Button>
+                <Link href={`/master/aset/view/${record.id_aset}`}>
+                  <Button type='primary' ghost size='small'
+                    onClick={() => { console.log("view click --> ", record) }}
+                  >
+                    View
+                  </Button></Link>
+
               </ConfigProvider>
-              <Button type="primary" ghost size="small">
+              <Button type="primary" ghost size="small"
+                onClick={
+                  () => {
+                    setOpenModal(true)
+                    setIsEdit(true)
+                    form.setFieldsValue(record)
+                  }
+                }>
                 Edit
               </Button>
               <Popconfirm
                 title="sure to delete?"
                 onConfirm={
-                  async function deleteCabang() {
+                  async function deleteAset() {
                     const result = await fetch('/api/master/aset/delete', {
                       method: "POST",
                       headers: {
@@ -105,8 +154,8 @@ export default function Page() {
           ),
         }]}
         expandable={{
+          fixed: 'left',
           expandedRowRender: (record) => {
-            console.log("record ---> ", record)
             const columns = [
               {
                 title: 'Jenis Dokumen', dataIndex: 'fileType', key: 'fileType',
@@ -131,10 +180,31 @@ export default function Page() {
                 title: 'Action',
                 dataIndex: 'operation',
                 key: 'operation',
-                render: () => (
-                  <Space size="middle">
+                render: (value: any, record: ExpandedDataType, index: number) => (
+                  // <Space size="middle">
+                  <Popconfirm title="sure to delete this file(s) ?"
+                    onConfirm={
+                      async function deleteAset() {
+                        const result = await fetch('/api/master/aset/delete', {
+                          method: "POST",
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            folder: record.url,
+                            requestType: "delete_folder_doc",
+                          })
+                        })
+                        if (result.status == 200) {
+                          setTriggerRefresh(!triggerRefresh)
+                        }
+                      }
+
+                    }>
                     <a>Delete</a>
-                  </Space>
+                  </Popconfirm>
+
+                  // </Space>
                 ),
               },
             ]
@@ -149,7 +219,11 @@ export default function Page() {
             const newDataSource: ExpandedDataType[] = newRec.list_dir_files.map(
               (value, idx) => {
                 return {
-                  fileType: Object.keys(value), key: idx, file: Object.values(value).flat() as string[], url: record.id_aset.replaceAll(" ", "_") + "_" + record.nama_aset.replaceAll(" ", "_") + "/" + Object.keys(value)
+                  fileType: Object.keys(value),
+                  key: idx,
+                  file: Object.values(value).flat() as string[],
+                  url: record.id_aset.replaceAll(" ", "_") + "/" + Object.keys(value),
+                  id_aset: record.id_aset
                 }
               }
             )
