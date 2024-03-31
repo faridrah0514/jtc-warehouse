@@ -8,7 +8,7 @@ export async function POST(request: Request, response: Response): Promise<Respon
   try {
     const conn = openDB()
     const data = await request.json()
-    const folderPath = (data.requestType === 'delete_folder_doc') ? path.join(projectRoot, "/public/docs/" + data.folder) : path.join(projectRoot, "/public/docs/" + data.id_aset.replaceAll(" ", "_"))
+    const folderPath = (data.requestType === 'delete_folder_doc') ? path.join("./public/docs", data.folder) : path.join("./public/docs",data.id_aset.replaceAll(" ", "_"))
     if (data.id) {
       await conn.query('delete from aset where id = ?',
         [data.id]

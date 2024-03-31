@@ -10,8 +10,8 @@ export async function POST(request: Request, response: Response): Promise<Respon
     const value = await request.json()
     const data = value.data
     const folderPath = data.id_aset.replaceAll(" ", "_")
-    const publicPath = '/public/docs/'
-    const fullPath = path.join(projectRoot, publicPath + folderPath)
+    const publicPath = './public/docs/'
+    const fullPath = path.join(publicPath,folderPath)
     if (!fs.existsSync(fullPath)) {
       fs.mkdirSync(fullPath)
       console.log(`Folder '${folderPath}' created successfully under the 'public' directory.`);
@@ -19,7 +19,7 @@ export async function POST(request: Request, response: Response): Promise<Respon
       console.log(`Folder '${folderPath}' already exists.`);
     }
     data.doc_list.forEach((value: any, i: number) => {
-      const fullPath = path.join(projectRoot, publicPath + folderPath, value)
+      const fullPath = path.join(publicPath, folderPath, value)
       if (!fs.existsSync(fullPath)) {
         fs.mkdirSync(fullPath)
         console.log(`Folder '${folderPath}' created successfully under the 'public' directory.`);
