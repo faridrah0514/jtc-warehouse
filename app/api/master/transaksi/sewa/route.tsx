@@ -10,6 +10,7 @@ export async function GET() {
     left join aset a on ts.id_aset = a.id
   `
   const [data, _] = await conn.execute(query)
+  conn.end()
   return Response.json({ data })
 }
 

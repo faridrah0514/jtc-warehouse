@@ -36,7 +36,8 @@ yarn-error.log*
 next-env.d.ts
 
 # public docs
-public/docs/
+public/docs/*
+!public/docs/.gitkeep
 
 # db/
 notes/
