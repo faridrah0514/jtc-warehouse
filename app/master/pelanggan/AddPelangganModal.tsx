@@ -13,7 +13,7 @@ interface Status {
 
 export default function AddPelangganModal(props: Status) {
   return (
-    <Modal open={props.openModal} footer={null} title='Form Tambah Pelanggan'>
+    <Modal open={props.openModal} footer={null} title='Form Tambah Pelanggan' closeIcon={null}>
       <Form form={props.form} layout='vertical'
         onFinish={
           async function addPelanggan(value: DataPelanggan) {
