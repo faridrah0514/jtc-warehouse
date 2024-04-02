@@ -29,7 +29,7 @@ CREATE TABLE `aset` (
   `no_pbb` varchar(100) default null,
   `tipe_sertifikat` varchar(50) default null,
   `no_sertifikat` varchar(100) default null,
-  `tanggal_akhir_hgb` varchar(50) default null
+  `tanggal_akhir_hgb` varchar(50) default null,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`id_cabang`) REFERENCES `cabang` (`id`)
 ) ;
