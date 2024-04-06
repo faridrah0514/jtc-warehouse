@@ -168,7 +168,7 @@ export default function Page() {
                       (value, idx) => {
                         return (
                           <li key={idx}>
-                            <a href={`/docs/${record.url}/${value}`} target="_blank" rel="noopener noreferrer">{value}</a>
+                            <a href={`/upload/docs/${record.url}/${value}`} target="_blank" rel="noopener noreferrer">{value}</a>
                           </li>
                         )
                       }

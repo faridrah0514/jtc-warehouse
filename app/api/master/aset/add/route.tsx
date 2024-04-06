@@ -10,7 +10,7 @@ export async function POST(request: Request, response: Response): Promise<Respon
     const value = await request.json()
     const data = value.data
     const folderPath = data.id_aset.replaceAll(" ", "_")
-    const publicPath = '/public/docs/'
+    const publicPath = '/upload/docs/'
     const fullPath = path.join(projectRoot, publicPath + folderPath)
     if (!fs.existsSync(fullPath)) {
       fs.mkdirSync(fullPath)

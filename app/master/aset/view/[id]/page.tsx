@@ -99,13 +99,13 @@ export default function Page({ params }: { params: { id: string } }) {
                 key: v,
                 label: v,
                 children: <>
-                  <Link href={`/docs/${asetData.id_aset}/${v}/${file[v]}`} target="_blank" rel="noopener noreferrer">
+                  <Link href={`/upload/docs/${asetData.id_aset}/${v}/${file[v]}`} target="_blank" rel="noopener noreferrer">
                     <Button type='link'>Open {file[v]}
                       {/* <Title level={4}>{file[v]}</Title> */}
                     </Button>
                   </Link>
                   <iframe
-                    src={`/docs/${asetData.id_aset}/${v}/${file[v]}`}
+                    src={`/upload/docs/${asetData.id_aset}/${v}/${file[v]}`}
                     className='w-full h-full mt-5'
                     style={{ minHeight: '1000px' }}
                   ></iframe>
