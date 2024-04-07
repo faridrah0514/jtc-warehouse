@@ -6,7 +6,8 @@ export interface DataCabang {
     kota: string,
     no_tlp: number,
     status: string,
-    kwh_rp: number
+    kwh_rp: number,
+    id_cabang: string
 }
 
 export interface DataPelanggan {

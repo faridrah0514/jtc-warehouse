@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 
-import { Button, ConfigProvider, Dropdown, Flex, Form, Modal, Popconfirm, Select, Space, Table, TableProps } from 'antd'
+import { Button, ConfigProvider, Dropdown, Flex, Form, Modal, Popconfirm, Select, Space, Table, TableProps, message } from 'antd'
 import AddAssetModal from './AddAssetModal'
 import { DataCabang, DataAset } from '@/app/types/master'
 import Link from 'next/link'
@@ -32,7 +32,7 @@ const column = [
   { title: "No. PBB", dataIndex: 'no_pbb', key: 'no_pbb' },
   { title: "Tipe Sertifikat", dataIndex: 'tipe_sertifikat', key: 'tipe_sertifikat' },
   { title: "No. Sertifikat", dataIndex: 'no_sertifikat', key: 'no_sertifikat' },
-  { title: "Tgl. Akhir HGB", dataIndex: 'tanggal_akhir_hgb', key: 'tanggal_akhir_hgb' },
+  // { title: "Tgl. Akhir HGB", dataIndex: 'tanggal_akhir_hgb', key: 'tanggal_akhir_hgb' },
 ]
 
 const OPTIONS = column.map((v, i) => v.title).filter(v => ((v !== 'Nomor') && (v !== 'Nama Aset')))
@@ -47,10 +47,7 @@ export default function Page() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   const filteredOptions = OPTIONS.filter((o) => !selectedItems.includes(o));
-  // const newColumns = (column as .map((item) => ({
-  //   ...item,
-  //   hidden: !checkedList.includes(item.key as string),
-  // }));
+
   useEffect(
     () => {
       async function getData() {
@@ -74,19 +71,6 @@ export default function Page() {
       <AddAssetModal maxId={maxId} isEdit={isEdit} form={form} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
       <Flex className='pb-5' gap={'small'} vertical={false}>
         <Button onClick={() => { setOpenModal(true); setIsEdit(false) }}>Tambah Aset</Button>
-
-        {/* <Select
-          mode="multiple"
-          placeholder="Filter Column"
-          value={selectedItems}
-          onChange={setSelectedItems}
-          // style={{ width: '100%' }}
-          className='min-w-40'
-          options={filteredOptions.map((item) => ({
-            value: item,
-            label: item,
-          }))}
-        /> */}
       </Flex>
 
       <Table className='overflow-auto'
@@ -108,9 +92,7 @@ export default function Page() {
                 }}
               >
                 <Link href={`/master/aset/view/${record.id_aset}`}>
-                  <Button type='primary' ghost size='small'
-                    onClick={() => { console.log("view click --> ", record) }}
-                  >
+                  <Button type='primary' ghost size='small'>
                     View
                   </Button></Link>
 
@@ -141,8 +123,11 @@ export default function Page() {
                       })
                     })
                     if (result.status == 200) {
-                      setTriggerRefresh(!triggerRefresh)
+                      message.success("Delete berhasil")
+                    } else {
+                      message.error("Delete gagal")
                     }
+                    setTriggerRefresh(!triggerRefresh)
                   }
                 }
               >

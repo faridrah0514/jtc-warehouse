@@ -1,10 +1,11 @@
-import { Button, FormInstance, Form, Input, Modal, Select, UploadFile, Upload, message, UploadProps, GetProp, Col, Row, Flex, DatePicker } from 'antd'
+import { Button, FormInstance, Form, Input, Modal, Select, UploadFile, Upload, message, UploadProps, GetProp, Col, Row, Flex, DatePicker, Image, Divider } from 'antd'
 const { Option } = Select;
 import TextArea from 'antd/es/input/TextArea'
 import React, { useEffect, useRef, useState } from 'react'
 import { DataAset, DataCabang } from '@/app/types/master'
-import { DeleteOutlined, UploadOutlined } from '@ant-design/icons';
+import { DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import { projectRoot } from '@/app/projectRoot';
+import Link from 'next/link';
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
 
@@ -18,33 +19,67 @@ interface Status {
   maxId: number
 }
 
+const getBase64 = (file: FileType): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
 
 export default function AddAssetModal(props: Status) {
   const [form] = Form.useForm<DataAset>()
+  const [tipeAsetForm] = Form.useForm<any>()
   const [allCabang, setAllCabang] = useState<{ id: number, nama_perusahaan: string }[]>([])
   const [fileList, setFileList] = useState<UploadFile[][]>([]);
   const [uploading, setUploading] = useState(false);
   const [inputs, setInputs] = useState<string[]>([]);
+  const [tipeAsetModal, setTipeAsetModal] = useState<boolean>(false);
+  const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true)
+  const [tipeAset, setTipeAset] = useState<{id: number, tipe_aset: string}[]>([])
 
   useEffect(
     () => {
       async function getAllCabang() {
         const response = await fetch('/api/master/cabang', { method: 'GET' })
+        const tipeAsetResp = await (await fetch('/api/master/aset/tipe_aset', { method: 'GET' })).json()
         const dataCabang = (await response.json()).data.map((value: DataCabang) => {
           return { id: value.id, nama_perusahaan: value.nama_perusahaan }
         })
+
         if (dataCabang) {
           setAllCabang(dataCabang)
         }
+        if (tipeAsetResp) {
+          setTipeAset(tipeAsetResp.data)
+        }
       }
       getAllCabang()
-    }, []
+    }, [triggerRefresh]
   )
+
+  async function addTipeAset(value: any) {
+    const result = await fetch('/api/master/aset/tipe_aset', {
+      method: 'POST', body: JSON.stringify({
+        requestType: 'add',
+        data: value
+      }), headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    setTipeAsetModal(false)
+    setTriggerRefresh(!triggerRefresh)
+    tipeAsetForm.resetFields()
+  }
 
   async function addAset(value: any) {
     //Insert Data to Database
     value.doc_list = [...inputs]
+    
     if (props.isEdit) {
+      // const str = "CB-0016-AS-0108";
+      const desiredString = value.id_aset.slice(value.id_aset.indexOf("AS"));
+      value.id_aset = 'CB-' + value.id_cabang.toString().padStart(4, "0") + '-' + desiredString
       const result = await fetch('/api/master/aset/add', {
         method: 'POST', body: JSON.stringify({
           requestType: 'edit',
@@ -54,6 +89,7 @@ export default function AddAssetModal(props: Status) {
         },
       })
     } else {
+      value.id_aset = 'CB-' + value.id_cabang.toString().padStart(4, "0") + '-' + value.id_aset
       const result = await fetch('/api/master/aset/add', {
         method: 'POST', body: JSON.stringify({
           requestType: 'add',
@@ -118,203 +154,262 @@ export default function AddAssetModal(props: Status) {
     setInputs(newInputs);
   };
 
+
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+
+  const handlePreview = async (file: UploadFile) => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj as FileType);
+    }
+
+    setPreviewImage(file.url || (file.preview as string));
+    setPreviewOpen(true);
+  };
+
   return (
-    <Modal open={props.openModal} footer={null} title='Form Tambah Aset' closeIcon={null} width={2000}>
-      <Form 
-      fields={(props.isEdit) ? []: [{
-        "name": ["id_aset"],
-        "value":'AS-'+props.maxId.toString().padStart(4, "0")
-      }]}
-      form={props.form} layout='horizontal' labelAlign='left' labelCol={{ span: 7 }} labelWrap wrapperCol={{ span: 15 }} onFinish={addAset} name="parent_form">
-        <Row gutter={20}>
-        {props.isEdit &&
-          <Form.Item name='id' required label="id" rules={[{ required: true }]} hidden>
-            <Input placeholder='id' />
+    <>
+      <Modal open={tipeAsetModal} closeIcon={null} footer={null} title='Form Tambah Tipe Aset'>
+        <Form name="addTipeAsetForm" form={tipeAsetForm} onFinish={addTipeAset}>
+          <Form.Item name='tipe_aset' label="Tipe Aset">
+            <Input placeholder='Masukkan Tipe Aset' />
           </Form.Item>
-        }
-          <Col span={13} className='border p-4'>
-            <Row>
-            <Col span={12}>
-                <Form.Item name='tipe_aset' required label="Tipe Aset" rules={[{ required: true }]}>
-                  <Select placeholder='Tipe Aset' allowClear>
-                    <Option value='Gudang'>Gudang</Option>
-                    <Option value='Hotel'>Hotel</Option>
-                    <Option value='Rumah'>Rumah</Option>
-                    <Option value='SPBU'>SPBU</Option>
-                    <Option value='Wisma'>Wisma</Option>
-                    <Option value='Ruko'>Ruko</Option>
-                    <Option value='Lain-Lain'>Lain-Lain</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name='id_aset' label="ID Aset">
-                  <Input disabled/>
-                </Form.Item>
-              </Col>
+          <div className="flex justify-end gap-2 pt-4">
+            <Form.Item>
+              <Button onClick={() => {
+                tipeAsetForm.resetFields()
+                setTipeAsetModal(false)
+              }}>Cancel</Button>
+            </Form.Item>
+            <Form.Item>
+              <Button htmlType="submit" type="primary" loading={uploading} > {uploading ? 'Uploading' : 'Submit'}</Button>
+            </Form.Item>
+          </div>
+        </Form>
+      </Modal>
+      <Modal open={props.openModal} footer={null} title='Form Tambah Aset' closeIcon={null} width={2000}>
+        <Form
 
-            </Row>
-            <Row>
-              <Col span={12}>
-                <Form.Item name='nama_aset' required label="Nama Aset" rules={[{ required: true }]} >
-                  <Input placeholder='Nama Asset' />
-                </Form.Item>
-              </Col>
-
-            </Row>
-            <Row>
-              <Col span={12}>
-                <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]} >
-                  <TextArea rows={3} placeholder='Alamat' />
-                </Form.Item>
-              </Col>
-
-            </Row>
-            <Row>
-              <Col span={12}>
-                <Form.Item name='kota' required label='Kota' rules={[{ required: true }]} >
-                  <Input placeholder='Kota' />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name='id_cabang' required label="Cabang" rules={[{ required: true }]}>
-                  <Select placeholder="Cabang" allowClear>
-                    {allCabang.map(
-                      (value) => <Option key={value.id} value={value.id}>{value.nama_perusahaan}</Option>
-                    )}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row>
-              <Col span={12}>
-                <Form.Item name='no_tlp' required label='No. Telepon' rules={[{ required: true }]}>
-                  <Input placeholder='No. Telepon' />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name='no_rek_air' required label='No. Rek. Air' rules={[{ required: true }]}>
-                  <Input placeholder='No. Rek. Air' />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row>
-              <Col span={12}>
-                <Form.Item name='no_rek_listrik' required label='No. Rek. Listrik' rules={[{ required: true }]}>
-                  <Input placeholder='No. Rek. Listrik' />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name='no_pbb' required label='No. PBB' rules={[{ required: true }]}>
-                  <Input placeholder='No. PBB' />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row>
-              <Col span={12}>
-                <Form.Item name='tipe_sertifikat' required label="Tipe Sertifikat" rules={[{ required: true }]}>
-                  <Select placeholder='Tipe Aset' allowClear>
-                    <Option value='SHM'>SHM</Option>
-                    <Option value='HGB'>HGB</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-
-              <Col span={12}>
-                <Form.Item name='no_sertifikat' required label="No. Sertifikat" rules={[{ required: true }]}>
-                  <Input placeholder='No. Sertifikat' />
-                </Form.Item>
-              </Col>
-
-            </Row>
-            <Row>
-              <Col span={12}>
-                {/* <Form.Item name='tanggal_akhir_hgb' required label='Tgl. Akhir HGB' rules={[{ required: true }]} labelCol={{ span: 7 }} wrapperCol={{ span: 15 }}>
-                  <DatePicker allowClear={false}></DatePicker>
-                </Form.Item> */}
-              </Col>
-              <Col span={12}>
-                <Form.Item name='status' required label='Status' rules={[{ required: true }]}>
-                  <Select placeholder='Status' allowClear>
-                    <Option value='Aktif'>Aktif</Option>
-                    <Option value='Tidak-Aktif'>Tidak Aktif</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Col>
-          <Col span={11} className='border p-4'>
-            {inputs.map((input, index) => (
-              <Row key={index} gutter={10}>
-                <Col span={10}>
-                <Flex gap="small">
-                <Form.Item name={'doc-' + index} label='Jenis Dokumen' labelCol={{ span: 11 }} wrapperCol={{ span: 200 }} rules={[{ required: true }]}>
-                    <Input
-                      onChange={(e) => handleInputChange(index, e.target.value)}
-                      placeholder='(Contoh: IMB, PBB, dll)'
+          fields={(props.isEdit) ? [] : [{
+            "name": ["id_aset"],
+            "value": 'AS-' + props.maxId.toString().padStart(4, "0")
+          }]}
+          form={props.form} layout='horizontal' labelAlign='left' labelCol={{ span: 7 }} labelWrap wrapperCol={{ span: 15 }} onFinish={addAset} name="parent_form">
+          <Row gutter={20}>
+            {props.isEdit &&
+              <Form.Item name='id' required label="id" rules={[{ required: true }]} hidden>
+                <Input placeholder='id' />
+              </Form.Item>
+            }
+            <Col span={13} className='border p-4'>
+              <Row>
+                <Col span={12}>
+                  <Form.Item name='id_tipe_aset' required label="Tipe Aset" rules={[{ required: true }]}>
+                    <Select placeholder='Tipe Aset' allowClear dropdownRender={(menu) => {
+                      return (
+                        <>
+                          {menu}
+                          <Divider style={{ margin: '0' }} />
+                          <Button style={{ paddingLeft: '10px' }} type="link" onClick={() => { setTipeAsetModal(true) }}>
+                            Tambah Tipe Aset
+                          </Button>
+                        </>
+                      )
+                    }}
+                      options={
+                        tipeAset.map((v, idx) => { return { label: v.tipe_aset, value: v.id } })
+                      }
                     />
                   </Form.Item>
-                  <Button icon={<DeleteOutlined />} ghost danger shape="circle" onClick={() => handleDeleteInput(index)} className='border-0'></Button>
-                </Flex>
-                
                 </Col>
-                <Col span={14}>
-                  <Form.Item name={input}>
-                    <Upload
-                      onRemove={(file) => {
-                        setFileList(
-                          fileList.map(
-                            (v, i) => {
-                              if (i == index) {
-                                return v.filter(
-                                  (k, j) => file.uid !== k.uid && file.name !== k.name
-                                )
-                              }
-                              return v
-                            }
-                          )
-                        )
-                      }}
-                      beforeUpload={(file) => {
-                        setFileList(
-                          fileList.map(
-                            (v, i) => {
-                              if (i == index) {
-                                return [...v, file]
-                              } return v
-                            }
-                          )
-                        )
-                        return false
-                      }}
-                    >
-                      <Button icon={<UploadOutlined />}>Upload</Button>
-                    </Upload>
+                <Col span={12}>
+                  <Form.Item name='id_aset'>
+                    {/* <Input disabled /> */}
+                  </Form.Item>
+                </Col>
+
+              </Row>
+              <Row>
+                <Col span={12}>
+                  <Form.Item name='nama_aset' required label="Nama Aset" rules={[{ required: true }]} >
+                    <Input placeholder='Nama Asset' />
+                  </Form.Item>
+                </Col>
+
+              </Row>
+              <Row>
+                <Col span={12}>
+                  <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]} >
+                    <TextArea rows={3} placeholder='Alamat' />
+                  </Form.Item>
+                </Col>
+
+              </Row>
+              <Row>
+                <Col span={12}>
+                  <Form.Item name='kota' required label='Kota' rules={[{ required: true }]} >
+                    <Input placeholder='Kota' />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name='id_cabang' required label="Cabang" rules={[{ required: true }]}>
+                    <Select placeholder="Cabang" allowClear>
+                      {allCabang.map(
+                        (value) => <Option key={value.id} value={value.id}>{value.nama_perusahaan}</Option>
+                      )}
+                    </Select>
                   </Form.Item>
                 </Col>
               </Row>
-            ))}
-            <Button type="primary" onClick={handleAddInput}>
-              Tambah Dokumen
-            </Button>
-          </Col>
-        </Row>
-        <div className="flex justify-end gap-2 pt-4">
-          <Form.Item>
-            <Button onClick={() => {
-              props.setOpenModal(false)
-              form.resetFields()
-              props.form.resetFields()
-              setInputs([])
-              setFileList([])
+              <Row>
+                <Col span={12}>
+                  <Form.Item name='no_tlp' required label='No. Telepon' rules={[{ required: true }]}>
+                    <Input placeholder='No. Telepon' />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name='no_rek_air' required label='No. Rek. Air' rules={[{ required: true }]}>
+                    <Input placeholder='No. Rek. Air' />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row>
+                <Col span={12}>
+                  <Form.Item name='no_rek_listrik' required label='No. Rek. Listrik' rules={[{ required: true }]}>
+                    <Input placeholder='No. Rek. Listrik' />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name='no_pbb' required label='No. PBB' rules={[{ required: true }]}>
+                    <Input placeholder='No. PBB' />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row>
+                <Col span={12}>
+                  <Form.Item name='tipe_sertifikat' required label="Tipe Sertifikat" rules={[{ required: true }]}>
+                    <Select placeholder='Tipe Aset' allowClear>
+                      <Option value='SHM'>SHM</Option>
+                      <Option value='HGB'>HGB</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
 
-            }}>Cancel</Button>
-          </Form.Item>
-          <Form.Item>
-            <Button htmlType="submit" type="primary" loading={uploading}> {uploading ? 'Uploading' : 'Submit'}</Button>
-          </Form.Item>
-        </div>
-      </Form>
-    </Modal>
+                <Col span={12}>
+                  <Form.Item name='no_sertifikat' required label="No. Sertifikat" rules={[{ required: true }]}>
+                    <Input placeholder='No. Sertifikat' />
+                  </Form.Item>
+                </Col>
+
+              </Row>
+              <Row>
+                <Col span={12}>
+                  {/* <Form.Item name='tanggal_akhir_hgb' required label='Tgl. Akhir HGB' rules={[{ required: true }]} labelCol={{ span: 7 }} wrapperCol={{ span: 15 }}>
+            <DatePicker allowClear={false}></DatePicker>
+          </Form.Item> */}
+                </Col>
+                <Col span={12}>
+                  <Form.Item name='status' required label='Status' rules={[{ required: true }]}>
+                    <Select placeholder='Status' allowClear>
+                      <Option value='Aktif'>Aktif</Option>
+                      <Option value='Tidak-Aktif'>Tidak Aktif</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Col>
+            <Col span={11} className='border p-4'>
+              {inputs.map((input, index) => (
+                <Row key={index} gutter={10}>
+                  <Col span={10}>
+                    <Flex gap="small">
+                      <Form.Item name={'doc-' + index} label='Jenis Dokumen' labelCol={{ span: 12 }} wrapperCol={{ span: 200 }} rules={[{ required: true }]}>
+                        <Input
+                          onChange={(e) => handleInputChange(index, e.target.value)}
+                          placeholder='(Contoh: IMB, PBB, dll)'
+                        />
+                      </Form.Item>
+                      <Button icon={<DeleteOutlined />} ghost danger shape="circle" onClick={() => handleDeleteInput(index)} className='border-0'></Button>
+                    </Flex>
+
+                  </Col>
+                  <Col span={14}>
+                    <Form.Item name={input}>
+                      <Upload
+                        onPreview={handlePreview}
+                        // onChange={handleAddInput}
+                        listType='picture-card'
+                        onRemove={(file) => {
+                          setFileList(
+                            fileList.map(
+                              (v, i) => {
+                                if (i == index) {
+                                  return v.filter(
+                                    (k, j) => file.uid !== k.uid && file.name !== k.name
+                                  )
+                                }
+                                return v
+                              }
+                            )
+                          )
+                        }}
+                        beforeUpload={(file) => {
+                          setFileList(
+                            fileList.map(
+                              (v, i) => {
+                                if (i == index) {
+                                  return [...v, file]
+                                } return v
+                              }
+                            )
+                          )
+                          return false
+                        }}
+                      >
+                        <button style={{ border: 0, background: 'none' }} type="button">
+                          <PlusOutlined />
+                          <div style={{ marginTop: 8 }}>Upload</div>
+                        </button>
+                      </Upload>
+                    </Form.Item>
+                  </Col>
+                  {previewImage &&
+                    <Image
+                      wrapperStyle={{ display: 'none' }}
+                      preview={{
+                        visible: previewOpen,
+                        onVisibleChange: (visible) => setPreviewOpen(visible),
+                        afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                      }}
+                      src={previewImage}
+                    />
+                  }
+                </Row>
+
+              ))}
+              <Button type="primary" onClick={handleAddInput}>
+                Tambah Dokumen
+              </Button>
+            </Col>
+          </Row>
+          <div className="flex justify-end gap-2 pt-4">
+            <Form.Item>
+              <Button onClick={() => {
+                props.setOpenModal(false)
+                form.resetFields()
+                props.form.resetFields()
+                setInputs([])
+                setFileList([])
+
+              }}>Cancel</Button>
+            </Form.Item>
+            <Form.Item>
+              <Button htmlType="submit" type="primary" loading={uploading}> {uploading ? 'Uploading' : 'Submit'}</Button>
+            </Form.Item>
+          </div>
+        </Form>
+      </Modal>
+    </>
+
   )
 }

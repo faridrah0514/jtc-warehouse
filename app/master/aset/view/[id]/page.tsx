@@ -1,6 +1,7 @@
 'use client'
 import { DataAset } from '@/app/types/master';
-import { Button, Descriptions, Space, Tabs } from 'antd';
+import { FilePdfOutlined } from '@ant-design/icons';
+import { Button, Card, Descriptions, Flex, Image, Modal, Space, Tabs } from 'antd';
 import Title from 'antd/es/typography/Title';
 import { Span } from 'next/dist/trace';
 import Link from 'next/link';
@@ -9,7 +10,18 @@ import React, { useEffect, useState } from 'react'
 export default function Page({ params }: { params: { id: string } }) {
   const [asetData, setAsetData] = useState<any>();
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
-  console.log("params -> ", params.id)
+
+  const [previewPdfUrl, setPreviewPdfUrl] = useState('');
+  const [pdfPreviewVisible, setPdfPreviewVisible] = useState(false);
+
+  const handlePdfPreview = (pdfUrl: string) => {
+    setPreviewPdfUrl(pdfUrl);
+    setPdfPreviewVisible(true);
+  };
+
+  const handlePdfPreviewCancel = () => {
+    setPdfPreviewVisible(false);
+  };
   useEffect(
     () => {
       async function getData() {
@@ -20,7 +32,6 @@ export default function Page({ params }: { params: { id: string } }) {
           setAsetData(data.data.filter(
             (value: DataAset) => value.id_aset == params.id
           )[0])
-          console.log("data --> ", data)
         }
       }
       getData()
@@ -93,23 +104,36 @@ export default function Page({ params }: { params: { id: string } }) {
       <Tabs type='card'
         items={
           asetData?.list_dir.map(
-            (v: any, i: number) => {
+            (v: any, i: React.Key) => {
               const file = asetData.list_dir_files.filter((value: any) => Object.keys(value) == v)[0]
               return {
                 key: v,
                 label: v,
-                children: <>
-                  <Link href={`/upload/docs/${asetData.id_aset}/${v}/${file[v]}`} target="_blank" rel="noopener noreferrer">
-                    <Button type='link'>Open {file[v]}
-                      {/* <Title level={4}>{file[v]}</Title> */}
-                    </Button>
-                  </Link>
-                  <iframe
-                    src={`/upload/docs/${asetData.id_aset}/${v}/${file[v]}`}
-                    className='w-full h-full mt-5'
-                    style={{ minHeight: '1000px' }}
-                  ></iframe>
-                </>
+                children: <div key={i}>
+                  <Flex wrap='wrap' gap='middle'>
+                    {file[v].map(
+                      (filename: String, idx_filename: React.Key) => {
+                        const filePath = `/upload/docs/${asetData.id_aset}/${v}/${filename}`;
+                        const isPdf = filename.toLowerCase().endsWith('.pdf');
+                        return (
+                          <>
+                            <Card key={idx_filename} hoverable className='w-80 h-80 flex justify-center items-center'>
+                              {isPdf ? (
+                                <Link href={filePath} target="_blank" rel="noopener noreferrer" className='flex flex-col justify-center items-center'>
+                                  <FilePdfOutlined width={600} className='text-6xl' /><br />
+                                  <Title level={5} className='text-blue-600'>{filename}</Title>
+                                </Link>
+                              ) : (
+                                <Image src={filePath} className='w-80 h-80'/>
+                              )}
+                            </Card>
+                          </>
+                        )
+
+                      }
+                    )}
+                  </Flex>
+                </div>
               }
             }
           )

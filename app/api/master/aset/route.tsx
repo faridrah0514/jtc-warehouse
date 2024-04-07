@@ -6,13 +6,15 @@ import { RowDataPacket } from 'mysql2';
 export const dynamic = 'force-dynamic'
 export async function GET(): Promise<Response> {
   const conn = openDB()
-  const [data, a] = await conn.query(`select a.*, c.nama_perusahaan cabang  from aset a
-  left join cabang c on a.id_cabang = c.id`)
+  const [data, a] = await conn.query(`select a.*, c.nama_perusahaan cabang, ta.tipe_aset tipe_aset  from aset a
+  left join cabang c on a.id_cabang = c.id
+  left join tipe_aset ta on a.id_tipe_aset = ta.id`)
   await conn.query(`ANALYZE TABLE ${process.env.MYSQL_DATABASE}.aset;`)
   const [maxId, b] = await conn.query(`SELECT AUTO_INCREMENT + 1 as max_id
   FROM information_schema.TABLES 
   WHERE TABLE_SCHEMA = '${process.env.MYSQL_DATABASE}' 
   AND TABLE_NAME = 'aset';`)
+  const [tipe_aset, _] = await conn.query(`select * from tipe_aset`)
   const newData = data as RowDataPacket[]
   for (const value of newData) {
     try {
@@ -34,5 +36,5 @@ export async function GET(): Promise<Response> {
   }
 
   conn.end()
-  return Response.json({ data: data, maxId })
+  return Response.json({ data: data, maxId, tipe_aset })
 }

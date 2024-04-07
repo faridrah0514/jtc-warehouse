@@ -10,8 +10,8 @@ export async function POST( request: Request, response: Response): Promise<Respo
     )
     conn.end()
     return Response.json({status: 200})
-  } catch (e) {
-    console.log(e)
-    return Response.json({status: 500})
+  } catch (e: any) {
+    console.log(e.sqlMessage)
+    return Response.json({status: 500, error: e.sqlMessage})
   }
 }

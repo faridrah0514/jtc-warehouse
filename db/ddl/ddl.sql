@@ -64,3 +64,11 @@ CREATE TABLE `transaksi_sewa` (
   FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id`),
   FOREIGN KEY (`id_aset`) REFERENCES `aset` (`id`)
 ) ;
+
+-- jtc_warehouse.tipe_aset definition
+
+CREATE TABLE `tipe_aset` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `tipe_aset` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ;

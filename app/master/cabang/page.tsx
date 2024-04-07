@@ -1,21 +1,15 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 
-import { Button, ConfigProvider, Flex, Form, Modal, Popconfirm, Space, Table, TableProps } from 'antd'
+import { Button, ConfigProvider, Flex, Form, Modal, Popconfirm, Space, Table, TableProps, message } from 'antd'
 import AddCabangModal from './AddCabangModal'
 import { DataCabang } from '@/app/types/master'
 import { useForm } from 'antd/es/form/Form'
 import Title from 'antd/es/typography/Title'
 
-// const schemaList: string[] = ['no', 'nama_perusahaan', 'alamat', 'kota', 'no_tlp', 'status', 'kwh_rp']
-
-// const column = schemaList.map(
-//   (value, i) => {
-//     return { title: "AHHHHH", dataIndex: value, key: value }
-//   }
-// )
 const column = [
   { title: "Nomor", dataIndex: 'no', key: 'no' },
+  { title: "ID Cabang", dataIndex: 'id_cabang', key: 'id_cabang' },
   { title: "Nama Perusahaan", dataIndex: 'nama_perusahaan', key: 'nama_perusahaan' },
   { title: "Alamat", dataIndex: 'alamat', key: 'alamat' },
   { title: "Kota", dataIndex: 'kota', key: 'kota' },
@@ -38,7 +32,10 @@ export default function Page() {
 
         if (data) {
           data.data.map(
-            (value: DataCabang, index: number) => value.no = index + 1
+            (value: DataCabang, index: number) => {
+              value.no = index + 1
+              value.id_cabang = 'CB-' + value.id.toString().padStart(4, "0")
+            }
           )
           setCabangData(
             data.data
@@ -70,9 +67,7 @@ export default function Page() {
                   }
                 }}
               >
-                {/* <Button type='primary' ghost size='small'>
-                  View
-                </Button> */}
+            
               </ConfigProvider>
               <Button type="primary" ghost size="small" onClick={
                 () => {
@@ -87,15 +82,18 @@ export default function Page() {
                 title="sure to delete?"
                 onConfirm={
                   async function deleteCabang() {
-                    const result = await fetch('/api/master/cabang/delete', {
+                    const result = await (await fetch('/api/master/cabang/delete', {
                       method: "POST",
                       headers: {
                         'Content-Type': 'application/json',
                       },
                       body: JSON.stringify({ id: record.id })
-                    })
+                    })).json()
+                    setTriggerRefresh(!triggerRefresh)
                     if (result.status == 200) {
-                      setTriggerRefresh(!triggerRefresh)
+                      message.success("Delete berhasil")
+                    } else {
+                      message.error(result.error)
                     }
                   }
                 }
