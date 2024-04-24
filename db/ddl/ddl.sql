@@ -30,30 +30,14 @@ CREATE TABLE
     PRIMARY KEY (`id`)
   );
 
--- jtc_warehouse.aset definition
 CREATE TABLE
-  `aset` (
+  `tipe_sertifikat` (
     `id` int NOT NULL AUTO_INCREMENT,
-    `id_aset` varchar(100) DEFAULT NULL UNIQUE,
-    `tipe_aset` varchar(100) DEFAULT NULL,
-    `nama_aset` varchar(100) DEFAULT NULL,
-    `id_cabang` int NOT NULL,
-    `alamat` varchar(255) DEFAULT NULL,
-    `kota` varchar(100) DEFAULT NULL,
-    `status` varchar(100) DEFAULT NULL,
-    `folder_path` varchar(255) DEFAULT NULL,
-    `no_tlp` varchar(100) DEFAULT NULL,
-    `no_rek_air` varchar(100) DEFAULT NULL,
-    `no_rek_listrik` varchar(100) DEFAULT NULL,
-    `no_pbb` varchar(100) default null,
-    `tipe_sertifikat` varchar(50) default null,
-    `no_sertifikat` varchar(100) default null,
-    `tanggal_akhir_hgb` varchar(50) default null,
-    PRIMARY KEY (`id`),
-    FOREIGN KEY (`id_cabang`) REFERENCES `cabang` (`id`)
-  );
+    `tipe_sertifikat` varchar(100) DEFAULT NULL,
+    PRIMARY KEY (`id`)
+  )
 
--- jtc_warehouse.aset definition
+  -- jtc_warehouse.aset definition
 CREATE TABLE
   `aset` (
     `id` int NOT NULL AUTO_INCREMENT,
@@ -68,13 +52,14 @@ CREATE TABLE
     `no_tlp` varchar(100) DEFAULT NULL,
     `no_rek_air` varchar(100) DEFAULT NULL,
     `no_rek_listrik` varchar(100) DEFAULT NULL,
-    `no_pbb` varchar(100) DEFAULT NULL,
-    `tipe_sertifikat` varchar(50) DEFAULT NULL,
+    `no_pbb` varchar(100) NOT NULL,
+    `id_tipe_sertifikat` int DEFAULT NULL,
     `no_sertifikat` varchar(100) DEFAULT NULL,
     `tanggal_akhir_hgb` varchar(50) DEFAULT NULL,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`id_cabang`) REFERENCES `cabang` (`id`),
     FOREIGN KEY (`id_tipe_aset`) REFERENCES `tipe_aset` (`id`)
+    FOREIGN KEY (`id_tipe_sertifikat`) REFERENCES `tipe_sertifikat` (`id`)
   );
 
 -- jtc_warehouse.transaksi_sewa definition

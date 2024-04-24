@@ -41,13 +41,13 @@ export async function POST(request: Request, response: Response): Promise<Respon
           no_rek_air = ?,
           no_rek_listrik = ?,
           no_pbb = ?,
-          tipe_sertifikat = ?,
+          id_tipe_sertifikat = ?,
           no_sertifikat = ?,
           tanggal_akhir_hgb = ?
         where
           id = ?    
         `,
-        [data.id_aset, data.id_tipe_aset, data.nama_aset, data.id_cabang, data.alamat, data.kota, data.status, data.no_tlp, data.no_rek_air, data.no_rek_listrik, data.no_pbb, data.tipe_sertifikat, data.no_sertifikat, data.tanggal_akhir_hgb, data.id]
+        [data.id_aset, data.id_tipe_aset, data.nama_aset, data.id_cabang, data.alamat, data.kota, data.status, data.no_tlp, data.no_rek_air, data.no_rek_listrik, data.no_pbb, data.id_tipe_sertifikat, data.no_sertifikat, data.tanggal_akhir_hgb, data.id]
       )
     } else {
       const idAset = 'CB-' + data.id_cabang.toString().padStart(4, "0") + '-' + data.id_aset
@@ -64,11 +64,11 @@ export async function POST(request: Request, response: Response): Promise<Respon
         no_rek_air,
         no_rek_listrik,
         no_pbb,
-        tipe_sertifikat,
+        id_tipe_sertifikat,
         no_sertifikat,
         tanggal_akhir_hgb
     ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-      [data.id_aset, data.id_tipe_aset, data.nama_aset, data.id_cabang, data.alamat, data.kota, data.status, fullPath, data.no_tlp, data.no_rek_air, data.no_rek_listrik, data.no_pbb, data.tipe_sertifikat, data.no_sertifikat, data.tanggal_akhir_hgb]
+      [data.id_aset, data.id_tipe_aset, data.nama_aset, data.id_cabang, data.alamat, data.kota, data.status, fullPath, data.no_tlp, data.no_rek_air, data.no_rek_listrik, data.no_pbb, data.id_tipe_sertifikat, data.no_sertifikat, data.tanggal_akhir_hgb]
     )
     }
 

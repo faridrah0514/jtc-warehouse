@@ -51,22 +51,22 @@ export default function AddCabangModal(props: Status) {
           </Form.Item>
         }
         <Form.Item name='nama_perusahaan' required label="Nama Perusahaan" rules={[{ required: true }]}>
-          <Input placeholder='Nama Perusahaan' />
+          <Input placeholder='Nama Perusahaan' autoComplete='off'/>
         </Form.Item>
         <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]}>
-          <TextArea rows={4} placeholder='Alamat' />
+          <TextArea rows={4} placeholder='Alamat' autoComplete='off'/>
         </Form.Item>
         <Form.Item name='kota' required label='Kota' rules={[{ required: true }]}>
-          <Input placeholder='Kota' />
+          <Input placeholder='Kota' autoComplete='off'/>
         </Form.Item>
         <Form.Item name='no_tlp' required label='No. Tlp' rules={[{ pattern: new RegExp(/^[0-9]+$/), message: 'No. Tlp tidak valid' }]}>
-          <Input placeholder='No. Tlp' />
+          <Input placeholder='No. Tlp' autoComplete='off'/>
         </Form.Item>
         <Form.Item name='status' required label='Status' rules={[{ required: true }]}>
-          <Input placeholder='Status' />
+          <Input placeholder='Status' autoComplete='off'/>
         </Form.Item>
         <Form.Item name='kwh_rp' required label='Kwh Rp' rules={[{ required: true, pattern: new RegExp(/^[0-9]+$/), message: 'Input Kwh tidak valid'  }]}>
-          <Input placeholder='Kwh Rp' />
+          <Input placeholder='Kwh Rp' autoComplete='off'/>
         </Form.Item>
         <div className="flex justify-end gap-2">
           <Form.Item>

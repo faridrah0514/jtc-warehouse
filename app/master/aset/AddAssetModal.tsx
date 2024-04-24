@@ -30,19 +30,23 @@ const getBase64 = (file: FileType): Promise<string> =>
 export default function AddAssetModal(props: Status) {
   const [form] = Form.useForm<DataAset>()
   const [tipeAsetForm] = Form.useForm<any>()
+  const [tipeSertifikatForm] = Form.useForm<any>()
   const [allCabang, setAllCabang] = useState<{ id: number, nama_perusahaan: string }[]>([])
   const [fileList, setFileList] = useState<UploadFile[][]>([]);
   const [uploading, setUploading] = useState(false);
   const [inputs, setInputs] = useState<string[]>([]);
   const [tipeAsetModal, setTipeAsetModal] = useState<boolean>(false);
+  const [tipeSertifikatModal, setTipeSertifikatModal] = useState<boolean>(false);
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true)
   const [tipeAset, setTipeAset] = useState<{id: number, tipe_aset: string}[]>([])
+  const [tipeSertifikat, setTipeSertifikat] = useState<{id: number, tipe_sertifikat: string}[]>([])
 
   useEffect(
     () => {
       async function getAllCabang() {
         const response = await fetch('/api/master/cabang', { method: 'GET' })
         const tipeAsetResp = await (await fetch('/api/master/aset/tipe_aset', { method: 'GET' })).json()
+        const tipeSertifikatResp = await (await fetch('/api/master/aset/tipe_sertifikat', { method: 'GET' })).json()
         const dataCabang = (await response.json()).data.map((value: DataCabang) => {
           return { id: value.id, nama_perusahaan: value.nama_perusahaan }
         })
@@ -52,6 +56,9 @@ export default function AddAssetModal(props: Status) {
         }
         if (tipeAsetResp) {
           setTipeAset(tipeAsetResp.data)
+        }
+        if(tipeSertifikatResp){
+          setTipeSertifikat(tipeSertifikatResp.data)
         }
       }
       getAllCabang()
@@ -70,6 +77,20 @@ export default function AddAssetModal(props: Status) {
     setTipeAsetModal(false)
     setTriggerRefresh(!triggerRefresh)
     tipeAsetForm.resetFields()
+  }
+
+  async function addTipeSertifikat(value: any) {
+    const result = await fetch('/api/master/aset/tipe_sertifikat', {
+      method: 'POST', body: JSON.stringify({
+        requestType: 'add',
+        data: value
+      }), headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    setTipeSertifikatModal(false)
+    setTriggerRefresh(!triggerRefresh)
+    tipeSertifikatForm.resetFields()
   }
 
   async function addAset(value: any) {
@@ -169,10 +190,11 @@ export default function AddAssetModal(props: Status) {
 
   return (
     <>
+      {/* Modal Tambah Tipe Aset */}
       <Modal open={tipeAsetModal} closeIcon={null} footer={null} title='Form Tambah Tipe Aset'>
         <Form name="addTipeAsetForm" form={tipeAsetForm} onFinish={addTipeAset}>
           <Form.Item name='tipe_aset' label="Tipe Aset">
-            <Input placeholder='Masukkan Tipe Aset' />
+            <Input placeholder='Masukkan Tipe Aset' autoComplete='off'/>
           </Form.Item>
           <div className="flex justify-end gap-2 pt-4">
             <Form.Item>
@@ -187,6 +209,28 @@ export default function AddAssetModal(props: Status) {
           </div>
         </Form>
       </Modal>
+
+      {/* Modal Tambah Tipe Sertifikat */}
+      <Modal open={tipeSertifikatModal} closeIcon={null} footer={null} title='Form Tambah Tipe Sertifikat'>
+        <Form name="addTipeSertifikatForm" form={tipeSertifikatForm} onFinish={addTipeSertifikat}>
+          <Form.Item name='tipe_sertifikat' label="Tipe Sertifikat">
+            <Input placeholder='Masukkan Tipe Sertifikat' autoComplete='off'/>
+          </Form.Item>
+          <div className="flex justify-end gap-2 pt-4">
+            <Form.Item>
+              <Button onClick={() => {
+                tipeSertifikatForm.resetFields()
+                setTipeSertifikatModal(false)
+              }}>Cancel</Button>
+            </Form.Item>
+            <Form.Item>
+              <Button htmlType="submit" type="primary" loading={uploading} > {uploading ? 'Uploading' : 'Submit'}</Button>
+            </Form.Item>
+          </div>
+        </Form>
+      </Modal>
+
+      {/* Modal Utama Form Tambah Aset */}
       <Modal open={props.openModal} footer={null} title='Form Tambah Aset' closeIcon={null} width={2000}>
         <Form
 
@@ -198,7 +242,7 @@ export default function AddAssetModal(props: Status) {
           <Row gutter={20}>
             {props.isEdit &&
               <Form.Item name='id' required label="id" rules={[{ required: true }]} hidden>
-                <Input placeholder='id' />
+                <Input placeholder='id' autoComplete='off'/>
               </Form.Item>
             }
             <Col span={13} className='border p-4'>
@@ -232,7 +276,7 @@ export default function AddAssetModal(props: Status) {
               <Row>
                 <Col span={12}>
                   <Form.Item name='nama_aset' required label="Nama Aset" rules={[{ required: true }]} >
-                    <Input placeholder='Nama Asset' />
+                    <Input placeholder='Nama Asset' autoComplete='off'/>
                   </Form.Item>
                 </Col>
 
@@ -248,7 +292,7 @@ export default function AddAssetModal(props: Status) {
               <Row>
                 <Col span={12}>
                   <Form.Item name='kota' required label='Kota' rules={[{ required: true }]} >
-                    <Input placeholder='Kota' />
+                    <Input placeholder='Kota' autoComplete='off'/>
                   </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -264,40 +308,55 @@ export default function AddAssetModal(props: Status) {
               <Row>
                 <Col span={12}>
                   <Form.Item name='no_tlp' required label='No. Telepon' rules={[{ required: true }]}>
-                    <Input placeholder='No. Telepon' />
+                    <Input placeholder='No. Telepon' autoComplete='off'/>
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item name='no_rek_air' required label='No. Rek. Air' rules={[{ required: true }]}>
-                    <Input placeholder='No. Rek. Air' />
+                    <Input placeholder='No. Rek. Air' autoComplete='off'/>
                   </Form.Item>
                 </Col>
               </Row>
               <Row>
                 <Col span={12}>
                   <Form.Item name='no_rek_listrik' required label='No. Rek. Listrik' rules={[{ required: true }]}>
-                    <Input placeholder='No. Rek. Listrik' />
+                    <Input placeholder='No. Rek. Listrik' autoComplete='off'/>
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item name='no_pbb' required label='No. PBB' rules={[{ required: true }]}>
-                    <Input placeholder='No. PBB' />
+                    <Input placeholder='No. PBB' autoComplete='off'/>
                   </Form.Item>
                 </Col>
               </Row>
               <Row>
                 <Col span={12}>
-                  <Form.Item name='tipe_sertifikat' required label="Tipe Sertifikat" rules={[{ required: true }]}>
-                    <Select placeholder='Tipe Aset' allowClear>
+                  <Form.Item name='id_tipe_sertifikat' required label="Tipe Sertifikat" rules={[{ required: true }]}>
+                  <Select placeholder='Tipe Sertifikat' allowClear dropdownRender={(menu) => {
+                      return (
+                        <>
+                          {menu}
+                          <Divider style={{ margin: '0' }} />
+                          <Button style={{ paddingLeft: '10px' }} type="link" onClick={() => { setTipeSertifikatModal(true) }}>
+                            Tambah Tipe Sertifikat
+                          </Button>
+                        </>
+                      )
+                    }}
+                      options={
+                        tipeSertifikat.map((v, idx) => { return { label: v.tipe_sertifikat, value: v.id } })
+                      }
+                    />
+                    {/* <Select placeholder='Tipe Aset' allowClear>
                       <Option value='SHM'>SHM</Option>
                       <Option value='HGB'>HGB</Option>
-                    </Select>
+                    </Select> */}
                   </Form.Item>
                 </Col>
 
                 <Col span={12}>
                   <Form.Item name='no_sertifikat' required label="No. Sertifikat" rules={[{ required: true }]}>
-                    <Input placeholder='No. Sertifikat' />
+                    <Input placeholder='No. Sertifikat' autoComplete='off'/>
                   </Form.Item>
                 </Col>
 
@@ -327,6 +386,7 @@ export default function AddAssetModal(props: Status) {
                         <Input
                           onChange={(e) => handleInputChange(index, e.target.value)}
                           placeholder='(Contoh: IMB, PBB, dll)'
+                          autoComplete='off'
                         />
                       </Form.Item>
                       <Button icon={<DeleteOutlined />} ghost danger shape="circle" onClick={() => handleDeleteInput(index)} className='border-0'></Button>

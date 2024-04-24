@@ -44,24 +44,24 @@ export default function AddPelangganModal(props: Status) {
       >
         {props.isEdit &&
           <Form.Item name='id' required label="id" rules={[{ required: true }]} hidden>
-            <Input placeholder='id' />
+            <Input placeholder='id' autoComplete='off'/>
           </Form.Item>
 
         }
         <Form.Item name='nama' required label="Nama" rules={[{ required: true }]}>
-          <Input placeholder='Nama' />
+          <Input placeholder='Nama' autoComplete='off'/>
         </Form.Item>
         <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]}>
-          <TextArea rows={4} placeholder='Alamat' />
+          <TextArea rows={4} placeholder='Alamat' autoComplete='off'/>
         </Form.Item>
         <Form.Item name='kota' required label='Kota' rules={[{ required: true }]}>
-          <Input placeholder='Kota' />
+          <Input placeholder='Kota' autoComplete='off'/>
         </Form.Item>
         <Form.Item name='no_tlp' required label='No. Tlp' rules={[{ pattern: new RegExp(/^[0-9]+$/), message: 'No. Tlp tidak valid' }]}>
-          <Input placeholder='No. Tlp' />
+          <Input placeholder='No. Tlp' autoComplete='off'/>
         </Form.Item>
         <Form.Item name='contact_person' required label='Contact Person' rules={[{ required: true }]}>
-          <Input placeholder='Contact Person' />
+          <Input placeholder='Contact Person' autoComplete='off'/>
         </Form.Item>
         <div className="flex justify-end gap-2">
           <Form.Item>

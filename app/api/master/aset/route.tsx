@@ -6,9 +6,11 @@ import { RowDataPacket } from 'mysql2';
 export const dynamic = 'force-dynamic'
 export async function GET(): Promise<Response> {
   const conn = openDB()
-  const [data, a] = await conn.query(`select a.*, c.nama_perusahaan cabang, ta.tipe_aset tipe_aset  from aset a
+  const [data, a] = await conn.query(`select a.*, c.nama_perusahaan cabang, ta.tipe_aset tipe_aset, ts.tipe_sertifikat tipe_sertifikat  from aset a
   left join cabang c on a.id_cabang = c.id
-  left join tipe_aset ta on a.id_tipe_aset = ta.id`)
+  left join tipe_aset ta on a.id_tipe_aset = ta.id
+  left join tipe_sertifikat ts on a.id_tipe_sertifikat = ts.id
+  `)
   await conn.query(`ANALYZE TABLE ${process.env.MYSQL_DATABASE}.aset;`)
   const [maxId, b] = await conn.query(`SELECT AUTO_INCREMENT + 1 as max_id
   FROM information_schema.TABLES 
