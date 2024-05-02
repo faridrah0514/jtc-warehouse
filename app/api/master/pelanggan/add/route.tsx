@@ -17,10 +17,10 @@ export async function POST(request: Request, response: Response): Promise<Respon
           contact_person = ?
         where
           id = ? 
-      `, [data.nama, data.alamat, data.kota, data.no_tlp, data.contact_person, data.id])
+      `, [data.nama, data.alamat, data.kota, data.no_tlp, data.nama_kontak, data.id])
     } else {
       await conn.query('insert into pelanggan (nama, alamat, kota, no_tlp, contact_person) values (?,?,?,?,?)',
-        [data.nama, data.alamat, data.kota, data.no_tlp, data.contact_person]
+        [data.nama, data.alamat, data.kota, data.no_tlp, data.nama_kontak]
       )
     }
     conn.end()

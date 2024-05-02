@@ -14,7 +14,7 @@ interface Status {
 export default function AddPelangganModal(props: Status) {
   return (
     <Modal open={props.openModal} footer={null} title='Form Tambah Pelanggan' closeIcon={null}>
-      <Form form={props.form} layout='vertical'
+      <Form form={props.form} layout='vertical' autoComplete='off'
         onFinish={
           async function addPelanggan(value: DataPelanggan) {
             if (props.isEdit) {
@@ -52,15 +52,15 @@ export default function AddPelangganModal(props: Status) {
           <Input placeholder='Nama' autoComplete='off'/>
         </Form.Item>
         <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]}>
-          <TextArea rows={4} placeholder='Alamat' autoComplete='off'/>
+          <TextArea rows={4} placeholder='Alamat' autoComplete='new-password'/>
         </Form.Item>
         <Form.Item name='kota' required label='Kota' rules={[{ required: true }]}>
-          <Input placeholder='Kota' autoComplete='off'/>
+          <Input placeholder='Kota' autoComplete='new-password'/>
         </Form.Item>
         <Form.Item name='no_tlp' required label='No. Tlp' rules={[{ pattern: new RegExp(/^[0-9]+$/), message: 'No. Tlp tidak valid' }]}>
           <Input placeholder='No. Tlp' autoComplete='off'/>
         </Form.Item>
-        <Form.Item name='contact_person' required label='Contact Person' rules={[{ required: true }]}>
+        <Form.Item name='nama_kontak' required label='Nama Kontak' rules={[{ required: true }]}>
           <Input placeholder='Contact Person' autoComplete='off'/>
         </Form.Item>
         <div className="flex justify-end gap-2">

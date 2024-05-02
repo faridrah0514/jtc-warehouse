@@ -15,7 +15,7 @@ interface Status {
 export default function AddCabangModal(props: Status) {
   return (
     <Modal open={props.openModal} footer={null} title='Form Tambah Cabang' closeIcon={null}>
-      <Form form={props.form} layout='vertical'
+      <Form form={props.form} layout='vertical' autoComplete='off'
         onFinish={
           async function addGudang(value: DataCabang) {
             if (props.isEdit) {
@@ -47,17 +47,17 @@ export default function AddCabangModal(props: Status) {
       >
         {props.isEdit &&
           <Form.Item name='id' required label="id" rules={[{ required: true }]} hidden>
-            <Input placeholder='id' />
+            <Input placeholder='id' autoComplete='off'/>
           </Form.Item>
         }
         <Form.Item name='nama_perusahaan' required label="Nama Perusahaan" rules={[{ required: true }]}>
           <Input placeholder='Nama Perusahaan' autoComplete='off'/>
         </Form.Item>
         <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]}>
-          <TextArea rows={4} placeholder='Alamat' autoComplete='off'/>
+          <TextArea rows={4} placeholder='Alamat' autoComplete='new-password'/>
         </Form.Item>
         <Form.Item name='kota' required label='Kota' rules={[{ required: true }]}>
-          <Input placeholder='Kota' autoComplete='off'/>
+          <Input placeholder='Kota' autoComplete='new-password'/>
         </Form.Item>
         <Form.Item name='no_tlp' required label='No. Tlp' rules={[{ pattern: new RegExp(/^[0-9]+$/), message: 'No. Tlp tidak valid' }]}>
           <Input placeholder='No. Tlp' autoComplete='off'/>

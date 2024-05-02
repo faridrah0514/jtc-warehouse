@@ -233,7 +233,7 @@ export default function AddAssetModal(props: Status) {
       {/* Modal Utama Form Tambah Aset */}
       <Modal open={props.openModal} footer={null} title='Form Tambah Aset' closeIcon={null} width={2000}>
         <Form
-
+        autoComplete='off'
           fields={(props.isEdit) ? [] : [{
             "name": ["id_aset"],
             "value": 'AS-' + props.maxId.toString().padStart(4, "0")
@@ -242,7 +242,7 @@ export default function AddAssetModal(props: Status) {
           <Row gutter={20}>
             {props.isEdit &&
               <Form.Item name='id' required label="id" rules={[{ required: true }]} hidden>
-                <Input placeholder='id' autoComplete='off'/>
+                <Input hidden placeholder='id' autoComplete='off'/>
               </Form.Item>
             }
             <Col span={13} className='border p-4'>
@@ -284,7 +284,7 @@ export default function AddAssetModal(props: Status) {
               <Row>
                 <Col span={12}>
                   <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]} >
-                    <TextArea rows={3} placeholder='Alamat' />
+                    <TextArea rows={3} placeholder='Alamat' autoComplete='new-password'/>
                   </Form.Item>
                 </Col>
 
@@ -307,8 +307,8 @@ export default function AddAssetModal(props: Status) {
               </Row>
               <Row>
                 <Col span={12}>
-                  <Form.Item name='no_tlp' required label='No. Telepon' rules={[{ required: true }]}>
-                    <Input placeholder='No. Telepon' autoComplete='off'/>
+                  <Form.Item name='no_tlp' required label='No. Tlp' rules={[{ required: true }]}>
+                    <Input placeholder='No. Tlp' autoComplete='off'/>
                   </Form.Item>
                 </Col>
                 <Col span={12}>
