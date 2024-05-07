@@ -3,17 +3,17 @@ import React, { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'; // Import dynamic from next/dynamic
 import { Image, Tabs } from 'antd';
 export default function page() {
-  const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
+  // const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
 
-  useEffect(
-    () => {
-      async function getData() {
-        const response = await fetch('/api/master/test', { method: 'GET', cache: 'no-store' })
-        const data = await response.json()
-      }
-      getData()
-    }, [triggerRefresh]
-  )
+  // useEffect(
+  //   () => {
+  //     async function getData() {
+  //       const response = await fetch('/api/master/test', { method: 'GET', cache: 'no-store' })
+  //       const data = await response.json()
+  //     }
+  //     getData()
+  //   }, []
+  // )
   return (
     <div className='w-screen h-screen overflow-hidden'>
       <Tabs

@@ -124,7 +124,7 @@ export default function Page({ params }: { params: { id: string } }) {
                                   <Title level={5} className='text-blue-600'>{filename}</Title>
                                 </Link>
                               ) : (
-                                <Image src={filePath} className='w-80 h-80'/>
+                                <Image alt='' src={filePath} className='w-80 h-80'/>
                               )}
                             </Card>
                           </>
