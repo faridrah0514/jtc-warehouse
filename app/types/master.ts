@@ -47,5 +47,7 @@ export interface DataAset {
   tipe_sertifikat: string,
   no_sertifikat: string,
   tanggal_akhir_hgb: string,
-  list_dir: string[]
+  list_files: string[],
+  list_dir: string[],
+  list_dir_files: any[]
 }
