@@ -32,7 +32,7 @@ export default function AddAssetModal(props: Status) {
   const [form] = Form.useForm<DataAset>()
   const [tipeAsetForm] = Form.useForm<any>()
   const [tipeSertifikatForm] = Form.useForm<any>()
-  const [allCabang, setAllCabang] = useState<{ id: number, nama_perusahaan: string }[]>([])
+  const [allCabang, setAllCabang] = useState<{ id: number, nama_perusahaan: string, alamat: string }[]>([])
   const [fileList, setFileList] = useState<UploadFile[][]>([]);
   const [uploading, setUploading] = useState(false);
   const [inputs, setInputs] = useState<string[]>([]);
@@ -41,6 +41,7 @@ export default function AddAssetModal(props: Status) {
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true)
   const [tipeAset, setTipeAset] = useState<{ id: number, tipe_aset: string }[]>([])
   const [tipeSertifikat, setTipeSertifikat] = useState<{ id: number, tipe_sertifikat: string }[]>([])
+  const [alamatCabang, setAlamatCabang] = useState('')
 
   useEffect(
     () => {
@@ -50,7 +51,7 @@ export default function AddAssetModal(props: Status) {
         const tipeAsetResp = await (await fetch('/api/master/aset/tipe_aset', { method: 'GET' })).json()
         const tipeSertifikatResp = await (await fetch('/api/master/aset/tipe_sertifikat', { method: 'GET' })).json()
         const dataCabang = (await response.json()).data.map((value: DataCabang) => {
-          return { id: value.id, nama_perusahaan: value.nama_perusahaan }
+          return { id: value.id, nama_perusahaan: value.nama_perusahaan, alamat: value.alamat }
         })
 
         if (dataCabang) {
@@ -293,11 +294,10 @@ export default function AddAssetModal(props: Status) {
                       </Row>
                       <Row>
                         <Col span={12}>
-                          <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]} >
-                            <TextArea rows={3} placeholder='Alamat' autoComplete='new-password' />
+                          <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]}>
+                            <TextArea rows={3} placeholder={alamatCabang ? alamatCabang : 'Alamat'} autoComplete='new-password' value={alamatCabang} disabled/>
                           </Form.Item>
                         </Col>
-
                       </Row>
                       <Row>
                         <Col span={12}>
@@ -307,7 +307,9 @@ export default function AddAssetModal(props: Status) {
                         </Col>
                         <Col span={12}>
                           <Form.Item name='id_cabang' required label="Cabang" rules={[{ required: true }]}>
-                            <Select placeholder="Cabang" allowClear>
+                            <Select placeholder="Cabang" allowClear onChange={(event) => { 
+                              setAlamatCabang(allCabang.filter(v => v.id == event)[0]['alamat'])
+                              }}>
                               {allCabang.map(
                                 (value) => <Option key={value.id} value={value.id}>{value.nama_perusahaan}</Option>
                               )}

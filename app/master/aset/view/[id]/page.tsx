@@ -1,11 +1,12 @@
 'use client'
 import { DataAset } from '@/app/types/master';
-import { FilePdfOutlined } from '@ant-design/icons';
+import { FilePdfOutlined, SnippetsOutlined } from '@ant-design/icons';
 import { Button, Card, Descriptions, Flex, Image, Modal, Space, Tabs } from 'antd';
 import Title from 'antd/es/typography/Title';
 import { Span } from 'next/dist/trace';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react'
+import path from "path";
 
 export default function Page({ params }: { params: { id: string } }) {
   const [asetData, setAsetData] = useState<any>();
@@ -13,6 +14,8 @@ export default function Page({ params }: { params: { id: string } }) {
 
   const [previewPdfUrl, setPreviewPdfUrl] = useState('');
   const [pdfPreviewVisible, setPdfPreviewVisible] = useState(false);
+
+  const file_extension: string[] = ['.xlsx', '.xls', '.doc', '.docx', '.pdf']
 
   const handlePdfPreview = (pdfUrl: string) => {
     setPreviewPdfUrl(pdfUrl);
@@ -111,27 +114,50 @@ export default function Page({ params }: { params: { id: string } }) {
                 label: v,
                 children: <div key={i}>
                   <Flex wrap='wrap' gap='middle'>
-                    {file[v].map(
-                      (filename: String, idx_filename: React.Key) => {
-                        const filePath = `/upload/docs/${asetData.id_aset}/${v}/${filename}`;
-                        const isPdf = filename.toLowerCase().endsWith('.pdf');
-                        return (
-                          <>
-                            <Card key={idx_filename} hoverable className='w-80 h-80 flex justify-center items-center'>
-                              {isPdf ? (
+                    {file[v]
+                      .filter((filename: string) => !filename.toLowerCase().startsWith('___pdf___'))
+                      .map(
+                        (filename: string, idx_filename: React.Key) => {
+                          const filePath = `/upload/docs/${asetData.id_aset}/${v}/${filename}`;
+                          const isPdf = filename.toLowerCase().startsWith('___pdf___');
+                          const extension: string = path.extname(filename).toLowerCase()
+                          return (
+                            <>
+                              <Card key={idx_filename} hoverable className='w-80 h-80 flex justify-center items-center'>
+                                {
+                                  file_extension.includes(extension) ?
+                                    <Link href={filePath} target="_blank" rel="noopener noreferrer" className='flex flex-col justify-center items-center'>
+                                      {extension == '.pdf' ? <FilePdfOutlined width={600} className='text-6xl' /> : <SnippetsOutlined width={600} className='text-6xl'></SnippetsOutlined>} <br />
+                                      <Title level={5} className='text-blue-600'>{filename}</Title>
+                                    </Link> : <div><Image alt={filePath} src={filePath} className='max-w-[14rem]'> TT</Image></div>
+                                }
+                              </Card>
+
+                              {/* <Card key={idx_filename} hoverable className='w-80 h-80 flex justify-center items-center'>
+                              {!isPdf ? (
                                 <Link href={filePath} target="_blank" rel="noopener noreferrer" className='flex flex-col justify-center items-center'>
                                   <FilePdfOutlined width={600} className='text-6xl' /><br />
                                   <Title level={5} className='text-blue-600'>{filename}</Title>
                                 </Link>
-                              ) : (
-                                <Image alt='' src={filePath} className='w-80 h-80'/>
+                              ) : ( 
+                                <Image alt='' src={filePath} className='w-80 h-80'hidden/>
                               )}
-                            </Card>
-                          </>
-                        )
+                            </Card> */}
 
-                      }
-                    )}
+                              {/* {!isPdf ? (<Card key={idx_filename} hoverable className='w-80 h-80 flex justify-center items-center'>
+                              <Link href={filePath} target="_blank" rel="noopener noreferrer" className='flex flex-col justify-center items-center'>
+                                <FilePdfOutlined width={600} className='text-6xl' /><br />
+                                <Title level={5} className='text-blue-600'>{filename}</Title>
+                              </Link>
+                            </Card>) : (<Card key={idx_filename} hoverable className='w-80 h-80 flex justify-center items-center'>
+
+                              <Image alt='' src={filePath} className='w-80 h-80'hidden/>
+                            </Card>)} */}
+                            </>
+                          )
+
+                        }
+                      )}
                   </Flex>
                 </div>
               }
