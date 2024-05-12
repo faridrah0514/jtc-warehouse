@@ -24,7 +24,7 @@ export async function POST(request: Request, response: Response): Promise<Respon
     return Response.json({ status: 200 })
   } catch (e) {
     console.log(e)
-    return Response.json({ status: 500 })
+    return Response.json({ status: 500, message: e })
   }
 }
 
