@@ -60,7 +60,7 @@ export default function AddPelangganModal(props: Status) {
         <Form.Item name='no_tlp' required label='No. Tlp' rules={[{ pattern: new RegExp(/^[0-9]+$/), message: 'No. Tlp tidak valid' }]}>
           <Input placeholder='No. Tlp' autoComplete='off'/>
         </Form.Item>
-        <Form.Item name='nama_kontak' required label='Nama Kontak' rules={[{ required: true }]}>
+        <Form.Item name='contact_person' required label='Nama Kontak' rules={[{ required: true }]}>
           <Input placeholder='Contact Person' autoComplete='off'/>
         </Form.Item>
         <div className="flex justify-end gap-2">
