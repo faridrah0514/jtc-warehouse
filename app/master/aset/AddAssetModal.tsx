@@ -65,6 +65,7 @@ export default function AddAssetModal(props: Status) {
         }
       }
       getAllCabang()
+      setAlamatCabang('')
     }, [triggerRefresh]
   )
 
@@ -79,6 +80,7 @@ export default function AddAssetModal(props: Status) {
     })
     setTipeAsetModal(false)
     setTriggerRefresh(!triggerRefresh)
+    // setAlamatCabang('')
     tipeAsetForm.resetFields()
   }
 
@@ -93,12 +95,14 @@ export default function AddAssetModal(props: Status) {
     })
     setTipeSertifikatModal(false)
     setTriggerRefresh(!triggerRefresh)
+    // setAlamatCabang('')
     tipeSertifikatForm.resetFields()
   }
 
   async function addAset(value: any) {
     //Insert Data to Database
     value.doc_list = [...inputs]
+    console.log("value ---> ", value)
     if (props.isEdit || props.isAddDocument) {
       // const str = "CB-0016-AS-0108";
       const desiredString = value.id_aset.slice(value.id_aset.indexOf("AS"));
@@ -158,6 +162,7 @@ export default function AddAssetModal(props: Status) {
     props.form.resetFields()
     setInputs([])
     setFileList([])
+    setAlamatCabang('')
   }
 
   const handleAddInput = () => {
@@ -294,8 +299,10 @@ export default function AddAssetModal(props: Status) {
                       </Row>
                       <Row>
                         <Col span={12}>
-                          <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]}>
-                            <TextArea rows={3} placeholder={alamatCabang ? alamatCabang : 'Alamat'} autoComplete='new-password' value={alamatCabang} disabled/>
+                          <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]} >
+                            <TextArea rows={3} placeholder={alamatCabang ? alamatCabang : 'Alamat'} autoComplete='new-password' value={alamatCabang} onChange={(event) => {
+                              props.form.setFieldValue("alamat", alamatCabang)
+                            }}disabled/>
                           </Form.Item>
                         </Col>
                       </Row>
@@ -308,7 +315,12 @@ export default function AddAssetModal(props: Status) {
                         <Col span={12}>
                           <Form.Item name='id_cabang' required label="Cabang" rules={[{ required: true }]}>
                             <Select placeholder="Cabang" allowClear onChange={(event) => { 
-                              setAlamatCabang(allCabang.filter(v => v.id == event)[0]['alamat'])
+                              // console.log("event ---> ", event)
+                              // console.log("difilter ---> ", allCabang.filter(v => v.id == event)[0]['alamat'])
+                              const alamat =  allCabang.filter(v => v.id == event)[0]['alamat']
+                              setAlamatCabang(alamat)
+                              // console.log("alamatcbang ---> ", alamat)
+                              props.form.setFieldValue('alamat', alamat)
                               }}>
                               {allCabang.map(
                                 (value) => <Option key={value.id} value={value.id}>{value.nama_perusahaan}</Option>
@@ -483,6 +495,7 @@ export default function AddAssetModal(props: Status) {
                 props.setIsAddDocument(false)
                 setInputs([])
                 setFileList([])
+                setAlamatCabang('')
               }}>Cancel</Button>
             </Form.Item>
             <Form.Item>
