@@ -161,7 +161,7 @@ export default function AddSewaModal(props: Status) {
                 'Content-Type': 'application/json',
               },
             })
-            console.log("value sewa --> ", value)
+            // console.log("value sewa --> ", value)
             props.setOpenModal(false)
             props.setTriggerRefresh(!props.triggerRefresh)
             // if (formRef.current) formRef.current.resetFields();
@@ -177,8 +177,8 @@ export default function AddSewaModal(props: Status) {
       >
         <Row>
           <Col span={24}>
-            <Form.Item name='id' label="id"  >
-              <Input  placeholder='id' autoComplete='off' />
+            <Form.Item name='id' label="id" hidden >
+              <Input  placeholder='id' autoComplete='off' hidden/>
             </Form.Item>
             <Form.Item name='no_akte' required label="Nomor Akte" rules={[{ required: true }]}>
               <Input placeholder='Nomor Akte' autoComplete='off' />

@@ -85,5 +85,3 @@ CREATE TABLE
     FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id`),
     FOREIGN KEY (`id_aset`) REFERENCES `aset` (`id`)
   );
-
--- jtc_warehouse.tipe_aset definition
