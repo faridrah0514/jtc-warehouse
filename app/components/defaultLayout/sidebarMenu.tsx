@@ -7,7 +7,9 @@ import {
     PieChartOutlined,
     SolutionOutlined,
     TeamOutlined,
+    ThunderboltOutlined,
     UserOutlined,
+
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import Link from 'next/link';
@@ -34,8 +36,9 @@ export const items: MenuItem[] = [
     getItem(<Link href='/master/pelanggan'>Pelanggan</Link>, 'Pelanggan', <TeamOutlined/>),
     // getItem(<Link href='/master/utility'>Utility</Link>, 'Utility'),
     getItem(<Link href='/master/aset'>Aset</Link>, 'Aset', <FolderOpenOutlined />),
-    // getItem(<Link href='/master/transaksi'>Transaksi</Link>, 'transaksi', <CreditCardOutlined />, [
-    //     getItem(<Link href='/master/transaksi/sewa'>Sewa</Link>, 'Sewa', <SolutionOutlined />),
-    // ]),
+    getItem(<Link href='/master/transaksi'>Transaksi</Link>, 'transaksi', <CreditCardOutlined />, [
+        getItem(<Link href='/master/transaksi/sewa'>Sewa</Link>, 'Sewa', <SolutionOutlined />),
+        getItem(<Link href='/master/transaksi/sewa'>Listrik</Link>, 'Listrik', <ThunderboltOutlined/>),
+    ]),
 ];
 

@@ -102,7 +102,6 @@ export default function AddAssetModal(props: Status) {
   async function addAset(value: any) {
     //Insert Data to Database
     value.doc_list = [...inputs]
-    console.log("value ---> ", value)
     if (props.isEdit || props.isAddDocument) {
       // const str = "CB-0016-AS-0108";
       const desiredString = value.id_aset.slice(value.id_aset.indexOf("AS"));
@@ -402,7 +401,8 @@ export default function AddAssetModal(props: Status) {
                 }
               }
             )()}
-
+            
+            {/* Add Document Fields */}
             {(
               () => {
                 if (!props.isEdit)
