@@ -37,11 +37,15 @@ next-env.d.ts
 
 # public docs
 public/docs/*
+public/txs/*/*
 !public/docs/.gitkeep
+!public/txs/.gitkeep
 
 # upload docs
 upload/docs/*
+upload/txs/*
 !upload/docs/.gitkeep
+!upload/txs/.gitkeep
 
 # db/
 notes/

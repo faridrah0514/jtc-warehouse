@@ -314,11 +314,8 @@ export default function AddAssetModal(props: Status) {
                         <Col span={12}>
                           <Form.Item name='id_cabang' required label="Cabang" rules={[{ required: true }]}>
                             <Select placeholder="Cabang" allowClear onChange={(event) => { 
-                              // console.log("event ---> ", event)
-                              // console.log("difilter ---> ", allCabang.filter(v => v.id == event)[0]['alamat'])
                               const alamat =  allCabang.filter(v => v.id == event)[0]['alamat']
                               setAlamatCabang(alamat)
-                              // console.log("alamatcbang ---> ", alamat)
                               props.form.setFieldValue('alamat', alamat)
                               }}>
                               {allCabang.map(

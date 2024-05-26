@@ -2,14 +2,14 @@
 import React, { useEffect, useState } from 'react'
 
 import { Button, Flex, Form, Popconfirm, Table, TableProps } from 'antd'
-import AddSewaModal from './AddSewaModal'
+import AddSewaModal, { _renderCurrency } from './AddSewaModal'
 import { DataCabang } from '@/app/types/master'
 import Title from 'antd/es/typography/Title'
 import dayjs from 'dayjs';
 
 const column = [
   { title: "Nomor", dataIndex: 'no', key: 'no' },
-  { title: "ID Sewa", dataIndex: 'id_sewa', key: 'id_sewa' },
+  { title: "ID Transaksi", dataIndex: 'id_transaksi', key: 'id_transaksi' },
   { title: "Tanggal Akte", dataIndex: 'tanggal_akte_1', key: 'tanggal_akte' },
   { title: "Nomor Akte", dataIndex: 'no_akte', key: 'no_akte' },
   { title: "Notaris", dataIndex: 'notaris', key: 'notaris' },
@@ -30,6 +30,7 @@ export default function Page() {
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
   const [isEdit, setIsEdit] = useState<boolean>(false)
   const [form] = Form.useForm()
+  const [maxId, setMaxId] = useState<number>(0)
 
   useEffect(
     () => {
@@ -39,11 +40,12 @@ export default function Page() {
         if (data) {
           data.data.map((v: any, i: number) => {
             v.no = i + 1
-            v.id_sewa = 'TXS-' + v.id
+            v.harga = _renderCurrency(v.harga)
+            v.total_biaya_sewa = _renderCurrency(v.total_biaya_sewa)
             return v
           })
           setSewaData(data.data)
-          console.log("sewaData -> ", data.data)
+          setMaxId(data.maxId[0].max_id)
         }
       }
       getData()
@@ -55,11 +57,26 @@ export default function Page() {
       <Flex className='pb-5' gap={'small'} vertical={false}>
         <Button onClick={() => { setOpenModal(true) }}>+ Transaksi Sewa</Button>
       </Flex>
-      <AddSewaModal form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
+      <AddSewaModal maxId={maxId} form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
       <Table className='overflow-auto'
-        scroll={{ x: 1500 }}
+        scroll={{ x: 2000 }}
         // scroll={true}
         columns={[...column, {
+          title: "Dokumen",
+          key: "dokumen",
+          width: 350,
+          render: (_, record) => (
+            <ul>
+              {record.list_files.map((v: string, idx: number) => {
+                return (
+                  <li key={idx}>
+                    <a href={`/upload/txs/${record.id_transaksi}/${v}`} target="_blank" rel="noopener noreferrer">{v}</a>
+                  </li>
+                )
+              })}
+            </ul>
+          )
+        }, {
           title: "Action",
           key: "action",
           render: (_, record:any ) => (
@@ -87,7 +104,7 @@ export default function Page() {
                       },
                       body: JSON.stringify({
                         requestType: requstType,
-                        data: { id: record.id }
+                        data: { id: record.id, id_transaksi: record.id_transaksi }
                       })
                     })
                     if (result.status == 200) {

@@ -66,6 +66,7 @@ CREATE TABLE
 CREATE TABLE
   `transaksi_sewa` (
     `id` int NOT NULL AUTO_INCREMENT,
+    `id_transaksi` varchar(50) DEFAULT NULL,
     `no_akte` varchar(100) DEFAULT NULL,
     `tanggal_akte` varchar(12) DEFAULT NULL,
     `notaris` varchar(50) DEFAULT NULL,
