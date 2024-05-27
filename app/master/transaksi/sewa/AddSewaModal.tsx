@@ -140,6 +140,7 @@ export default function AddSewaModal(props: Status) {
           const masa_sewa = props.form.getFieldValue("masa_sewa")
           handleDateChange(masa_sewa, [masa_sewa[0].format(dateFormat).toString(), masa_sewa[1].format(dateFormat).toString()])
           setCurrencyValue(props.form.getFieldValue("harga"))
+          setSelectedCabang(props.form.getFieldValue("id_cabang"))
         }
       }
       getAllData()
@@ -233,8 +234,8 @@ export default function AddSewaModal(props: Status) {
               </Select>
             </Form.Item>
             <Form.Item name='id_aset' required label="Nama Aset" rules={[{ required: true }]}>
-              <Select placeholder="Aset" allowClear disabled={!selectedCabang || !props.isEdit}>
-                {allData.aset.filter((item: any) => item.id_cabang == selectedCabang || item.id_cabang == props.form.getFieldValue("id_cabang")).map(
+              <Select placeholder="Aset" allowClear disabled={!selectedCabang}>
+                {allData.aset.filter((item: any) => item.id_cabang == selectedCabang).map(
                   (value: any) => <Option key={value.id} value={value.id}>{value.nama_aset}</Option>
                 )}
               </Select>
