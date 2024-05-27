@@ -10,18 +10,17 @@ import dayjs from 'dayjs';
 const column = [
   { title: "Nomor", dataIndex: 'no', key: 'no' },
   { title: "ID Transaksi", dataIndex: 'id_transaksi', key: 'id_transaksi' },
+  { title: "Cabang", dataIndex: 'nama_cabang', key: 'nama_cabang' },
+  { title: "Aset", dataIndex: 'nama_aset', key: 'nama_aset' },
+  { title: "Pelanggan", dataIndex: 'nama_pelanggan', key: 'nama_pelanggan' },
   { title: "Tanggal Akte", dataIndex: 'tanggal_akte_1', key: 'tanggal_akte' },
   { title: "Nomor Akte", dataIndex: 'no_akte', key: 'no_akte' },
   { title: "Notaris", dataIndex: 'notaris', key: 'notaris' },
-  { title: "Pelanggan", dataIndex: 'nama_pelanggan', key: 'nama_pelanggan' },
-  { title: "Cabang", dataIndex: 'nama_cabang', key: 'nama_cabang' },
-  { title: "Aset", dataIndex: 'nama_aset', key: 'nama_aset' },
   { title: "Tanggal Awal Sewa", dataIndex: 'start_date_sewa', key: 'start_date_sewa' },
   { title: "Tanggal Akhir Sewa", dataIndex: 'end_date_sewa', key: 'end_date_sewa' },
   { title: "Periode Pembayaran", dataIndex: 'periode_pembayaran', key: 'periode_pembayaran' },
-  { title: "Harga", dataIndex: 'harga', key: 'harga' },
-  { title: "Total Biaya Sewa", dataIndex: 'total_biaya_sewa', key: 'total_biaya_sewa' },
-
+  { title: "Harga", dataIndex: 'harga_rp', key: 'harga_rp' },
+  { title: "Total Biaya Sewa", dataIndex: 'total_biaya_sewa_rp', key: 'total_biaya_sewa_rp' },
 ]
 export default function Page() {
 
@@ -40,8 +39,8 @@ export default function Page() {
         if (data) {
           data.data.map((v: any, i: number) => {
             v.no = i + 1
-            v.harga = _renderCurrency(v.harga)
-            v.total_biaya_sewa = _renderCurrency(v.total_biaya_sewa)
+            v.harga_rp = _renderCurrency(v.harga)
+            v.total_biaya_sewa_rp = _renderCurrency(v.total_biaya_sewa)
             return v
           })
           setSewaData(data.data)
@@ -85,9 +84,10 @@ export default function Page() {
                 () => {
                   setOpenModal(true)
                   setIsEdit(true)
-                  record.tanggal_akte = dayjs(record.tanggal_akte_1, 'YYYY-MM-DD')
-                  record.masa_sewa = [dayjs(record.start_date_sewa, 'YYYY-MM-DD'), dayjs(record.end_date_sewa, 'YYYY-MM-DD')]
+                  record.tanggal_akte = dayjs(record.tanggal_akte_1, 'DD-MM-YYYY')
+                  record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
                   form.setFieldsValue(record)
+                  setTriggerRefresh(!triggerRefresh)
                 }
               }>
                 Edit

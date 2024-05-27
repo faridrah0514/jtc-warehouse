@@ -71,7 +71,6 @@ interface DiffPeriod { tahun: number, bulan: number }
 export default function AddSewaModal(props: Status) {
   const [allData, setAllData] = useState<{ cabang: any, pelanggan: any, aset: any }>({ cabang: [], pelanggan: [], aset: [] })
   const [diffPeriod, setDiffPeriod] = useState<DiffPeriod>({ tahun: 0, bulan: 0 })
-  const [uploading, setUploading] = useState(false);
   const [currencyValue, setCurrencyValue] = useState<number>(0)
   const [periodePembayaran, setPeriodePembayaran] = useState<string>('Perbulan');
   const [selectedCabang, setSelectedCabang] = useState<number | undefined>(undefined)
@@ -79,7 +78,7 @@ export default function AddSewaModal(props: Status) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const dateFormat = 'DD-MM-YYYY'
-  // const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true)
+
 
   const getBase64 = (file: FileType): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -102,9 +101,6 @@ export default function AddSewaModal(props: Status) {
     const totalBulan = (diffPeriod.tahun * 12) + diffPeriod.bulan
     return (periodePembayaran == 'Perbulan') ? currencyValue * totalBulan : currencyValue * totalBulan / 12
   }
-  // console.log("props.form: ", props.form.getFieldsValue())
-
-
 
   const handleDateChange = (dates: [Dayjs | null, Dayjs | null], dateStrings: [string, string], dFormat: string = dateFormat) => {
     if (dates && dates[0] && dates[1]) {
@@ -122,16 +118,6 @@ export default function AddSewaModal(props: Status) {
     }
   };
 
-  // if (props.form.getFieldValue("id")) {
-  //   console.log("edit niii")
-  //   const rentPeriod = props.form.getFieldValue("masa_sewa")
-  //   const rentPeriodString: [string,string] = [rentPeriod[0].format(dateFormat).toString(), rentPeriod[1].format(dateFormat).toString()]
-  //   console.log(rentPeriod)
-  //   console.log("rentPeriosString: ", rentPeriodString)
-  //   // console.log("rentPeriod[0].format(dateFormat).toString(): ", [rentPeriod[0].format(dateFormat).toString(), rentPeriod[1].format(dateFormat).toString()])
-  //   handleDateChange(_, rentPeriodString)
-  // }
-
   useEffect(
     () => {
       async function getAllData() {
@@ -141,7 +127,6 @@ export default function AddSewaModal(props: Status) {
         const dataCabang = (await allCabang.json()).data.map((value: DataCabang) => {
           return { id: value.id, nama_perusahaan: value.nama_perusahaan }
         })
-        // console.log("allAset: ", (await allAset.json()).data)
         const dataPelanggan = (await allPelanggan.json()).data.map((value: DataPelanggan) => { return { id: value.id, nama: value.nama } })
         const dataAset = (await allAset.json()).data.map((value: DataAset) => { return { id: value.id, nama_aset: value.nama_aset, id_cabang: value.id_cabang } })
         if (dataCabang || dataPelanggan || dataAset) {
@@ -150,24 +135,15 @@ export default function AddSewaModal(props: Status) {
             pelanggan: dataPelanggan,
             aset: dataAset
           })
-          // console.log("allData: ", {
-          //   cabang: dataCabang,
-          //   pelanggan: dataPelanggan,
-          //   aset: dataAset
-          // })
         }
-        // if (props.form.getFieldValue("id")) {
-        //   console.log("edit niii")
-        //   const rentPeriod = props.form.getFieldValue("masa_sewa")
-        //   const rentPeriodString: [string,string] = [rentPeriod[0].format(dateFormat).toString(), rentPeriod[1].format(dateFormat).toString()]
-        //   console.log(rentPeriod)
-        //   console.log("rentPeriosString: ", rentPeriodString)
-        //   // console.log("rentPeriod[0].format(dateFormat).toString(): ", [rentPeriod[0].format(dateFormat).toString(), rentPeriod[1].format(dateFormat).toString()])
-        //   handleDateChange(rentPeriod, rentPeriodString)
-        // }
+        if (props.isEdit && props.openModal) {
+          const masa_sewa = props.form.getFieldValue("masa_sewa")
+          handleDateChange(masa_sewa, [masa_sewa[0].format(dateFormat).toString(), masa_sewa[1].format(dateFormat).toString()])
+          setCurrencyValue(props.form.getFieldValue("harga"))
+        }
       }
       getAllData()
-    }, []
+    }, [props.triggerRefresh]
   )
 
   return (
@@ -185,11 +161,11 @@ export default function AddSewaModal(props: Status) {
             value.total_biaya_sewa = hitungHarga(diffPeriod, currencyValue, periodePembayaran)
             const requestType = (props.isEdit) ? 'edit' : 'add'
             const result = await fetch('/api/master/transaksi/sewa', {
-              method: 'POST', body: 
-              JSON.stringify({
-                requestType: requestType,
-                data: value,
-              })
+              method: 'POST', body:
+                JSON.stringify({
+                  requestType: requestType,
+                  data: value,
+                })
               ,
               headers: {
                 'Content-Type': 'application/json',
@@ -202,59 +178,28 @@ export default function AddSewaModal(props: Status) {
                 formData.append('id_transaksi', value.id_transaksi)
                 formData.append('files[]', v as FileType)
 
-                fetch('/api/master/transaksi/upload',{ method: 'POST', body: formData })
-                .then((res) => res.json())
-                .then((res) => {
-                  if (res.status == 200) {
-                    message.success("upload success")
-                  } else {
-                    message.error("upload failed")
-                  }
-                })
-                .catch(() => message.error("upload failed"))
-                // fd.push(formData)
-                // formData.append('nama_aset', value.nama_aset)
-                // formData.append('id_aset', value.id_aset)
-                // formData.append('doc_list', input)
-                // fileList[idx].forEach(
-                //   (file) => {
-                //     formData.append('files[]', file as FileType)
-                //   }
-                // )
-                // setUploading(true)
-                // fetch('/api/master/aset/upload', {
-                //   method: 'POST',
-                //   body: formData
-                // }).then((res) => res.json())
-                //   .then((res) => {
-                //     setFileList([])
-                //     if (res.status == 200) {
-                //       message.success("upload success")
-                //     } else {
-                //       message.error("upload failed")
-                //     }
-
-                //   })
-                //   .catch(() => message.error("upload failed"))
-                //   .finally(() => setUploading(false))
+                fetch('/api/master/transaksi/upload', { method: 'POST', body: formData })
+                  .then((res) => res.json())
+                  .then((res) => {
+                    if (res.status == 200) {
+                      message.success("upload success")
+                    } else {
+                      message.error("upload failed")
+                    }
+                  })
+                  .catch(() => message.error("upload failed"))
               }
             )
-
-            // formData.append('satu', 'satu')
-
-      
             props.setOpenModal(false)
             props.setTriggerRefresh(!props.triggerRefresh)
-            // if (formRef.current) formRef.current.resetFields();
             props.form.resetFields()
-            // props.isEdit = false
+            setFileList([])
           }
         }
         labelAlign='left'
         labelCol={{ span: 7 }}
         labelWrap
         wrapperCol={{ span: 15 }}
-
       >
         <Row>
           <Form.Item name='id_transaksi' />
@@ -267,7 +212,7 @@ export default function AddSewaModal(props: Status) {
             </Form.Item>
             <Form.Item
               name='tanggal_akte' required label='Tanggal Akte' rules={[{ required: true }]}>
-              <DatePicker value={(props.isEdit) ? dayjs(props.form.getFieldValue("tanggal_akte")) : null} allowClear={false} format={dateFormat}
+              <DatePicker value={(props.isEdit) ? dayjs(props.form.getFieldValue("tanggal_akte"), dateFormat) : null} allowClear={false} format={dateFormat}
               ></DatePicker>
             </Form.Item>
             <Form.Item name='notaris' required label="Notaris" rules={[{ required: true }]}>
@@ -288,39 +233,15 @@ export default function AddSewaModal(props: Status) {
               </Select>
             </Form.Item>
             <Form.Item name='id_aset' required label="Nama Aset" rules={[{ required: true }]}>
-              <Select placeholder="Aset" allowClear disabled={!selectedCabang}>
-                {allData.aset.filter((item: any) => item.id_cabang == selectedCabang).map(
+              <Select placeholder="Aset" allowClear disabled={!selectedCabang || !props.isEdit}>
+                {allData.aset.filter((item: any) => item.id_cabang == selectedCabang || item.id_cabang == props.form.getFieldValue("id_cabang")).map(
                   (value: any) => <Option key={value.id} value={value.id}>{value.nama_aset}</Option>
                 )}
               </Select>
             </Form.Item>
             <Form.Item
               name='masa_sewa' required label="Masa Sewa" rules={[{ required: true }]}>
-              <RangePicker allowClear={false} onChange={
-                handleDateChange
-
-
-                //   (a, b) => {
-                //     console.log("b: ", b)
-                //     console.log("b[0]: ", dayjs(b[0], 'DD-MM-YYYY'))
-                //     // console.log("a: ", a)
-                //   const totalMonths = dayjs(b[1], dateFormat).diff(dayjs(b[0], dateFormat).subtract(1, 'day'), 'month')
-                //   const years = Math.floor(totalMonths / 12);
-                //   let months = totalMonths % 12;
-                //   const endOfMonthPeriod = dayjs(b[0], dateFormat).add(months, 'month').add(years, 'years')
-
-                //   let days = dayjs(b[1], dateFormat).diff(endOfMonthPeriod.subtract(1, 'day'), 'day')
-                //   if (days > 1) {
-                //     months = months + 1
-                //     days = 0
-                //   }
-                //   setDiffPeriod({ tahun: years, bulan: months })
-
-                // }
-
-              }
-                format={dateFormat}
-              />
+              <RangePicker allowClear={false} onChange={handleDateChange} format={dateFormat}/>
             </Form.Item>
             <Form.Item name='periode_pembayaran' required label="Periode Pembayaran" initialValue={props.form.getFieldValue('periode_pembayaran') ?? 'Perbulan'}>
               <Radio.Group value={periodePembayaran} onChange={(e: RadioChangeEvent) => {
@@ -336,8 +257,9 @@ export default function AddSewaModal(props: Status) {
             ]}>
               <CurrencyInput value={currencyValue} onChange={(value) => setCurrencyValue(() => value)} />
             </Form.Item>
-            <Form.Item name='file' label="Upload Dokumen" required rules={[{ required: true }]}>
+            <Form.Item name='file' label="Upload Dokumen" required={!props.isEdit} rules={[{ required: !props.isEdit }]}>
               <Upload
+                multiple
                 onPreview={handlePreview}
                 listType='picture-card'
                 beforeUpload={(file) => {
@@ -370,11 +292,7 @@ export default function AddSewaModal(props: Status) {
           </Col>
         </Row>
         <Row>
-          {(!props.isEdit) ?
-            <Text className='pl-2'>Periode Sewa: {diffPeriod.tahun ? diffPeriod.tahun : '0'} Tahun {diffPeriod.bulan ? diffPeriod.bulan : '0'} Bulan</Text> :
-            <Text className='pl-2'>Periode Sewa: {diffPeriod.tahun ? diffPeriod.tahun : '0'} Tahun {diffPeriod.bulan ? diffPeriod.bulan : '0'} Bulan</Text>
-          }
-          {/* <Text className='pl-2'>Periode Sewa: {diffPeriod.tahun ? diffPeriod.tahun : '0'} Tahun {diffPeriod.bulan ? diffPeriod.bulan : '0'} Bulan</Text> */}
+          <Text className='pl-2'>Periode Sewa: {diffPeriod.tahun ? diffPeriod.tahun : '0'} Tahun {diffPeriod.bulan ? diffPeriod.bulan : '0'} Bulan</Text>
         </Row>
         <Row>
           <Text className='pl-2'>Periode Pembayaran: {periodePembayaran}</Text>
@@ -390,11 +308,11 @@ export default function AddSewaModal(props: Status) {
               setDiffPeriod({ tahun: 0, bulan: 0 });
               setCurrencyValue(0)
               setPeriodePembayaran('Perbulan')
-              // props.isEdit = false
+              setFileList([])
             }}>Cancel</Button>
           </Form.Item>
           <Form.Item>
-            <Button htmlType="submit" type="primary"> Sumbit</Button>
+            <Button htmlType="submit" type="primary"> Submit</Button>
           </Form.Item>
         </div>
       </Form>
