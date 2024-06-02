@@ -34,6 +34,7 @@ CREATE TABLE
   `tipe_sertifikat` (
     `id` int NOT NULL AUTO_INCREMENT,
     `tipe_sertifikat` varchar(100) DEFAULT NULL,
+    `masa_berlaku` tinyint(1) DEFAULT '0',
     PRIMARY KEY (`id`)
   )
 

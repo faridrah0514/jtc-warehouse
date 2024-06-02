@@ -1,4 +1,4 @@
-import { Button, Form, Input, Modal, Select, Typography, message, UploadProps, GetProp, DatePicker, Row, Col, Radio, FormInstance, Upload, UploadFile, Image } from 'antd'
+import { Button, Form, Input, Modal, Select, Typography, message, UploadProps, GetProp, DatePicker, Row, Col, Radio, FormInstance, Upload, UploadFile, Image, Table, Popconfirm } from 'antd'
 const { Option } = Select;
 import React, { useEffect, useRef, useState, ChangeEvent } from 'react'
 import { DataAset, DataCabang, DataPelanggan } from '@/app/types/master'
@@ -7,6 +7,7 @@ const { Text, Link } = Typography;
 const { RangePicker } = DatePicker;
 import type { RadioChangeEvent } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import { list } from 'postcss';
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
 
@@ -77,6 +78,7 @@ export default function AddSewaModal(props: Status) {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
+  const [listFiles, setListFiles] = useState([])
   const dateFormat = 'DD-MM-YYYY'
 
 
@@ -140,7 +142,9 @@ export default function AddSewaModal(props: Status) {
           const masa_sewa = props.form.getFieldValue("masa_sewa")
           handleDateChange(masa_sewa, [masa_sewa[0].format(dateFormat).toString(), masa_sewa[1].format(dateFormat).toString()])
           setCurrencyValue(props.form.getFieldValue("harga"))
+          setPeriodePembayaran(props.form.getFieldValue("periode_pembayaran"))
           setSelectedCabang(props.form.getFieldValue("id_cabang"))
+          setListFiles(props.form.getFieldValue('list_files'))
         }
       }
       getAllData()
@@ -194,6 +198,7 @@ export default function AddSewaModal(props: Status) {
             props.setOpenModal(false)
             props.setTriggerRefresh(!props.triggerRefresh)
             props.form.resetFields()
+            setListFiles([])
             setFileList([])
           }
         }
@@ -226,6 +231,7 @@ export default function AddSewaModal(props: Status) {
                 )}
               </Select>
             </Form.Item>
+
             <Form.Item name='id_cabang' required label="Nama Cabang" rules={[{ required: true }]}>
               <Select placeholder="Cabang" allowClear onChange={(value) => { setSelectedCabang(value) }}>
                 {allData.cabang.map(
@@ -242,7 +248,7 @@ export default function AddSewaModal(props: Status) {
             </Form.Item>
             <Form.Item
               name='masa_sewa' required label="Masa Sewa" rules={[{ required: true }]}>
-              <RangePicker allowClear={false} onChange={handleDateChange} format={dateFormat}/>
+              <RangePicker allowClear={false} onChange={handleDateChange} format={dateFormat} />
             </Form.Item>
             <Form.Item name='periode_pembayaran' required label="Periode Pembayaran" initialValue={props.form.getFieldValue('periode_pembayaran') ?? 'Perbulan'}>
               <Radio.Group value={periodePembayaran} onChange={(e: RadioChangeEvent) => {
@@ -293,14 +299,79 @@ export default function AddSewaModal(props: Status) {
           </Col>
         </Row>
         <Row>
-          <Text className='pl-2'>Periode Sewa: {diffPeriod.tahun ? diffPeriod.tahun : '0'} Tahun {diffPeriod.bulan ? diffPeriod.bulan : '0'} Bulan</Text>
+          <Col span={10}>
+            <Row>
+              <Text className='pl-2'>Periode Sewa: {diffPeriod.tahun ? diffPeriod.tahun : '0'} Tahun {diffPeriod.bulan ? diffPeriod.bulan : '0'} Bulan</Text>
+            </Row>
+            <Row>
+              <Text className='pl-2'>Periode Pembayaran: {periodePembayaran}</Text>
+            </Row>
+            <Row>
+              <Text className='pl-2'>Biaya Sewa: {(currencyValue != 0) ? _renderCurrency(hitungHarga(diffPeriod, currencyValue, periodePembayaran)) : 'Rp 0'} </Text>
+            </Row>
+          </Col>
+          <Col span={14}>
+            <Table size='small' 
+            dataSource={listFiles}
+            pagination={{ pageSize: 2 }}
+             columns={[
+              {
+                title: "Dokument",
+                render: (_, record) => (
+                  <a href={`/upload/txs/${props.form.getFieldValue("id_transaksi")}/${record}`} target="_blank" rel="noopener noreferrer">{record}</a>
+                )
+              },
+              {
+                title: "Action",
+                render: (_ , record) => (
+                  <Popconfirm
+                  title="sure to delete?"
+                  onConfirm={
+                    async function deleteCabang() {
+                      const requstType = 'delete-one-file'
+                      const result = await fetch('/api/master/transaksi/sewa', {
+                        method: "POST",
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                          requestType: requstType,
+                          data: {file: record, id_transaksi: props.form.getFieldValue("id_transaksi")}
+                        })
+                      })
+                      if (result.status == 200) {
+                        // setTriggerRefresh(!triggerRefresh)
+                      }
+                      setListFiles(listFiles.filter(v => v != record))
+                    }
+                  }
+                >
+                  <Button size="small" danger>
+                    Delete
+                  </Button>
+                </Popconfirm>
+                )
+              }
+             ]}
+             ></Table>
+          </Col>
         </Row>
-        <Row>
-          <Text className='pl-2'>Periode Pembayaran: {periodePembayaran}</Text>
-        </Row>
-        <Row>
-          <Text className='pl-2'>Biaya Sewa: {(currencyValue != 0) ? _renderCurrency(hitungHarga(diffPeriod, currencyValue, periodePembayaran)) : 'Rp 0'} </Text>
-        </Row>
+
+
+        {/* <Row>
+          <List dataSource={listFiles} itemLayout="horizontal"
+              renderItem={(item, index) => (
+                <List.Item>
+                  <List.Item.Meta
+                    // avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
+                    // title={<a href="https://ant.design">{item}</a>}
+                    // description="Ant Design, a design language for background applications, is refined by Ant UED Team"
+                  />
+                  <a href="https://ant.design">{item}</a>
+                </List.Item>
+              )}
+          />
+        </Row> */}
         <div className="flex justify-end gap-2">
           <Form.Item>
             <Button onClick={() => {
@@ -310,6 +381,7 @@ export default function AddSewaModal(props: Status) {
               setCurrencyValue(0)
               setPeriodePembayaran('Perbulan')
               setFileList([])
+              setListFiles([])
             }}>Cancel</Button>
           </Form.Item>
           <Form.Item>

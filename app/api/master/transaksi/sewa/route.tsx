@@ -84,6 +84,13 @@ export async function POST(request: Request) {
           data.harga, data.total_biaya_sewa, data.id
         ]
       )
+    } else if (value.requestType == 'delete-one-file'){ 
+      const filePath = path.join(fullPath, data.file)
+      rimraf(filePath).then((result) => {
+        console.log(`Folder '${filePath}' deleted successfully.`);
+      }).catch((e) => {
+        console.error(`Error deleting folder '${filePath}':`, e);
+      });
     } else {
       // request Type is add
       await conn.query(`

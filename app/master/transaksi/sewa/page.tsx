@@ -88,6 +88,7 @@ export default function Page() {
                   record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
                   form.setFieldsValue(record)
                   setTriggerRefresh(!triggerRefresh)
+                  console.log("record: ", record)
                 }
               }>
                 Edit

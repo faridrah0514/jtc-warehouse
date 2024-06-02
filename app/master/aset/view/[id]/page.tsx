@@ -99,6 +99,11 @@ export default function Page({ params }: { params: { id: string } }) {
             label: 'Tipe Sertifikat',
             children: asetData?.tipe_sertifikat
           },
+          {
+            key: '11',
+            label: 'Tanggal Akhir HGB',
+            children: asetData?.tanggal_akhir_hgb
+          },
         ]}
       >
       </Descriptions>
