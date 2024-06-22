@@ -38,7 +38,7 @@ export const items: MenuItem[] = [
     getItem(<Link href='/master/aset'>Aset</Link>, 'Aset', <FolderOpenOutlined />),
     getItem(<Link href='/master/transaksi'>Transaksi</Link>, 'transaksi', <CreditCardOutlined />, [
         getItem(<Link href='/master/transaksi/sewa'>Sewa</Link>, 'Sewa', <SolutionOutlined />),
-        getItem(<Link href='/master/transaksi/sewa'>Listrik</Link>, 'Listrik', <ThunderboltOutlined/>),
+        getItem(<Link href='/master/transaksi/listrik'>Listrik</Link>, 'Listrik', <ThunderboltOutlined/>),
     ]),
 ];
 

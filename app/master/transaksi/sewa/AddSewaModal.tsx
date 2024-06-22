@@ -8,6 +8,9 @@ const { RangePicker } = DatePicker;
 import type { RadioChangeEvent } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { list } from 'postcss';
+import { _renderCurrency } from '@/app/utils/renderCurrency';
+import { CurrencyInput } from '@/app/components/currencyInput/currencyInput';
+
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
 
@@ -19,52 +22,6 @@ interface Status {
   form: FormInstance,
   isEdit: boolean,
   maxId: number
-}
-
-export const _renderCurrency = (value: number) => {
-  let number = Number(value)
-  return number?.toLocaleString('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-    minimumFractionDigits: 0
-  })
-}
-
-interface CurrencyInputProps {
-  value: number;
-  onChange: (value: number) => void;
-  className?: string;
-  allowNegative?: boolean;
-  [key: string]: any; // for other props
-}
-
-export const CurrencyInput: React.FC<CurrencyInputProps> = ({
-  value = 0,
-  onChange,
-  className = '',
-  allowNegative = true,
-  ...props
-}) => {
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    let rawText = e.target.value
-    let numberText = rawText.replace(/\D/g, '')
-    let result = numberText
-    onChange(Number(result))
-  }
-
-  return (
-    <Input
-      className={`${className}`}
-      value={`${_renderCurrency(value)}`}
-      onChange={handleChange}
-      onClick={() => inputRef?.current?.click}
-      onFocus={() => inputRef?.current?.focus}
-      {...props}
-    />
-  )
 }
 
 interface DiffPeriod { tahun: number, bulan: number }
@@ -178,7 +135,6 @@ export default function AddSewaModal(props: Status) {
             })
             fileList.forEach(
               (v: UploadFile, idx: number) => {
-                // console.log("v, idx: ", v, idx)
                 const formData = new FormData()
                 formData.append('id_transaksi', value.id_transaksi)
                 formData.append('files[]', v as FileType)

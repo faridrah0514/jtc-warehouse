@@ -8,6 +8,12 @@ CREATE TABLE
     `no_tlp` varchar(100) DEFAULT NULL,
     `status` varchar(100) DEFAULT NULL,
     `kwh_rp` float DEFAULT NULL,
+    `rek_bank_1` varchar(100) DEFAULT NULL,
+    `rek_norek_1` varchar(100) DEFAULT NULL,
+    `rek_atas_nama_1` varchar(100) DEFAULT NULL,
+    `rek_bank_2` varchar(100) DEFAULT NULL,
+    `rek_norek_2` varchar(100) DEFAULT NULL,
+    `rek_atas_nama_2` varchar(100) DEFAULT NULL,
     PRIMARY KEY (`id`)
   );
 
@@ -34,10 +40,9 @@ CREATE TABLE
   `tipe_sertifikat` (
     `id` int NOT NULL AUTO_INCREMENT,
     `tipe_sertifikat` varchar(100) DEFAULT NULL,
-    `masa_berlaku` tinyint(1) DEFAULT '0',
+    `masa_berlaku` tinyint (1) DEFAULT '0',
     PRIMARY KEY (`id`)
   )
-
   -- jtc_warehouse.aset definition
 CREATE TABLE
   `aset` (
@@ -59,8 +64,7 @@ CREATE TABLE
     `tanggal_akhir_hgb` varchar(50) DEFAULT NULL,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`id_cabang`) REFERENCES `cabang` (`id`),
-    FOREIGN KEY (`id_tipe_aset`) REFERENCES `tipe_aset` (`id`)
-    FOREIGN KEY (`id_tipe_sertifikat`) REFERENCES `tipe_sertifikat` (`id`)
+    FOREIGN KEY (`id_tipe_aset`) REFERENCES `tipe_aset` (`id`) FOREIGN KEY (`id_tipe_sertifikat`) REFERENCES `tipe_sertifikat` (`id`)
   );
 
 -- jtc_warehouse.transaksi_sewa definition
@@ -86,4 +90,23 @@ CREATE TABLE
     FOREIGN KEY (`id_cabang`) REFERENCES `cabang` (`id`),
     FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id`),
     FOREIGN KEY (`id_aset`) REFERENCES `aset` (`id`)
+  );
+
+-- jtc_warehouse.transaksi_listrik definition
+CREATE TABLE
+  `transaksi_listrik` (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `id_aset` int NOT NULL,
+    `id_cabang` int NOT NULL,
+    `id_pelanggan` int NOT NULL,
+    `bl_thn` varchar(12) DEFAULT NULL,
+    `meteran_awal` float DEFAULT NULL,
+    `meteran_akhir` float DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `id_cabang` (`id_cabang`),
+    KEY `id_aset` (`id_aset`),
+    KEY `id_pelanggan` (`id_pelanggan`),
+    CONSTRAINT `transaksi_listrik_ibfk_1` FOREIGN KEY (`id_cabang`) REFERENCES `cabang` (`id`),
+    CONSTRAINT `transaksi_listrik_ibfk_2` FOREIGN KEY (`id_aset`) REFERENCES `aset` (`id`),
+    CONSTRAINT `transaksi_listrik_ibfk_3` FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id`)
   );

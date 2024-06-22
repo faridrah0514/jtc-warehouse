@@ -17,7 +17,7 @@ export async function POST(request: Request, response: Response): Promise<Respon
       )
     } else {
       console.log("data: ", data)
-      await conn.query(`insert into tipe_sertifikat (tipe_sertifikat, masa_sertifikat) values (?,?)`,
+      await conn.query(`insert into tipe_sertifikat (tipe_sertifikat, masa_berlaku) values (?,?)`,
         [data.tipe_sertifikat, data.masa_berlaku]
       )
     }

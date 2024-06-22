@@ -13,14 +13,26 @@ export async function POST(request: Request, response: Response): Promise<Respon
           kota = ?,
           no_tlp = ?,
           status = ?,
-          kwh_rp = ?
+          kwh_rp = ?,
+          rek_bank_1 = ?,
+          rek_norek_1 = ?,
+          rek_atas_nama_1 = ?,
+          rek_bank_2 = ?,
+          rek_norek_2 = ?,
+          rek_atas_nama_2 = ?
         where
           id = ?
-      `, [data.nama_perusahaan, data.alamat, data.kota, data.no_tlp, data.status, data.kwh_rp, data.id])
-
+      `, [data.nama_perusahaan, data.alamat, data.kota, data.no_tlp, data.status, data.kwh_rp,
+      data.rek_bank_1, data.rek_norek_1, data.rek_atas_nama_1,
+      data.rek_bank_2, data.rek_norek_2, data.rek_atas_nama_2,
+      data.id
+      ])
     } else {
-      await conn.query('insert into cabang (nama_perusahaan, alamat, kota, no_tlp, status, kwh_rp) values (?,?,?,?,?,?)',
-        [data.nama_perusahaan, data.alamat, data.kota, data.no_tlp, data.status, data.kwh_rp]
+      await conn.query('insert into cabang (nama_perusahaan, alamat, kota, no_tlp, status, kwh_rp, rek_bank_1, rek_norek_1, rek_atas_nama_1, rek_bank_2, rek_norek_2, rek_atas_nama_2) values (?,?,?,?,?,?,?,?,?,?,?,?)',
+        [data.nama_perusahaan, data.alamat, data.kota, data.no_tlp, data.status, data.kwh_rp,
+        data.rek_bank_1, data.rek_norek_1, data.rek_atas_nama_1,
+        data.rek_bank_2, data.rek_norek_2, data.rek_atas_nama_2,
+        ]
       )
     }
     conn.end()

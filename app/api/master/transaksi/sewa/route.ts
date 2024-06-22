@@ -9,7 +9,7 @@ export async function GET() {
   const conn = openDB()
   const txsPath = '/upload/txs'
   const query = `
-    select ts.*, ts.tanggal_akte as tanggal_akte_1, c.nama_perusahaan nama_cabang, p.nama nama_pelanggan, a.nama_aset nama_aset from transaksi_sewa ts 
+    select ts.*, ts.tanggal_akte as tanggal_akte_1, c.nama_perusahaan nama_cabang, p.nama nama_pelanggan, a.nama_aset nama_aset, c.* from transaksi_sewa ts 
     left join cabang c on ts.id_cabang =  c.id
     left join pelanggan p on ts.id_pelanggan = p.id
     left join aset a on ts.id_aset = a.id
@@ -24,18 +24,6 @@ export async function GET() {
   for (const value of newData) {
     try {
       value.list_files = await fs.promises.readdir(path.join(projectRoot, txsPath, value.id_transaksi));
-    //   const listDir = await fs.promises.readdir(path.join(projectRoot, txsPath, value.id_transaksi));
-    //   value.list_dir = listDir;
-    //   value.list_files = listDir;
-    //   value.list_dir_files = await Promise.all(value.list_dir.map(async (list_dir: string) => {
-    //     try {
-    //       const list_files = await fs.promises.readdir(value.folder_path + "/" + list_dir);
-    //       return { [list_dir]: list_files };
-    //     } catch (error) {
-    //       console.error("Error reading directory:", error);
-    //       return { [list_dir]: [] }; // Return an empty array if readdir fails
-    //     }
-    //   }));
     } catch (error) {
       console.error(`Error processing data for folder '${value.folder_path}':`, error);
     }
@@ -58,8 +46,6 @@ export async function POST(request: Request) {
       }).catch((e) => {
         console.error(`Error deleting folder '${fullPath}':`, e);
       });
-      // conn.end()
-      // return Response.json({ status: 200 })
     } else if (value.requestType == 'edit') {
       await conn.query(
         `update transaksi_sewa set 

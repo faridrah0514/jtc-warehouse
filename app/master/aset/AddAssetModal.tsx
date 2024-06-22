@@ -40,7 +40,7 @@ export default function AddAssetModal(props: Status) {
   const [tipeSertifikatModal, setTipeSertifikatModal] = useState<boolean>(false);
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true)
   const [tipeAset, setTipeAset] = useState<{ id: number, tipe_aset: string }[]>([])
-  const [tipeSertifikat, setTipeSertifikat] = useState<{ id: number, tipe_sertifikat: string, masa_berlaku: number }[]>([{id: 0, tipe_sertifikat: '', masa_berlaku: 0}])
+  const [tipeSertifikat, setTipeSertifikat] = useState<{ id: number, tipe_sertifikat: string, masa_berlaku: number }[]>([{ id: 0, tipe_sertifikat: '', masa_berlaku: 0 }])
   const [tipeSertifikatValue, setTipeSertifikatValue] = useState<number>(0)
   const [alamatCabang, setAlamatCabang] = useState('')
   const [kotaCabang, setKotaCabang] = useState<string>('')
@@ -62,7 +62,6 @@ export default function AddAssetModal(props: Status) {
           setTipeAset(tipeAsetResp.data)
         }
         if (tipeSertifikatResp) {
-          // console.log("tipeSertifikatResp.data: ", tipeSertifikatResp.data.filter((v) => v.id == 5)[0]['masa_berlaku'])
           setTipeSertifikat(tipeSertifikatResp.data)
         }
       }
@@ -226,11 +225,11 @@ export default function AddAssetModal(props: Status) {
             <Input placeholder='Masukkan Tipe Sertifikat' autoComplete='off' />
           </Form.Item>
           <Form.Item name='masa_berlaku' label="Ada masa berlaku sertifikat?" initialValue={false}>
-              <Radio.Group>
-                <Radio.Button value={true}>Ya</Radio.Button>
-                <Radio.Button value={false}>Tidak</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
+            <Radio.Group>
+              <Radio.Button value={true}>Ya</Radio.Button>
+              <Radio.Button value={false}>Tidak</Radio.Button>
+            </Radio.Group>
+          </Form.Item>
           <div className="flex justify-end gap-2 pt-4">
             <Form.Item>
               <Button onClick={() => {
@@ -270,8 +269,54 @@ export default function AddAssetModal(props: Status) {
                 if (!props.isAddDocument) {
                   return (
                     <Col span={props.isEdit ? 24 : 13} className='border p-4' hidden>
+                      <Divider orientation='left'>Detail Cabang dan Aset</Divider>
+                      <Form.Item name='id_aset' hidden>
+                      </Form.Item>
+                      
                       <Row>
                         <Col span={12}>
+                          <Form.Item name='id_cabang' required label="Cabang" rules={[{ required: true }]}>
+                            <Select placeholder="Cabang" allowClear onChange={(event) => {
+                              const alamat = allCabang.filter(v => v.id == event)[0]['alamat']
+                              const kota = allCabang.filter(v => v.id == event)[0]['kota']
+                              setAlamatCabang(alamat)
+                              setKotaCabang(kota)
+                              props.form.setFieldValue('alamat', alamat)
+                              props.form.setFieldValue('kota', kota)
+                            }}>
+                              {allCabang.map(
+                                (value) => <Option key={value.id} value={value.id}>{value.nama_perusahaan}</Option>
+                              )}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]} >
+                            <TextArea rows={3} placeholder={alamatCabang ? alamatCabang : 'Alamat'} autoComplete='new-password' value={alamatCabang} onChange={(event) => {
+                              props.form.setFieldValue("alamat", alamatCabang)
+                            }} disabled />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                      <Row>
+                      <Col span={12}>
+                          <Form.Item name='nama_aset' required label="Nama Aset" rules={[{ required: true }]} >
+                            <Input placeholder='Nama Asset' autoComplete='off' />
+                          </Form.Item>
+                        </Col>
+                      <Col span={12}>
+                          <Form.Item name='kota' required label='Kota' rules={[{ required: true }]} >
+                            <Input placeholder={kotaCabang ? kotaCabang : 'Kota'} autoComplete='off' value={kotaCabang} onChange={(event) => { props.form.setFieldValue("kota", kotaCabang) }} disabled />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                      <Row>
+                        {/* <Col span={12}>
+                          <Form.Item name='nama_aset' required label="Nama Aset" rules={[{ required: true }]} >
+                            <Input placeholder='Nama Asset' autoComplete='off' />
+                          </Form.Item>
+                        </Col> */}
+                                                <Col span={12}>
                           <Form.Item name='id_tipe_aset' required label="Tipe Aset" rules={[{ required: true }]}>
                             <Select placeholder='Tipe Aset' allowClear dropdownRender={(menu) => {
                               return (
@@ -290,77 +335,14 @@ export default function AddAssetModal(props: Status) {
                             />
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
-                          <Form.Item name='id_aset'>
-                            {/* <Input disabled /> */}
+                        
+                        {/* <Col span={12}>
+                          <Form.Item name='luas_tanah' label='Luas Tanah'>
+                            <Input placeholder='Luas Tanah' autoComplete='off' />
                           </Form.Item>
-                        </Col>
-
+                        </Col> */}
                       </Row>
-                      <Row>
-                        <Col span={12}>
-                          <Form.Item name='nama_aset' required label="Nama Aset" rules={[{ required: true }]} >
-                            <Input placeholder='Nama Asset' autoComplete='off' />
-                          </Form.Item>
-                        </Col>
-
-                      </Row>
-                      <Row>
-                        <Col span={12}>
-                          <Form.Item name='alamat' required label='Alamat' rules={[{ required: true }]} >
-                            <TextArea rows={3} placeholder={alamatCabang ? alamatCabang : 'Alamat'} autoComplete='new-password' value={alamatCabang} onChange={(event) => {
-                              props.form.setFieldValue("alamat", alamatCabang)
-                            }} disabled />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col span={12}>
-                          <Form.Item name='kota' required label='Kota' rules={[{ required: true }]} >
-                            <Input placeholder={kotaCabang ? kotaCabang : 'Kota'} autoComplete='off' value={kotaCabang} onChange={(event) => {props.form.setFieldValue("kota", kotaCabang)}} disabled/>
-                          </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                          <Form.Item name='id_cabang' required label="Cabang" rules={[{ required: true }]}>
-                            <Select placeholder="Cabang" allowClear onChange={(event) => {
-                              const alamat = allCabang.filter(v => v.id == event)[0]['alamat']
-                              const kota = allCabang.filter(v => v.id == event)[0]['kota']
-                              setAlamatCabang(alamat)
-                              setKotaCabang(kota)
-                              props.form.setFieldValue('alamat', alamat)
-                              props.form.setFieldValue('kota', kota)
-                            }}>
-                              {allCabang.map(
-                                (value) => <Option key={value.id} value={value.id}>{value.nama_perusahaan}</Option>
-                              )}
-                            </Select>
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col span={12}>
-                          <Form.Item name='no_tlp' required label='No. Tlp' rules={[{ required: true }]}>
-                            <Input placeholder='No. Tlp' autoComplete='off' />
-                          </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                          <Form.Item name='no_rek_air' required label='No. Rek. Air' rules={[{ required: true }]}>
-                            <Input placeholder='No. Rek. Air' autoComplete='off' />
-                          </Form.Item>
-                        </Col>
-                      </Row>
-                      <Row>
-                        <Col span={12}>
-                          <Form.Item name='no_rek_listrik' required label='No. Rek. Listrik' rules={[{ required: true }]}>
-                            <Input placeholder='No. Rek. Listrik' autoComplete='off' />
-                          </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                          <Form.Item name='no_pbb' required label='No. PBB' rules={[{ required: true }]}>
-                            <Input placeholder='No. PBB' autoComplete='off' />
-                          </Form.Item>
-                        </Col>
-                      </Row>
+                      <Divider orientation='left'>Detail Luas dan Sertifikat</Divider>
                       <Row>
                         <Col span={12}>
                           <Form.Item name='id_tipe_sertifikat' required label="Tipe Sertifikat" rules={[{ required: true }]}>
@@ -378,10 +360,9 @@ export default function AddAssetModal(props: Status) {
                               options={
                                 tipeSertifikat.map((v, idx) => { return { label: v.tipe_sertifikat, value: v.id } })
                               }
-                              onChange={(id_sertifikat) => { console.log("id_sertifikat", id_sertifikat) ; 
-                              setTipeSertifikatValue(id_sertifikat)
-                              console.log("taa: ", tipeSertifikat.filter(v => v.id == tipeSertifikatValue))
-                            }}
+                              onChange={(id_sertifikat) => {
+                                setTipeSertifikatValue(id_sertifikat)
+                              }}
                             />
                           </Form.Item>
                         </Col>
@@ -390,23 +371,107 @@ export default function AddAssetModal(props: Status) {
                             <Input placeholder='No. Sertifikat' autoComplete='off' />
                           </Form.Item>
                         </Col>
-
                       </Row>
                       <Row>
-                        <Col span={12}>
-                          <Form.Item name='tanggal_akhir_hgb' 
+                      <Col span={12}>
+                          <Form.Item name='tanggal_akhir_hgb'
                             hidden={(() => {
                               const selectedSertifikat = tipeSertifikat.filter(v => v.id == tipeSertifikatValue)[0];
                               return selectedSertifikat ? selectedSertifikat['masa_berlaku'] == 0 : true;
-                            })()} 
-                          required 
-                          label='Tgl. Akhir Sertifikat' 
-                          // rules={[{ required: (tipeSertifikat.filter(v => v.id == tipeSertifikatValue)[0].masa_berlaku == 1) ? true : false }]} 
-                          labelCol={{ span: 7 }} 
-                          wrapperCol={{ span: 15 }}>
+                            })()}
+                            required
+                            label='Tgl. Akhir Sertifikat'
+                            // rules={[{ required: (tipeSertifikat.filter(v => v.id == tipeSertifikatValue)[0].masa_berlaku == 1) ? true : false }]} 
+                            labelCol={{ span: 7 }}
+                            wrapperCol={{ span: 15 }}>
                             <DatePicker format={"DD-MM-YYYY"} allowClear={false}></DatePicker>
                           </Form.Item>
                         </Col>
+                      </Row>
+                      <Row>
+                        {/* <Col span={12}>
+                          <Form.Item name='id_tipe_aset' required label="Tipe Aset" rules={[{ required: true }]}>
+                            <Select placeholder='Tipe Aset' allowClear dropdownRender={(menu) => {
+                              return (
+                                <>
+                                  {menu}
+                                  <Divider style={{ margin: '0' }} />
+                                  <Button style={{ paddingLeft: '10px' }} type="link" onClick={() => { setTipeAsetModal(true) }}>
+                                    Tambah Tipe Aset
+                                  </Button>
+                                </>
+                              )
+                            }}
+                              options={
+                                tipeAset.map((v, idx) => { return { label: v.tipe_aset, value: v.id } })
+                              }
+                            />
+                          </Form.Item>
+                        </Col> */}
+                               <Col span={12}>
+                          <Form.Item name='luas_tanah' label='Luas Tanah'>
+                            <Input placeholder='Luas Tanah' autoComplete='off' />
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item name='luas_bangunan' label='Luas Bangunan'>
+                            <Input placeholder='Luas Bangunan' autoComplete='off' />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                      <Row>
+                        {/* <Col span={12}>
+                          <Form.Item name='kota' required label='Kota' rules={[{ required: true }]} >
+                            <Input placeholder={kotaCabang ? kotaCabang : 'Kota'} autoComplete='off' value={kotaCabang} onChange={(event) => { props.form.setFieldValue("kota", kotaCabang) }} disabled />
+                          </Form.Item>
+                        </Col> */}
+                        <Col span={12}>
+                          <Form.Item name='luas_lt12' label='Luas Lantai'>
+                            <Input placeholder='Luas Lt.1 & Lt.2' autoComplete='off' />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                      <Divider orientation='left'>Lain-Lain</Divider>
+                      <Row>
+                        <Col span={12}>
+                          <Form.Item name='no_tlp' required label='No. Tlp' rules={[{ required: true }]}>
+                            <Input placeholder='No. Tlp' autoComplete='off' />
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item name='no_rek_air' label='No. Rek. Air'>
+                            <Input placeholder='No. Rek. Air' autoComplete='off' />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                      <Row>
+                        <Col span={12}>
+                          <Form.Item name='no_rek_listrik' label='No. Rek. Listrik'>
+                            <Input placeholder='No. Rek. Listrik' autoComplete='off' />
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item name='no_pbb' label='No. PBB'>
+                            <Input placeholder='No. PBB' autoComplete='off' />
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                      
+                      <Row>
+                        {/* <Col span={12}>
+                          <Form.Item name='tanggal_akhir_hgb'
+                            hidden={(() => {
+                              const selectedSertifikat = tipeSertifikat.filter(v => v.id == tipeSertifikatValue)[0];
+                              return selectedSertifikat ? selectedSertifikat['masa_berlaku'] == 0 : true;
+                            })()}
+                            required
+                            label='Tgl. Akhir Sertifikat'
+                            // rules={[{ required: (tipeSertifikat.filter(v => v.id == tipeSertifikatValue)[0].masa_berlaku == 1) ? true : false }]} 
+                            labelCol={{ span: 7 }}
+                            wrapperCol={{ span: 15 }}>
+                            <DatePicker format={"DD-MM-YYYY"} allowClear={false}></DatePicker>
+                          </Form.Item>
+                        </Col> */}
                         <Col span={12}>
                           <Form.Item name='status' required label='Status' rules={[{ required: true }]}>
                             <Select placeholder='Status' allowClear>
@@ -504,7 +569,6 @@ export default function AddAssetModal(props: Status) {
                   )
               }
             )()}
-
           </Row>
           <div className="flex justify-end gap-2 pt-4">
             <Form.Item>
@@ -526,6 +590,5 @@ export default function AddAssetModal(props: Status) {
         </Form>
       </Modal>
     </>
-
   )
 }

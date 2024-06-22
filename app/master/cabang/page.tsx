@@ -6,6 +6,7 @@ import AddCabangModal from './AddCabangModal'
 import { DataCabang } from '@/app/types/master'
 import { useForm } from 'antd/es/form/Form'
 import Title from 'antd/es/typography/Title'
+import { _renderCurrency } from '@/app/utils/renderCurrency'
 
 const column = [
   { title: "Nomor", dataIndex: 'no', key: 'no' },
@@ -15,7 +16,7 @@ const column = [
   { title: "Kota", dataIndex: 'kota', key: 'kota' },
   { title: "No Tlp", dataIndex: 'no_tlp', key: 'no_tlp' },
   { title: "Status", dataIndex: 'status', key: 'status' },
-  { title: "Kwh Rp", dataIndex: 'kwh_rp', key: 'kwh_rp' },
+  { title: "Kwh Rp", dataIndex: 'kwh_rp_1', key: 'kwh_rp_1' },
 ]
 export default function Page() {
   const [form] = Form.useForm()
@@ -35,6 +36,7 @@ export default function Page() {
             (value: DataCabang, index: number) => {
               value.no = index + 1
               value.id_cabang = 'CB-' + value.id.toString().padStart(4, "0")
+              value.kwh_rp_1 = _renderCurrency(value.kwh_rp)
             }
           )
           setCabangData(

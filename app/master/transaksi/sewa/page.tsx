@@ -2,10 +2,11 @@
 import React, { useEffect, useState } from 'react'
 
 import { Button, Flex, Form, Popconfirm, Table, TableProps } from 'antd'
-import AddSewaModal, { _renderCurrency } from './AddSewaModal'
+import AddSewaModal from './AddSewaModal'
 import { DataCabang } from '@/app/types/master'
 import Title from 'antd/es/typography/Title'
 import dayjs from 'dayjs';
+import { _renderCurrency } from '@/app/utils/renderCurrency'
 
 const column = [
   { title: "Nomor", dataIndex: 'no', key: 'no' },
@@ -88,7 +89,6 @@ export default function Page() {
                   record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
                   form.setFieldsValue(record)
                   setTriggerRefresh(!triggerRefresh)
-                  console.log("record: ", record)
                 }
               }>
                 Edit

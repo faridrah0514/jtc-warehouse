@@ -7,6 +7,7 @@ export interface DataCabang {
     no_tlp: number,
     status: string,
     kwh_rp: number,
+    kwh_rp_1: string,
     id_cabang: string
 }
 
