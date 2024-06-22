@@ -1,14 +1,9 @@
-import { Button, Form, Input, Modal, Select, Typography, message, UploadProps, GetProp, DatePicker, Row, Col, Radio, FormInstance, Upload, UploadFile, Image, Table, Popconfirm } from 'antd'
+import { Button, Form, Input, Modal, Select, Typography, UploadProps, GetProp, DatePicker, Row, Col, FormInstance } from 'antd'
 const { Option } = Select;
 import React, { useEffect, useRef, useState, ChangeEvent } from 'react'
-import { DataAset, DataCabang, DataPelanggan } from '@/app/types/master'
-import dayjs, { Dayjs } from 'dayjs';
 const { Text, Link } = Typography;
-const { RangePicker } = DatePicker;
-import type { RadioChangeEvent } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
 import { _renderCurrency } from '@/app/utils/renderCurrency';
-import { CurrencyInput } from '@/app/components/currencyInput/currencyInput';
+import dayjs from 'dayjs';
 
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
@@ -20,62 +15,71 @@ interface Status {
   setTriggerRefresh: React.Dispatch<React.SetStateAction<boolean>>
   form: FormInstance,
   isEdit: boolean,
+  tagihanListrik: any[]
 }
 
 interface DiffPeriod { tahun: number, bulan: number }
 interface Pemakaian { awal: number, akhir: number }
 
 export default function AddListrikModal(props: Status) {
-  const [allData, setAllData] = useState<{ cabang: any, pelanggan: any, aset: any }>({ cabang: [], pelanggan: [], aset: [] })
   const [pemakaian, setPemakaian] = useState<Pemakaian>({ awal: 0, akhir: 0 })
-  const [diffPeriod, setDiffPeriod] = useState<DiffPeriod>({ tahun: 0, bulan: 0 })
-  const [currencyValue, setCurrencyValue] = useState<number>(0)
-  const [periodePembayaran, setPeriodePembayaran] = useState<string>('Perbulan');
   const [selectedCabang, setSelectedCabang] = useState<number | undefined>(undefined)
   const [selectedPelanggan, setSelectedPelanggan] = useState<number | undefined>(undefined)
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState('');
-  const [listFiles, setListFiles] = useState([])
-  const dateFormat = 'DD-MM-YYYY'
+  const [selectedAset, setSelectedAset] = useState<number | undefined>(undefined)
   const [sewaData, setSewaData] = useState<any[]>();
 
-  function hitungHarga(diffPeriod: DiffPeriod, currencyValue: number, periodePembayaran: string): number {
-    const totalBulan = (diffPeriod.tahun * 12) + diffPeriod.bulan
-    return (periodePembayaran == 'Perbulan') ? currencyValue * totalBulan : currencyValue * totalBulan / 12
+  async function getAllData() {
+    const sewa = await fetch('/api/master/transaksi/sewa', { method: 'GET', cache: 'no-store' })
+    const dataSewa = await sewa.json()
+    setSewaData(dataSewa.data)
+    if (props.isEdit && props.openModal) {
+      const masa_sewa = props.form.getFieldValue("masa_sewa")
+      setPemakaian({awal: props.form.getFieldValue("meteran_awal"), akhir: props.form.getFieldValue("meteran_akhir")})
+      setSelectedCabang(props.form.getFieldValue("id_cabang"))
+      setSewaData([{
+        id_pelanggan: props.form.getFieldValue("id_pelanggan"),
+        id_aset: props.form.getFieldValue("id_aset"),
+        nama_pelanggan: props.form.getFieldValue("nama_pelanggan"),
+        nama_cabang: props.form.getFieldValue("nama_cabang"),
+        nama_aset: props.form.getFieldValue("nama_aset"),
+        id_cabang: props.form.getFieldValue("id_cabang"),
+        kwh_rp: props.form.getFieldValue("kwh_rp"),
+        rek_bank_1: props.form.getFieldValue("rek_bank_1"),
+        rek_bank_2: props.form.getFieldValue("rek_bank_2"),
+        rek_norek_1: props.form.getFieldValue("rek_norek_1"),
+        rek_norek_2: props.form.getFieldValue("rek_norek_2"),
+        rek_atas_nama_1: props.form.getFieldValue("rek_atas_nama_1"),
+        rek_atas_nama_2: props.form.getFieldValue("rek_atas_nama_2"),
+      }])
+      setSelectedPelanggan(props.form.getFieldValue("id_pelanggan"))
+    }
   }
 
   useEffect(
     () => {
-      async function getAllData() {
-        const sewa = await fetch('/api/master/transaksi/sewa', { method: 'GET', cache: 'no-store' })
-        const dataSewa = await sewa.json()
-        setSewaData(dataSewa.data)
-        if (props.isEdit && props.openModal) {
-          const masa_sewa = props.form.getFieldValue("masa_sewa")
-          setPemakaian({awal: props.form.getFieldValue("meteran_awal"), akhir: props.form.getFieldValue("meteran_akhir")})
-          setSelectedCabang(props.form.getFieldValue("id_cabang"))
-          setSewaData([{
-            id_pelanggan: props.form.getFieldValue("id_pelanggan"),
-            id_aset: props.form.getFieldValue("id_aset"),
-            nama_pelanggan: props.form.getFieldValue("nama_pelanggan"),
-            nama_cabang: props.form.getFieldValue("nama_cabang"),
-            nama_aset: props.form.getFieldValue("nama_aset"),
-            id_cabang: props.form.getFieldValue("id_cabang"),
-            kwh_rp: props.form.getFieldValue("kwh_rp"),
-            rek_bank_1: props.form.getFieldValue("rek_bank_1"),
-            rek_bank_2: props.form.getFieldValue("rek_bank_2"),
-            rek_norek_1: props.form.getFieldValue("rek_norek_1"),
-            rek_norek_2: props.form.getFieldValue("rek_norek_2"),
-            rek_atas_nama_1: props.form.getFieldValue("rek_atas_nama_1"),
-            rek_atas_nama_2: props.form.getFieldValue("rek_atas_nama_2"),
-          }])
-          setSelectedPelanggan(props.form.getFieldValue("id_pelanggan"))
-        }
-      }
       getAllData()
     }, [props.triggerRefresh]
   )
+
+  async function addTagihanListrik(value) {
+    value.bln_thn = value.bln_thn.format("MM-YYYY").toString()
+    const requestType = (props.isEdit) ? 'edit' : 'add'
+    await fetch('/api/master/transaksi/listrik', {
+      method: 'POST', body:
+        JSON.stringify({
+          requestType: requestType,
+          data: value,
+        })
+      ,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    props.setOpenModal(false)
+    props.setTriggerRefresh(!props.triggerRefresh)
+    props.form.resetFields()
+    setPemakaian({ awal: 0, akhir: 0 })
+  }
 
   return (
     <Modal open={props.openModal} footer={null} width={800} title='Form Tagihan Listrik' closeIcon={null}>
@@ -84,27 +88,7 @@ export default function AddListrikModal(props: Status) {
         //   "name": ["id_transaksi"],
         //   "value": 'TXS-' + props.maxId.toString().padStart(4, "0")
         // }]}
-        onFinish={
-          async function addTagihanListrik(value) {
-            value.bln_thn = value.bln_thn.format("MM-YYYY").toString()
-            const requestType = (props.isEdit) ? 'edit' : 'add'
-            const result = await fetch('/api/master/transaksi/listrik', {
-              method: 'POST', body:
-                JSON.stringify({
-                  requestType: requestType,
-                  data: value,
-                })
-              ,
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            })
-            props.setOpenModal(false)
-            props.setTriggerRefresh(!props.triggerRefresh)
-            props.form.resetFields()
-            setPemakaian({ awal: 0, akhir: 0 })
-          }
-        }
+        onFinish={addTagihanListrik}
         labelAlign='left'
         labelCol={{ span: 7 }}
         labelWrap
@@ -137,7 +121,11 @@ export default function AddListrikModal(props: Status) {
               </Select>
             </Form.Item>
             <Form.Item name='id_aset' label="Nama Aset" rules={[{ required: true }]}>
-              <Select placeholder="Aset" allowClear disabled={!selectedCabang}>
+              <Select placeholder="Aset" allowClear disabled={!selectedCabang} onChange={(value) => {console.log("value --> ", value); 
+              console.log("biji: ", dayjs(Math.max(...props.tagihanListrik.filter(
+              (value: any) => value.id_pelanggan == selectedPelanggan && value.id_cabang == selectedCabang && value.id_aset == selectedAset
+            ).map(value => dayjs(value.bln_thn, "MM-YYYY")).map(value => value.valueOf()))).format("MM-YYYY"))
+            ; setSelectedAset(value)}}>
                 {
                   sewaData?.filter(
                     (value: any) => value.id_pelanggan == selectedPelanggan && value.id_cabang == selectedCabang
@@ -149,8 +137,18 @@ export default function AddListrikModal(props: Status) {
             </Form.Item>
             <Form.Item
               name='bln_thn' label="BL/THN" rules={[{ required: true }]}>
-              <DatePicker allowClear={false} format={'MM-YYYY'} picker='month' />
+              <DatePicker allowClear={false} format={'MM-YYYY'} picker='month' 
+              disabledDate={(current) =>  {
+                console.log("current: ", current)
+                return current <= dayjs(Math.max(...props.tagihanListrik.filter(
+                  (value: any) => value.id_pelanggan == selectedPelanggan && value.id_cabang == selectedCabang && value.id_aset == selectedAset
+                ).map(value => dayjs(value.bln_thn, "MM-YYYY")).map(value => value.valueOf()))).add(1, 'month')
+              }}
+              />
             </Form.Item>
+            {/* <Text>aaaa: {props.tagihanListrik.filter(
+              (value: any) => value.id_pelanggan == selectedPelanggan && value.id_cabang == selectedCabang && value.id_aset == selectedAset
+            ).map(value => value.thn_bln)}</Text> */}
             <Form.Item
               name='meteran_awal' label="Meteran Awal"
               rules={[

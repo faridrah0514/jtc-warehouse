@@ -26,21 +26,22 @@ export default function Page() {
   const [isEdit, setIsEdit] = useState<boolean>(false)
   const [form] = Form.useForm()
 
+  async function getData() {
+    const response = await fetch('/api/master/transaksi/listrik', { method: 'GET', cache: 'no-store' })
+    const data = await response.json()
+    if (data) {
+      data.data.map((v: any, i: number) => {
+        v.no = i + 1
+        // v.harga_rp = _renderCurrency(v.harga)
+        // v.total_biaya_sewa_rp = _renderCurrency(v.total_biaya_sewa)
+        return v
+      })
+      setTagihanListrik(data.data)
+    }
+  }
+
   useEffect(
     () => {
-      async function getData() {
-        const response = await fetch('/api/master/transaksi/listrik', { method: 'GET', cache: 'no-store' })
-        const data = await response.json()
-        if (data) {
-          data.data.map((v: any, i: number) => {
-            v.no = i + 1
-            // v.harga_rp = _renderCurrency(v.harga)
-            // v.total_biaya_sewa_rp = _renderCurrency(v.total_biaya_sewa)
-            return v
-          })
-          setTagihanListrik(data.data)
-        }
-      }
       getData()
     }, [triggerRefresh]
   )
@@ -51,7 +52,8 @@ export default function Page() {
         <Button onClick={() => { setOpenModal(true) }}>+ Transaksi Tagihan Listrik</Button>
       </Flex>
       {/* <AddSewaModal maxId={maxId} form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} /> */}
-      <AddListrikModal form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh}></AddListrikModal>
+      <AddListrikModal form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} tagihanListrik={tagihanListrikData}> </AddListrikModal>
+      {/* <AddListrikModal modalProps={{ form, isEdit, openModal, setOpenModal, triggerRefresh, setTriggerRefresh }}></AddListrikModal> */}
       <Table className='overflow-auto'
         dataSource={tagihanListrikData}
         scroll={{ x: true }}
