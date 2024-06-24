@@ -4,6 +4,7 @@ import TextArea from 'antd/es/input/TextArea'
 import React, { useEffect, useRef, useState } from 'react'
 import { DataAset, DataCabang } from '@/app/types/master'
 import { DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { CurrencyInput } from '@/app/components/currencyInput/currencyInput';
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
 
@@ -44,6 +45,7 @@ export default function AddAssetModal(props: Status) {
   const [tipeSertifikatValue, setTipeSertifikatValue] = useState<number>(0)
   const [alamatCabang, setAlamatCabang] = useState('')
   const [kotaCabang, setKotaCabang] = useState<string>('')
+  const [currencyValue, setCurrencyValue] = useState<number>(0)
 
   useEffect(
     () => {
@@ -272,7 +274,7 @@ export default function AddAssetModal(props: Status) {
                       <Divider orientation='left'>Detail Cabang dan Aset</Divider>
                       <Form.Item name='id_aset' hidden>
                       </Form.Item>
-                      
+
                       <Row>
                         <Col span={12}>
                           <Form.Item name='id_cabang' required label="Cabang" rules={[{ required: true }]}>
@@ -299,12 +301,12 @@ export default function AddAssetModal(props: Status) {
                         </Col>
                       </Row>
                       <Row>
-                      <Col span={12}>
+                        <Col span={12}>
                           <Form.Item name='nama_aset' required label="Nama Aset" rules={[{ required: true }]} >
                             <Input placeholder='Nama Asset' autoComplete='off' />
                           </Form.Item>
                         </Col>
-                      <Col span={12}>
+                        <Col span={12}>
                           <Form.Item name='kota' required label='Kota' rules={[{ required: true }]} >
                             <Input placeholder={kotaCabang ? kotaCabang : 'Kota'} autoComplete='off' value={kotaCabang} onChange={(event) => { props.form.setFieldValue("kota", kotaCabang) }} disabled />
                           </Form.Item>
@@ -316,7 +318,7 @@ export default function AddAssetModal(props: Status) {
                             <Input placeholder='Nama Asset' autoComplete='off' />
                           </Form.Item>
                         </Col> */}
-                                                <Col span={12}>
+                        <Col span={12}>
                           <Form.Item name='id_tipe_aset' required label="Tipe Aset" rules={[{ required: true }]}>
                             <Select placeholder='Tipe Aset' allowClear dropdownRender={(menu) => {
                               return (
@@ -335,7 +337,7 @@ export default function AddAssetModal(props: Status) {
                             />
                           </Form.Item>
                         </Col>
-                        
+
                         {/* <Col span={12}>
                           <Form.Item name='luas_tanah' label='Luas Tanah'>
                             <Input placeholder='Luas Tanah' autoComplete='off' />
@@ -373,7 +375,7 @@ export default function AddAssetModal(props: Status) {
                         </Col>
                       </Row>
                       <Row>
-                      <Col span={12}>
+                        <Col span={12}>
                           <Form.Item name='tanggal_akhir_hgb'
                             hidden={(() => {
                               const selectedSertifikat = tipeSertifikat.filter(v => v.id == tipeSertifikatValue)[0];
@@ -408,7 +410,7 @@ export default function AddAssetModal(props: Status) {
                             />
                           </Form.Item>
                         </Col> */}
-                               <Col span={12}>
+                        <Col span={12}>
                           <Form.Item name='luas_tanah' label='Luas Tanah'>
                             <Input placeholder='Luas Tanah' autoComplete='off' />
                           </Form.Item>
@@ -456,8 +458,12 @@ export default function AddAssetModal(props: Status) {
                           </Form.Item>
                         </Col>
                       </Row>
-                      
                       <Row>
+                        <Col span={12}>
+                          {/* <Form.Item name='biaya_ipl' label='Biaya IPL'>
+                            <CurrencyInput value={currencyValue} onChange={(value) => setCurrencyValue(() => value)} />
+                          </Form.Item> */}
+                        </Col>
                         {/* <Col span={12}>
                           <Form.Item name='tanggal_akhir_hgb'
                             hidden={(() => {

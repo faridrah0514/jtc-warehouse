@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 
-import { Button, Flex, Form, Popconfirm, Table, TableProps } from 'antd'
+import { Button, Flex, Form, Popconfirm, Table, TableProps, Tag } from 'antd'
 import AddSewaModal from './AddSewaModal'
 import { DataCabang } from '@/app/types/master'
 import Title from 'antd/es/typography/Title'
@@ -76,7 +76,21 @@ export default function Page() {
               })}
             </ul>
           )
-        }, {
+        }, 
+        {
+          title: "Status Sewa",
+          key: "status_sewa",
+          render: (_, record: any) => {
+            const today = dayjs() 
+            if (dayjs(record.start_date_sewa, "DD-MM-YYYY") > today)
+              return <Tag color='processing'>Akan Datang</Tag>
+            else if (dayjs(record.start_date_sewa, "DD-MM-YYYY") <= today && today <= dayjs(record.end_date_sewa, "DD-MM-YYYY"))
+              return <Tag color='success'>Aktif</Tag>
+            else
+              return <Tag color='default'>Non-Aktif</Tag>
+          }
+        },
+        {
           title: "Action",
           key: "action",
           render: (_, record:any ) => (
@@ -87,6 +101,7 @@ export default function Page() {
                   setIsEdit(true)
                   record.tanggal_akte = dayjs(record.tanggal_akte_1, 'DD-MM-YYYY')
                   record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
+                  console.log("record: ", record)
                   form.setFieldsValue(record)
                   setTriggerRefresh(!triggerRefresh)
                 }

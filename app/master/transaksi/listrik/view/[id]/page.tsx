@@ -51,17 +51,17 @@ export default function Page({ params }: { params: { id: string } }) {
     },
   };
   
-  const handleDownloadPDF = () => {
-    const input = document.getElementById('content-id'); 
-    // Specify the id of the element you want to convert to PDF
-    html2canvas(input).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF();
-      pdf.addImage(imgData, 'PNG', 0, 0);
-      pdf.save('downloaded-file.pdf'); 
-      // Specify the name of the downloaded PDF file
-    });
-  };
+  // const handleDownloadPDF = () => {
+  //   const input = document.getElementById('content-id'); 
+  //   // Specify the id of the element you want to convert to PDF
+  //   html2canvas(input).then((canvas) => {
+  //     const imgData = canvas.toDataURL('image/png');
+  //     const pdf = new jsPDF();
+  //     pdf.addImage(imgData, 'PNG', 0, 0);
+  //     pdf.save('downloaded-file.pdf'); 
+  //     // Specify the name of the downloaded PDF file
+  //   });
+  // };
   useEffect(
     () => {
       async function getData() {

@@ -20,7 +20,7 @@ const column = [
 ]
 export default function Page() {
 
-  const [tagihanListrikData, setTagihanListrik] = useState<any[]>();
+  const [tagihanListrikData, setTagihanListrik] = useState<any[]>([]);
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
   const [isEdit, setIsEdit] = useState<boolean>(false)

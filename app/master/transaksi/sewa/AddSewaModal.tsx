@@ -204,7 +204,22 @@ export default function AddSewaModal(props: Status) {
             </Form.Item>
             <Form.Item
               name='masa_sewa' required label="Masa Sewa" rules={[{ required: true }]}>
-              <RangePicker allowClear={false} onChange={handleDateChange} format={dateFormat} />
+              <RangePicker allowClear={false} onChange={ (dates, dateStrings) => {
+                const dFormat = dateFormat
+                if (dates && dates[0] && dates[1]) {
+                  const totalMonths = dayjs(dateStrings[1], dFormat).diff(dayjs(dateStrings[0], dFormat).subtract(1, 'day'), 'month');
+                  const years = Math.floor(totalMonths / 12);
+                  let months = totalMonths % 12;
+                  const endOfMonthPeriod = dayjs(dateStrings[0], dFormat).add(months, 'month').add(years, 'years');
+
+                  let days = dayjs(dateStrings[1], dFormat).diff(endOfMonthPeriod.subtract(1, 'day'), 'day');
+                  if (days > 1) {
+                    months += 1;
+                    days = 0;
+                  }
+                  setDiffPeriod({ tahun: years, bulan: months });
+                }
+              }} format={dateFormat} />
             </Form.Item>
             <Form.Item name='periode_pembayaran' required label="Periode Pembayaran" initialValue={props.form.getFieldValue('periode_pembayaran') ?? 'Perbulan'}>
               <Radio.Group value={periodePembayaran} onChange={(e: RadioChangeEvent) => {

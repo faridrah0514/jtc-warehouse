@@ -9,7 +9,19 @@ export async function GET() {
   const conn = openDB()
   const txsPath = '/upload/txs'
   const query = `
-    select ts.*, ts.tanggal_akte as tanggal_akte_1, c.nama_perusahaan nama_cabang, p.nama nama_pelanggan, a.nama_aset nama_aset, c.* from transaksi_sewa ts 
+    select ts.*, ts.tanggal_akte as tanggal_akte_1, c.nama_perusahaan nama_cabang, p.nama nama_pelanggan, a.nama_aset nama_aset, 
+      c.alamat,
+      c.kota,
+      c.no_tlp,
+      c.status,
+      c.kwh_rp,
+      c.rek_bank_1,
+      c.rek_norek_1,
+      c.rek_atas_nama_1,
+      c.rek_bank_2,
+      c.rek_norek_2,
+      c.rek_atas_nama_2
+   from transaksi_sewa ts 
     left join cabang c on ts.id_cabang =  c.id
     left join pelanggan p on ts.id_pelanggan = p.id
     left join aset a on ts.id_aset = a.id
