@@ -22,6 +22,7 @@ const column = [
   { title: "Periode Pembayaran", dataIndex: 'periode_pembayaran', key: 'periode_pembayaran' },
   { title: "Harga", dataIndex: 'harga_rp', key: 'harga_rp' },
   { title: "Total Biaya Sewa", dataIndex: 'total_biaya_sewa_rp', key: 'total_biaya_sewa_rp' },
+  { title: "Iuran IPL", dataIndex: 'ipl_rp', key: 'ipl_rp' },
 ]
 export default function Page() {
 
@@ -42,6 +43,7 @@ export default function Page() {
             v.no = i + 1
             v.harga_rp = _renderCurrency(v.harga)
             v.total_biaya_sewa_rp = _renderCurrency(v.total_biaya_sewa)
+            v.ipl_rp = _renderCurrency(v.ipl)
             return v
           })
           setSewaData(data.data)
@@ -101,7 +103,6 @@ export default function Page() {
                   setIsEdit(true)
                   record.tanggal_akte = dayjs(record.tanggal_akte_1, 'DD-MM-YYYY')
                   record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
-                  console.log("record: ", record)
                   form.setFieldsValue(record)
                   setTriggerRefresh(!triggerRefresh)
                 }

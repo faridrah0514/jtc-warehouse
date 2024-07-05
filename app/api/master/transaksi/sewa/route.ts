@@ -9,7 +9,7 @@ export async function GET() {
   const conn = openDB()
   const txsPath = '/upload/txs'
   const query = `
-    select ts.*, ts.tanggal_akte as tanggal_akte_1, c.nama_perusahaan nama_cabang, p.nama nama_pelanggan, a.nama_aset nama_aset, 
+    select ts.*, ts.tanggal_akte as tanggal_akte_1, c.nama_perusahaan nama_cabang, p.nama nama_pelanggan, a.nama_aset nama_aset, a.is_pln is_pln, 
       c.alamat,
       c.kota,
       c.no_tlp,
@@ -71,7 +71,8 @@ export async function POST(request: Request) {
         start_date_sewa = ? , 
         end_date_sewa = ? ,
         harga =? , 
-        total_biaya_sewa = ?
+        total_biaya_sewa = ?,
+        ipl = ?
         where
           id = ?    
         `,
@@ -79,7 +80,7 @@ export async function POST(request: Request) {
           data.no_akte, data.tanggal_akte, data.notaris,
           data.id_cabang, data.id_pelanggan, data.id_aset, data.periode_pembayaran,
           data.start_date_sewa, data.end_date_sewa,
-          data.harga, data.total_biaya_sewa, data.id
+          data.harga, data.total_biaya_sewa, data.ipl, data.id
         ]
       )
     } else if (value.requestType == 'delete-one-file'){ 
@@ -96,13 +97,13 @@ export async function POST(request: Request) {
         no_akte, tanggal_akte, notaris,
         id_cabang, id_pelanggan, id_aset, periode_pembayaran,
         start_date_sewa, end_date_sewa,
-        harga, total_biaya_sewa, id_transaksi
-      ) values (?,?,?,?,?,?,?,?,?,?,?, ?)
+        harga, total_biaya_sewa, id_transaksi, ipl
+      ) values (?,?,?,?,?,?,?,?,?,?,?, ?, ?)
     `, [
         data.no_akte, data.tanggal_akte, data.notaris,
         data.id_cabang, data.id_pelanggan, data.id_aset, data.periode_pembayaran,
         data.start_date_sewa, data.end_date_sewa,
-        data.harga, data.total_biaya_sewa, data.id_transaksi
+        data.harga, data.total_biaya_sewa, data.id_transaksi, data.ipl
       ])
       if (!fs.existsSync(fullPath)) {
         fs.mkdirSync(fullPath)

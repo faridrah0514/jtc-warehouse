@@ -28,6 +28,7 @@ export async function POST(request: Request, response: Response): Promise<Respon
       }
     })
     if (value.requestType == 'edit') {
+      console.log("data --> ", data)
       await conn.query(
         `update aset set 
           id_aset= ?,
@@ -43,11 +44,17 @@ export async function POST(request: Request, response: Response): Promise<Respon
           no_pbb = ?,
           id_tipe_sertifikat = ?,
           no_sertifikat = ?,
-          tanggal_akhir_hgb = ?
+          tanggal_akhir_hgb = ?,
+          luas_lt1 = ?,
+          luas_lt2 = ?,
+          is_pln =?,
+          luas_tanah = ?,
+          luas_bangunan = ?,
+          ipl = ?
         where
           id = ?    
         `,
-        [data.id_aset, data.id_tipe_aset, data.nama_aset, data.id_cabang, data.alamat, data.kota, data.status, data.no_tlp, data.no_rek_air, data.no_rek_listrik, data.no_pbb, data.id_tipe_sertifikat, data.no_sertifikat, data.tanggal_akhir_hgb, data.id]
+        [data.id_aset, data.id_tipe_aset, data.nama_aset, data.id_cabang, data.alamat, data.kota, data.status, data.no_tlp, data.no_rek_air, data.no_rek_listrik, data.no_pbb, data.id_tipe_sertifikat, data.no_sertifikat, data.tanggal_akhir_hgb, data.luas_lt1, data.luas_lt2, data.is_pln, data.luas_tanah, data.luas_bangunan, data.ipl, data.id]
       )
     } else if (value.requestType == 'add') {
       const idAset = 'CB-' + data.id_cabang.toString().padStart(4, "0") + '-' + data.id_aset
@@ -66,9 +73,17 @@ export async function POST(request: Request, response: Response): Promise<Respon
         no_pbb,
         id_tipe_sertifikat,
         no_sertifikat,
-        tanggal_akhir_hgb
-    ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-        [data.id_aset, data.id_tipe_aset, data.nama_aset, data.id_cabang, data.alamat, data.kota, data.status, fullPath, data.no_tlp, data.no_rek_air, data.no_rek_listrik, data.no_pbb, data.id_tipe_sertifikat, data.no_sertifikat, data.tanggal_akhir_hgb]
+        tanggal_akhir_hgb,
+        luas_lt1,
+        luas_lt2,
+        is_pln,
+        luas_tanah,
+        luas_bangunan,
+        ipl
+    ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        [data.id_aset, data.id_tipe_aset, data.nama_aset, data.id_cabang, data.alamat, data.kota, data.status, fullPath, data.no_tlp, data.no_rek_air, data.no_rek_listrik, data.no_pbb, data.id_tipe_sertifikat, data.no_sertifikat, data.tanggal_akhir_hgb,
+          data.luas_lt1, data.luas_lt2, data.is_pln, data.luas_tanah, data.luas_bangunan, data.ipl
+        ]
       )
     }
 

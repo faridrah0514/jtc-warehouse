@@ -107,8 +107,8 @@ export default function Page({ params }: { params: { id: string } }) {
           />
           <div className='pt-4'>
             <Text className={'mb-2'} style={{ display: 'block' }}>Tagihan di transfer ke rekening berikut:</Text>
-            <Text style={{ display: 'block' }}>Bank {tagihanListrikData?.rek_bank_1.toUpperCase()} {tagihanListrikData?.rek_norek_1} a.n {tagihanListrikData?.rek_atas_nama_1}</Text>
-            <Text style={{ display: 'block' }}>Bank {tagihanListrikData?.rek_bank_2.toUpperCase()} {tagihanListrikData?.rek_norek_2} a.n {tagihanListrikData?.rek_atas_nama_2}</Text>
+            <Text style={{ display: 'block' }}>Bank {tagihanListrikData?.rek_bank_1} {tagihanListrikData?.rek_norek_1} a.n {tagihanListrikData?.rek_atas_nama_1}</Text>
+            <Text style={{ display: 'block' }}>Bank {tagihanListrikData?.rek_bank_2} {tagihanListrikData?.rek_norek_2} a.n {tagihanListrikData?.rek_atas_nama_2}</Text>
           </div>
         </Card>
       </div>

@@ -106,7 +106,6 @@ export default function AddAssetModal(props: Status) {
     //Insert Data to Database
     value.doc_list = [...inputs]
     if (props.isEdit || props.isAddDocument) {
-      // const str = "CB-0016-AS-0108";
       const desiredString = value.id_aset.slice(value.id_aset.indexOf("AS"));
       value.id_aset = 'CB-' + value.id_cabang.toString().padStart(4, "0") + '-' + desiredString
       const requestType = props.isEdit ? 'edit' : ''
@@ -428,8 +427,13 @@ export default function AddAssetModal(props: Status) {
                           </Form.Item>
                         </Col> */}
                         <Col span={12}>
-                          <Form.Item name='luas_lt12' label='Luas Lantai'>
-                            <Input placeholder='Luas Lt.1 & Lt.2' autoComplete='off' />
+                          <Form.Item name='luas_lt1' label='Luas Lantai 1'>
+                            <Input placeholder='Luas Lt.1' autoComplete='off' />
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item name='luas_lt2' label='Luas Lantai 2'>
+                            <Input placeholder='Luas Lt.2' autoComplete='off' />
                           </Form.Item>
                         </Col>
                       </Row>
@@ -460,24 +464,13 @@ export default function AddAssetModal(props: Status) {
                       </Row>
                       <Row>
                         <Col span={12}>
-                          {/* <Form.Item name='biaya_ipl' label='Biaya IPL'>
-                            <CurrencyInput value={currencyValue} onChange={(value) => setCurrencyValue(() => value)} />
-                          </Form.Item> */}
-                        </Col>
-                        {/* <Col span={12}>
-                          <Form.Item name='tanggal_akhir_hgb'
-                            hidden={(() => {
-                              const selectedSertifikat = tipeSertifikat.filter(v => v.id == tipeSertifikatValue)[0];
-                              return selectedSertifikat ? selectedSertifikat['masa_berlaku'] == 0 : true;
-                            })()}
-                            required
-                            label='Tgl. Akhir Sertifikat'
-                            // rules={[{ required: (tipeSertifikat.filter(v => v.id == tipeSertifikatValue)[0].masa_berlaku == 1) ? true : false }]} 
-                            labelCol={{ span: 7 }}
-                            wrapperCol={{ span: 15 }}>
-                            <DatePicker format={"DD-MM-YYYY"} allowClear={false}></DatePicker>
+                          <Form.Item name='is_pln' required label="Listrik Milik PLN?">
+                            <Radio.Group>
+                              <Radio.Button value={1}>Ya</Radio.Button>
+                              <Radio.Button value={0}>Tidak</Radio.Button>
+                            </Radio.Group>
                           </Form.Item>
-                        </Col> */}
+                        </Col>
                         <Col span={12}>
                           <Form.Item name='status' required label='Status' rules={[{ required: true }]}>
                             <Select placeholder='Status' allowClear>
@@ -487,6 +480,15 @@ export default function AddAssetModal(props: Status) {
                           </Form.Item>
                         </Col>
                       </Row>
+                      {/* <Row>
+                        <Col span={12}>
+                          <Form.Item name='ipl' required label="Iuran IPL" rules={[
+                            { required: true },
+                          ]}>
+                            <CurrencyInput value={currencyValue} onChange={(value) => setCurrencyValue(() => value)} />
+                          </Form.Item>
+                        </Col>
+                      </Row> */}
                     </Col>
                   )
                 }

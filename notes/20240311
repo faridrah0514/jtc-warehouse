@@ -1,45 +1,11 @@
-Cabang: -> anak perusahaan ------>
-Nama Perusahaan:
-Alamat:
-Kota:
-No Tel/Hp:
-Status: PKP
+4 Juli 2024
+- Luas lantai di pisah, lt1 & lt2
+- tambah opsi milik pln atau bukan?
 
+# Halaman Transaksi Sewa
+- di page transaksi sewa, ada IPL-nya
 
-KWH Rp:
-
-Pelanggan:
-Nama:
-Alamat:
-Kota:
-Contact Person:
-No Hp:
-
-Kelompok: -> gudang atau ruko/perumahan -> relasi ke Asset
-Jenis Bangunan
-
-Biaya (Utility): -> perbulan, hanya input angka akhir KWH, (awal - akhir) dikali biaya, bentuknya bukan token, tapi meteran
-IPL:
-Awal:
-Akhir:
-Terpakai:
-Asset: 
-
-Asset: -> relasi ke Pelanggan
-Nomor: ( Auto )GUDANG-01, Perumahan, Ruko
-Nama Aset:
-Alamat:
-Kota:
-Kelompok: ( Pilihan )
-Status: Aktif/Pasif -> Aktif: disewa/dibeli, Pasif: sedang tidak disewa, tidak ada tagihan IPL atau listrik
-Scan: 
-PBB
-Listrik
-Air
-Telepon
-IMB
-SHM
-
-
-1 Cabang A -> beberapa aset? B, C, D
-
+# Halaman Transaksi Listrik
+- nama cabang dulu di atas
+- pelaggan yang masa sewanya masih berjalan
+- aset yang bukan dari pln

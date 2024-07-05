@@ -7,6 +7,8 @@ import { Span } from 'next/dist/trace';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react'
 import path from "path";
+import { render } from 'react-dom';
+import { _renderCurrency } from '@/app/utils/renderCurrency';
 
 export default function Page({ params }: { params: { id: string } }) {
   const [asetData, setAsetData] = useState<any>();
@@ -51,7 +53,7 @@ export default function Page({ params }: { params: { id: string } }) {
           {
             key: '1',
             label: 'Nama Aset',
-            children: asetData?.nama_aset
+            children: asetData?.nama_aset,
           },
           {
             key: '2',
@@ -104,6 +106,36 @@ export default function Page({ params }: { params: { id: string } }) {
             label: 'Tanggal Akhir HGB',
             children: asetData?.tanggal_akhir_hgb
           },
+          {
+            key: '12',
+            label: 'Luas Tanah',
+            children: asetData?.luas_tanah,
+          },
+          {
+            key: '13',
+            label: 'Luas Bangunan',
+            children: asetData?.luas_bangunan,
+          },
+          {
+            key: '14',
+            label: 'Luas Lt.1',
+            children: asetData?.luas_lt1
+          },
+          {
+            key: '15',
+            label: 'Luas Lt.2',
+            children: asetData?.luas_lt2
+          },  
+          {
+            key: '16',
+            label: 'Listrik Milik PLN?',
+            children: asetData?.is_pln
+          },
+          {
+            key: '17',
+            label: 'Iuran IPL',
+            children: _renderCurrency(asetData?.ipl)
+          },         
         ]}
       >
       </Descriptions>

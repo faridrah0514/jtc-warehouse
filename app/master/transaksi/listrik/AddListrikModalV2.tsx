@@ -24,7 +24,7 @@ interface Status {
 interface DiffPeriod { tahun: number, bulan: number }
 interface Pemakaian { awal: number, akhir: number }
 
-export default function AddListrikModal(props: Status) {
+export default function AddListrikModalV2(props: Status) {
   const [pemakaian, setPemakaian] = useState<Pemakaian>({ awal: 0, akhir: 0 })
   const [selectedCabang, setSelectedCabang] = useState<number | undefined>(undefined)
   const [selectedPelanggan, setSelectedPelanggan] = useState<number | undefined>(undefined)
@@ -188,7 +188,7 @@ export default function AddListrikModal(props: Status) {
                   {/* <Input placeholder={props.form.getFieldValue("nama_aset")} value={props.form.getFieldValue("nama_aset")}disabled></Input> */}
                   <Text>{props.form.getFieldValue("nama_aset")}</Text>
                 </Form.Item>
-                
+
                 <Form.Item
                   name='bln_thn'
                   label="BL/THN"
@@ -201,15 +201,12 @@ export default function AddListrikModal(props: Status) {
                     picker='month'
                     onChange={(date, dateString) => {
                       try {
-                        const get_max = props.tagihanListrik.filter((value: any) => value.id_pelanggan == selectedPelanggan && value.id_cabang == selectedCabang && value.id_aset == selectedAset)
+                        const get_max = props.tagihanListrik
                           .map(value => dayjs(value.bln_thn, "MM-YYYY"))?.reduce((max, current) => current.isAfter(max) ? current : max, dayjs("01-01-1970", "DD-MM-YYYY")).format("MM-YYYY") || 0
-                        const meteran_akhir = props.tagihanListrik.filter((value: any) => value.id_pelanggan == selectedPelanggan && value.id_cabang == selectedCabang && value.id_aset == selectedAset && value.bln_thn == get_max)[0]['meteran_akhir'] || 0
-                        // setMeteranAkhir(meteran_akhir)
+                        const meteran_akhir = props.tagihanListrik.filter((value: any) => value.bln_thn == get_max)[0]['meteran_akhir'] || 0
                         setMeteranAkhir(meteranAkhir => meteran_akhir)
-                        setPemakaian({awal: meteran_akhir, akhir: pemakaian.akhir})
-                        // props.setTriggerRefresh(!props.triggerRefresh)
+                        setPemakaian({ awal: meteran_akhir, akhir: pemakaian.akhir })
                         props.form.setFieldValue("meteran_awal", meteran_akhir)
-                
                       } catch (e) {
                         setMeteranAkhir(0)
                         console.log("e: ", e)
@@ -217,23 +214,27 @@ export default function AddListrikModal(props: Status) {
                     }}
                     disabledDate={(current) => {
                       try {
-                        const pilihan = sewaData?.filter((value: any) => value.id_pelanggan == selectedPelanggan && value.id_cabang == selectedCabang && value.id_aset == selectedAset)[0]
-                        console.log("pilihan: ", pilihan)
-                        const bulanAwal = pilihan['start_date_sewa']
-                        const bulanAkhir = pilihan['end_date_sewa']
-                        return current <= dayjs(bulanAwal, "DD-MM-YYYY") || current > dayjs(bulanAkhir, "DD-MM-YYYY") || current <= dayjs(Math.max(...props.tagihanListrik.filter(
-                          (value: any) => value.id_pelanggan == selectedPelanggan && value.id_cabang == selectedCabang && value.id_aset == selectedAset
-                        ).map(value => dayjs(value.bln_thn, "MM-YYYY")).map(value => value.valueOf()))).add(1, 'month')
-                      } catch (e) { return false}
+                        // const pilihan = sewaData?.filter((value: any) => value.id_pelanggan == selectedPelanggan && value.id_cabang == selectedCabang && value.id_aset == selectedAset)[0]
+                        // console.log("pilihan: ", pilihan)
+                        // const bulanAwal = pilihan['start_date_sewa']
+                        // const bulanAkhir = pilihan['end_date_sewa']
+                        const bulanAwal = props.form.getFieldValue("start_date_sewa")
+                        const bulanAkhir = props.form.getFieldValue("end_date_sewa")
+
+                        // console.log("bulanAwal: ", bulanAwal, "bulanAkhir: ", bulanAkhir)
+                        // console.log("dipilih: ", dayjs(Math.max(...props.tagihanListrik.map(value => dayjs(value.bln_thn, "MM-YYYY")).map(value => value.valueOf()))).add(1, 'month'))
+                        // console.log("props.tagihanListrik: ", props.tagihanListrik.map(value => dayjs(value.bln_thn, "MM-YYYY")))
+                        return current <= dayjs(bulanAwal, "DD-MM-YYYY") || current > dayjs(bulanAkhir, "DD-MM-YYYY") || current <= dayjs(Math.max(...props.tagihanListrik.map(value => dayjs(value.bln_thn, "MM-YYYY")).map(value => value.valueOf()))).add(1, 'month')
+                      } catch (e) { return false }
                     }}
-                    // disabled={!selectedAset}
+                  // disabled={!selectedAset}
                   />
                 </Form.Item>
                 {/* </> */}
                 {/* )} */}
                 {/* {current === steps.length - 1 && ( */}
                 {/* <> */}
-                
+
                 {current == 1 && (
                   <Form.Item
                     name='meteran_awal' label="Meteran Awal"
@@ -255,12 +256,12 @@ export default function AddListrikModal(props: Status) {
                       value={meteranAkhir}
                     />
                   </Form.Item>
-                //   <MeteranAwalInput
-                //   meteranAwal={meteranAkhir}
-                //   onChange={(value) => {
-                //     setMeteranAkhir(value);
-                //   }}
-                // />
+                  //   <MeteranAwalInput
+                  //   meteranAwal={meteranAkhir}
+                  //   onChange={(value) => {
+                  //     setMeteranAkhir(value);
+                  //   }}
+                  // />
                 )}
 
                 <Form.Item
@@ -283,32 +284,37 @@ export default function AddListrikModal(props: Status) {
                   <Row>
                     <Col>
                       <Row>
-                        {(pemakaian.akhir - pemakaian.awal) >= 0 ?
+                        {(pemakaian.akhir - pemakaian.awal) > 0 ?
                           <Text className='pl-2'>Jumlah Pemakaian: {pemakaian.akhir - pemakaian.awal} Kwh</Text> :
-                          <Text className='pl-2'>Jumlah Pemakaian: 0 Kwh</Text>
+                          <Text className='pl-2'>Jumlah Pemakaian: {(props.form.getFieldValue("meteran_akhir") || props.form.getFieldValue("meteran_awal")) ? props.form.getFieldValue("meteran_akhir") - props.form.getFieldValue("meteran_awal") : 0} Kwh</Text>
                         }
                       </Row>
                       <Row>
-                        {!selectedCabang ?
+                        <Text className='pl-2'>Tarif/Kwh: {_renderCurrency(props.form.getFieldValue("kwh_rp"))}</Text>
+                        {/* {!selectedCabang ?
                           <Text className='pl-2'>Tarif/Kwh: {_renderCurrency(0)}</Text> :
                           <Text className='pl-2'>Tarif/Kwh: {_renderCurrency(Number(sewaData?.filter(value => value.id_cabang == selectedCabang)[0].kwh_rp))}</Text>
+                        } */}
+                      </Row>
+                      <Row>
+                        {(pemakaian.akhir - pemakaian.awal) > 0 ?
+                          <Text className='pl-2'>Total Tagihan: {_renderCurrency(Number(props.form.getFieldValue("kwh_rp")) * (pemakaian.akhir - pemakaian.awal))}</Text> :
+                          <Text className='pl-2'>Total Tagihan: {(props.form.getFieldValue("meteran_akhir") || props.form.getFieldValue("meteran_awal")) ? _renderCurrency(Number(props.form.getFieldValue("kwh_rp")) * (props.form.getFieldValue("meteran_akhir") - props.form.getFieldValue("meteran_awal"))) : _renderCurrency(0)}</Text>
                         }
                       </Row>
                       <Row>
-                        {(pemakaian.akhir - pemakaian.awal) >= 0 && selectedCabang ?
-                          <Text className='pl-2'>Total Tagihan: {_renderCurrency(Number(sewaData?.filter(value => value.id_cabang == selectedCabang)[0].kwh_rp) * (pemakaian.akhir - pemakaian.awal))}</Text> :
-                          <Text className='pl-2'>Total Tagihan: {_renderCurrency(0)}</Text>
-                        }
-                      </Row>
-                      <Row>
-                        {selectedCabang ?
+                        <div>
+                          <Text className='pl-2' style={{ display: 'block' }}>Tagihan di transfer ke Rekening Bank {props.form.getFieldValue("rek_bank_1")} {props.form.getFieldValue("rek_norek_1")} a.n {props.form.getFieldValue("rek_atas_nama_1")}</Text>
+                          <Text className='pl-2' style={{ display: 'block' }}>Tagihan di transfer ke Rekening Bank {props.form.getFieldValue("rek_bank_2")} {props.form.getFieldValue("rek_norek_2")} a.n {props.form.getFieldValue("rek_atas_nama_2")}</Text>
+                        </div>
+                        {/* {selectedCabang ?
                           <div>
                             <Text className='pl-2' style={{ display: 'block' }}>Tagihan di transfer ke Rekening Bank {sewaData?.filter(value => value.id_cabang == selectedCabang)[0].rek_bank_1} {sewaData?.filter(value => value.id_cabang == selectedCabang)[0].rek_norek_1} a.n {sewaData?.filter(value => value.id_cabang == selectedCabang)[0].rek_atas_nama_1}</Text>
                             <Text className='pl-2' style={{ display: 'block' }}>Tagihan di transfer ke Rekening Bank {sewaData?.filter(value => value.id_cabang == selectedCabang)[0].rek_bank_2} {sewaData?.filter(value => value.id_cabang == selectedCabang)[0].rek_norek_2} a.n {sewaData?.filter(value => value.id_cabang == selectedCabang)[0].rek_atas_nama_2}</Text>
                           </div>
                           :
                           <></>
-                        }
+                        } */}
                       </Row>
                     </Col>
                   </Row>

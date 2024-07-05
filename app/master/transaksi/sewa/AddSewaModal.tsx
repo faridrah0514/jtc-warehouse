@@ -30,6 +30,7 @@ export default function AddSewaModal(props: Status) {
   const [allData, setAllData] = useState<{ cabang: any, pelanggan: any, aset: any }>({ cabang: [], pelanggan: [], aset: [] })
   const [diffPeriod, setDiffPeriod] = useState<DiffPeriod>({ tahun: 0, bulan: 0 })
   const [currencyValue, setCurrencyValue] = useState<number>(0)
+  const [iplValue, setIplValue] = useState<number>(0)
   const [periodePembayaran, setPeriodePembayaran] = useState<string>('Perbulan');
   const [selectedCabang, setSelectedCabang] = useState<number | undefined>(undefined)
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -204,7 +205,7 @@ export default function AddSewaModal(props: Status) {
             </Form.Item>
             <Form.Item
               name='masa_sewa' required label="Masa Sewa" rules={[{ required: true }]}>
-              <RangePicker allowClear={false} onChange={ (dates, dateStrings) => {
+              <RangePicker allowClear={false} onChange={(dates, dateStrings) => {
                 const dFormat = dateFormat
                 if (dates && dates[0] && dates[1]) {
                   const totalMonths = dayjs(dateStrings[1], dFormat).diff(dayjs(dateStrings[0], dFormat).subtract(1, 'day'), 'month');
@@ -234,6 +235,11 @@ export default function AddSewaModal(props: Status) {
               { required: true },
             ]}>
               <CurrencyInput value={currencyValue} onChange={(value) => setCurrencyValue(() => value)} />
+            </Form.Item>
+            <Form.Item name='ipl' required label="Iuran IPL" rules={[
+              { required: true },
+            ]}>
+              <CurrencyInput value={iplValue} onChange={(value) => setIplValue(() => value)} />
             </Form.Item>
             <Form.Item name='file' label="Upload Dokumen" required={!props.isEdit} rules={[{ required: !props.isEdit }]}>
               <Upload
@@ -282,49 +288,49 @@ export default function AddSewaModal(props: Status) {
             </Row>
           </Col>
           <Col span={14}>
-            <Table size='small' 
-            dataSource={listFiles}
-            pagination={{ pageSize: 2 }}
-             columns={[
-              {
-                title: "Dokument",
-                render: (_, record) => (
-                  <a href={`/upload/txs/${props.form.getFieldValue("id_transaksi")}/${record}`} target="_blank" rel="noopener noreferrer">{record}</a>
-                )
-              },
-              {
-                title: "Action",
-                render: (_ , record) => (
-                  <Popconfirm
-                  title="sure to delete?"
-                  onConfirm={
-                    async function deleteCabang() {
-                      const requstType = 'delete-one-file'
-                      const result = await fetch('/api/master/transaksi/sewa', {
-                        method: "POST",
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                          requestType: requstType,
-                          data: {file: record, id_transaksi: props.form.getFieldValue("id_transaksi")}
-                        })
-                      })
-                      if (result.status == 200) {
-                        // setTriggerRefresh(!triggerRefresh)
+            <Table size='small'
+              dataSource={listFiles}
+              pagination={{ pageSize: 2 }}
+              columns={[
+                {
+                  title: "Dokument",
+                  render: (_, record) => (
+                    <a href={`/upload/txs/${props.form.getFieldValue("id_transaksi")}/${record}`} target="_blank" rel="noopener noreferrer">{record}</a>
+                  )
+                },
+                {
+                  title: "Action",
+                  render: (_, record) => (
+                    <Popconfirm
+                      title="sure to delete?"
+                      onConfirm={
+                        async function deleteCabang() {
+                          const requstType = 'delete-one-file'
+                          const result = await fetch('/api/master/transaksi/sewa', {
+                            method: "POST",
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              requestType: requstType,
+                              data: { file: record, id_transaksi: props.form.getFieldValue("id_transaksi") }
+                            })
+                          })
+                          if (result.status == 200) {
+                            // setTriggerRefresh(!triggerRefresh)
+                          }
+                          setListFiles(listFiles.filter(v => v != record))
+                        }
                       }
-                      setListFiles(listFiles.filter(v => v != record))
-                    }
-                  }
-                >
-                  <Button size="small" danger>
-                    Delete
-                  </Button>
-                </Popconfirm>
-                )
-              }
-             ]}
-             ></Table>
+                    >
+                      <Button size="small" danger>
+                        Delete
+                      </Button>
+                    </Popconfirm>
+                  )
+                }
+              ]}
+            ></Table>
           </Col>
         </Row>
 
