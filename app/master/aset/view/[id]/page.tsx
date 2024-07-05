@@ -7,7 +7,6 @@ import { Span } from 'next/dist/trace';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react'
 import path from "path";
-import { render } from 'react-dom';
 import { _renderCurrency } from '@/app/utils/renderCurrency';
 
 export default function Page({ params }: { params: { id: string } }) {
