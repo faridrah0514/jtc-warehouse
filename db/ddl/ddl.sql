@@ -117,3 +117,19 @@ CREATE TABLE
     CONSTRAINT `transaksi_listrik_ibfk_2` FOREIGN KEY (`id_aset`) REFERENCES `aset` (`id`),
     CONSTRAINT `transaksi_listrik_ibfk_3` FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id`)
   );
+
+-- jtc_warehouse.transaksi_ipl_test definition
+CREATE TABLE
+  `transaksi_ipl` (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `periode_pembayaran` varchar(20) DEFAULT NULL,
+    `id_cabang` int DEFAULT NULL,
+    `id_pelanggan` int DEFAULT NULL,
+    `id_aset` int DEFAULT NULL,
+    `status_pembayaran` varchar(50) DEFAULT NULL,
+    `ipl` int DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`id_cabang`) REFERENCES `cabang` (`id`),
+    FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id`),
+    FOREIGN KEY (`id_aset`) REFERENCES `aset` (`id`)
+  )

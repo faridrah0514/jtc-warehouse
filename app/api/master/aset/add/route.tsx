@@ -28,7 +28,6 @@ export async function POST(request: Request, response: Response): Promise<Respon
       }
     })
     if (value.requestType == 'edit') {
-      console.log("data --> ", data)
       await conn.query(
         `update aset set 
           id_aset= ?,

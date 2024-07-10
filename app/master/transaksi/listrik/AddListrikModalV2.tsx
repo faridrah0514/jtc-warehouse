@@ -1,14 +1,9 @@
 import { Button, Form, Input, Modal, Select, Typography, UploadProps, GetProp, DatePicker, Row, Col, FormInstance, Steps } from 'antd'
 const { Option } = Select;
-import React, { useEffect, useRef, useState, ChangeEvent } from 'react'
+import React, { useEffect, useState } from 'react'
 const { Text, Link } = Typography;
 import { _renderCurrency } from '@/app/utils/renderCurrency';
 import dayjs from 'dayjs';
-import type { InputRef } from 'antd';
-import MeteranAwalInput from './MeteranAwalInput';
-
-
-type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
 
 interface Status {
   children?: React.ReactNode,
@@ -214,16 +209,8 @@ export default function AddListrikModalV2(props: Status) {
                     }}
                     disabledDate={(current) => {
                       try {
-                        // const pilihan = sewaData?.filter((value: any) => value.id_pelanggan == selectedPelanggan && value.id_cabang == selectedCabang && value.id_aset == selectedAset)[0]
-                        // console.log("pilihan: ", pilihan)
-                        // const bulanAwal = pilihan['start_date_sewa']
-                        // const bulanAkhir = pilihan['end_date_sewa']
                         const bulanAwal = props.form.getFieldValue("start_date_sewa")
                         const bulanAkhir = props.form.getFieldValue("end_date_sewa")
-
-                        // console.log("bulanAwal: ", bulanAwal, "bulanAkhir: ", bulanAkhir)
-                        // console.log("dipilih: ", dayjs(Math.max(...props.tagihanListrik.map(value => dayjs(value.bln_thn, "MM-YYYY")).map(value => value.valueOf()))).add(1, 'month'))
-                        // console.log("props.tagihanListrik: ", props.tagihanListrik.map(value => dayjs(value.bln_thn, "MM-YYYY")))
                         return current <= dayjs(bulanAwal, "DD-MM-YYYY") || current > dayjs(bulanAkhir, "DD-MM-YYYY") || current <= dayjs(Math.max(...props.tagihanListrik.map(value => dayjs(value.bln_thn, "MM-YYYY")).map(value => value.valueOf()))).add(1, 'month')
                       } catch (e) { return false }
                     }}

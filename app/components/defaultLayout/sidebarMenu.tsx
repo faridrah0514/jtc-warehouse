@@ -1,15 +1,12 @@
 import {
     CreditCardOutlined,
-    DesktopOutlined,
-    FileOutlined,
     FolderOpenOutlined,
+    HomeOutlined,
     PartitionOutlined,
     PieChartOutlined,
     SolutionOutlined,
     TeamOutlined,
     ThunderboltOutlined,
-    UserOutlined,
-
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import Link from 'next/link';
@@ -39,6 +36,7 @@ export const items: MenuItem[] = [
     getItem(<Link href='/master/transaksi'>Transaksi</Link>, 'transaksi', <CreditCardOutlined />, [
         getItem(<Link href='/master/transaksi/sewa'>Sewa</Link>, 'Sewa', <SolutionOutlined />),
         getItem(<Link href='/master/transaksi/listrik'>Listrik</Link>, 'Listrik', <ThunderboltOutlined/>),
+        getItem(<Link href='/master/transaksi/ipl'>IPL</Link>, 'IPL', <HomeOutlined/>),
     ]),
 ];
 

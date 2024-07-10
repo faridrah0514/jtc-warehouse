@@ -5,7 +5,6 @@ import { Button, ConfigProvider, Flex, Form, Popconfirm, Table, TableProps, Tag 
 import { DataCabang } from '@/app/types/master'
 import Title from 'antd/es/typography/Title'
 import dayjs from 'dayjs';
-import AddListrikModal from './AddListrikModal'
 import Link from 'next/link'
 import AddListrikModalV2 from './AddListrikModalV2'
 

@@ -1,11 +1,9 @@
 import { Button, Form, Input, Modal, Select, Typography, UploadProps, GetProp, DatePicker, Row, Col, FormInstance, Steps } from 'antd'
 const { Option } = Select;
 import React, { useEffect, useRef, useState, ChangeEvent } from 'react'
-const { Text, Link } = Typography;
+const { Text } = Typography;
 import { _renderCurrency } from '@/app/utils/renderCurrency';
 import dayjs from 'dayjs';
-import type { InputRef } from 'antd';
-import MeteranAwalInput from './MeteranAwalInput';
 
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
@@ -218,7 +216,6 @@ export default function AddListrikModal(props: Status) {
                     disabledDate={(current) => {
                       try {
                         const pilihan = sewaData?.filter((value: any) => value.id_pelanggan == selectedPelanggan && value.id_cabang == selectedCabang && value.id_aset == selectedAset)[0]
-                        console.log("pilihan: ", pilihan)
                         const bulanAwal = pilihan['start_date_sewa']
                         const bulanAkhir = pilihan['end_date_sewa']
                         return current <= dayjs(bulanAwal, "DD-MM-YYYY") || current > dayjs(bulanAkhir, "DD-MM-YYYY") || current <= dayjs(Math.max(...props.tagihanListrik.filter(
