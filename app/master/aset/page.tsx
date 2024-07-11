@@ -99,8 +99,6 @@ export default function Page() {
       </Flex>
 
       <Table className='overflow-auto'
-        // scroll={{ x: 1500 }}
-        // scroll=true
         columns={[...column, {
           title: "Action",
           key: "action",
@@ -291,14 +289,6 @@ export default function Page() {
                 ),
               },
             ]
-
-            // interface a extends DataAset {
-            //   list_files: string[],
-            //   list_dir: string[],
-            //   list_dir_files: any[]
-            // }
-            // const newRec = record as a
-
             const newDataSource: ExpandedDataType[] = record.list_dir_files.map(
               (value, idx) => {
                 return {
@@ -310,7 +300,7 @@ export default function Page() {
                 }
               }
             )
-            return <Table columns={columns} dataSource={newDataSource} pagination={false} />
+            return <Table size='small' columns={columns} dataSource={newDataSource} pagination={false} />
           }
         }}
         dataSource={asetData}

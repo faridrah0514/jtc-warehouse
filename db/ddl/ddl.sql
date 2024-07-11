@@ -128,6 +128,7 @@ CREATE TABLE
     `id_aset` int DEFAULT NULL,
     `status_pembayaran` varchar(50) DEFAULT NULL,
     `ipl` int DEFAULT NULL,
+    `tanggal_pembayaran` varchar(12) DEFAULT NULL,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`id_cabang`) REFERENCES `cabang` (`id`),
     FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id`),

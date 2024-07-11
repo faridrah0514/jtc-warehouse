@@ -146,44 +146,15 @@ export default function AddListrikModalV2(props: Status) {
                 <Form.Item name='id' label="id" hidden >
                   <Input placeholder='id' autoComplete='off' hidden />
                 </Form.Item>
-                <Form.Item name='id_pelanggan' label="Nama Pelanggan" rules={[{ required: true }]} hidden={current == 1}>
-                  {/* <Select placeholder="Pelanggan" allowClear onChange={(value) => { setSelectedPelanggan(value) }} disabled>
-                    {
-                      Array.from(new Map(sewaData?.map(item => [item.id_pelanggan, item])).values()).map(
-                        (value: any, idx) => <Option key={idx} value={value.id_pelanggan}>{value.nama_pelanggan}</Option>
-                      )
-                    }
-                  </Select> */}
-                  {/* <Input placeholder={props.form.getFieldValue("nama_pelanggan")} disabled></Input> */}
-                  <Text>{props.form.getFieldValue("nama_pelanggan")}</Text>
-                </Form.Item>
                 <Form.Item name='id_cabang' label="Nama Cabang" rules={[{ required: true }]} hidden={current == 1}>
-                  {/* <Select placeholder="Cabang" allowClear onChange={(value) => { setSelectedCabang(value) }} disabled>
-                    {
-                      Array.from(new Map(
-                        sewaData?.filter((value: any) => value.id_pelanggan === selectedPelanggan)
-                          .map((value: any) => [value.id_cabang, value])
-                      ).values()).map(
-                        (value: any, idx) => <Option key={idx} value={value.id_cabang}>{value.nama_cabang}</Option>)
-                    }
-                  </Select> */}
-                  {/* <Input placeholder={props.form.getFieldValue("nama_cabang")} disabled></Input> */}
                   <Text>{props.form.getFieldValue("nama_cabang")}</Text>
                 </Form.Item>
                 <Form.Item name='id_aset' label="Nama Aset" rules={[{ required: true }]} hidden={current == 1}>
-                  {/* <Select placeholder="Aset" allowClear disabled={!selectedCabang} onChange={(value) => { setSelectedAset(value) }}>
-                    {
-                      sewaData?.filter(
-                        (value: any) => value.id_pelanggan == selectedPelanggan && value.id_cabang == selectedCabang
-                      ).map(
-                        (value: any, idx: number) => <Option key={idx} value={value.id_aset}>{value.nama_aset}</Option>
-                      )
-                    }
-                  </Select> */}
-                  {/* <Input placeholder={props.form.getFieldValue("nama_aset")} value={props.form.getFieldValue("nama_aset")}disabled></Input> */}
                   <Text>{props.form.getFieldValue("nama_aset")}</Text>
                 </Form.Item>
-
+                <Form.Item name='id_pelanggan' label="Nama Pelanggan" rules={[{ required: true }]} hidden={current == 1}>
+                  <Text>{props.form.getFieldValue("nama_pelanggan")}</Text>
+                </Form.Item>
                 <Form.Item
                   name='bln_thn'
                   label="BL/THN"

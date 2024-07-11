@@ -53,8 +53,6 @@ export default function Page() {
     if (data) {
       data.data.map((v: any, i: number) => {
         v.no = i + 1
-        // v.harga_rp = _renderCurrency(v.harga)
-        // v.total_biaya_sewa_rp = _renderCurrency(v.total_biaya_sewa)
         return v
       })
       setTagihanListrik(data.data)
@@ -76,88 +74,8 @@ export default function Page() {
   return (
     <>
       <Title level={3}>Halaman Data Master Transaksi - Listrik</Title>
-      {/* <Flex className='pb-5' gap={'small'} vertical={false}>
-        <Button onClick={() => { setOpenModal(true) }}>+ Transaksi Tagihan Listrik</Button>
-      </Flex> */}
-      {/* <AddSewaModal maxId={maxId} form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} /> */}
-      {/* <AddListrikModal form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} tagihanListrik={tagihanListrikData}> </AddListrikModal> */}
       <AddListrikModalV2 form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} tagihanListrik={tagihanListrikData} />
-      {/* <AddListrikModal modalProps={{ form, isEdit, openModal, setOpenModal, triggerRefresh, setTriggerRefresh }}></AddListrikModal> */}
-      {/* <Table className='overflow-auto'
-        dataSource={tagihanListrikData}
-        scroll={{ x: true }}
-        columns={[
-          ...column,
-          {
-            title: "Action",
-            key: "action",
-            render: (_, record: any) => (
-              <Flex gap="small">
-                <ConfigProvider
-                  theme={{
-                    components: {
-                      Button: {
-                        colorPrimary: '#00b96b',
-                        colorPrimaryHover: '#00db7f'
-                      }
-                    }
-                  }}
-                >
-                  <Button type="primary" ghost size="small">
-                    <Link href={`/master/transaksi/listrik/view/${record.id}`}>
-                      View
-                    </Link>
-                  </Button>
-                </ConfigProvider>
-                <Button type="primary" ghost size="small" onClick={
-                  () => {
-                    setOpenModal(true)
-                    setIsEdit(true)
-                    record.bln_thn = dayjs(record.bln_thn, 'MM-YYYY')
-                    // record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
-                    form.setFieldsValue(record)
-                    setTriggerRefresh(!triggerRefresh)
-                  }
-                }>
-                  Edit
-                </Button>
-                <Popconfirm
-                  title="sure to delete?"
-                  onConfirm={
-                    async function deleteCabang() {
-                      const requstType = 'delete'
-                      const result = await fetch('/api/master/transaksi/listrik', {
-                        method: "POST",
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                          requestType: requstType,
-                          data: { id: record.id }
-                        })
-                      })
-                      if (result.status == 200) {
-                        setTriggerRefresh(!triggerRefresh)
-                      }
-                    }
-                  }
-                >
-                  <Button size="small" danger>
-                    Delete
-                  </Button>
-                </Popconfirm>
-              </Flex>
-            ),
-            width: 75
-          }
-        ]}
-        // dataSource={sewaData}
-        rowKey='id'
-        size='small'
-        // loading={sewaData ? false : true}
-        bordered
-      /> */}
-      <Table className='overflow-auto'
+      <Table className='overflow-auto' size='small'
         columns={[
           ...columnSewa,
           {
@@ -178,65 +96,21 @@ export default function Page() {
             key: "action",
             render: (_, record: any) => (
               <Flex gap="small">
-                {/* <ConfigProvider
-                  theme={{
-                    components: {
-                      Button: {
-                        colorPrimary: '#00b96b',
-                        colorPrimaryHover: '#00db7f'
-                      }
-                    }
-                  }}
-                >
-                  <Button type="primary" ghost size="small">
-                    <Link href={`/master/transaksi/listrik/view/${record.id}`}>
-                      View
-                    </Link>
-                  </Button>
-                </ConfigProvider> */}
                 <Button type="primary" ghost size="small" onClick={
                   () => {
                     setOpenModal(true)
                     setIsEdit(false)
-                    // record.bln_thn = dayjs(record.bln_thn, 'MM-YYYY')
-                    // record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
                     form.setFieldsValue(record)
                     setTriggerRefresh(!triggerRefresh)
                   }
                 }>
                   + Transaksi Tagihan Listrik
                 </Button>
-                {/* <Popconfirm
-                  title="sure to delete?"
-                  onConfirm={
-                    async function deleteCabang() {
-                      const requstType = 'delete'
-                      const result = await fetch('/api/master/transaksi/listrik', {
-                        method: "POST",
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                          requestType: requstType,
-                          data: { id: record.id }
-                        })
-                      })
-                      if (result.status == 200) {
-                        setTriggerRefresh(!triggerRefresh)
-                      }
-                    }
-                  }
-                >
-                  <Button size="small" danger>
-                    Delete
-                  </Button>
-                </Popconfirm> */}
               </Flex>
             ),
-            // width: 75
           }
         ]}
-        dataSource={dataSewa}
+        dataSource={dataSewa.map((item: any, index: number) => ({ ...item, key: index }))}
         expandable={{
           // fixed:'left',
           expandedRowRender: (record) => {
@@ -245,7 +119,7 @@ export default function Page() {
                 title: 'Jenis Dokumen', dataIndex: 'fileType', key: 'fileType',
               },
             ]
-            return <Table columns={[
+            return <Table size='small' columns={[
               ...column,
               {
                 title: "Action",
@@ -306,9 +180,8 @@ export default function Page() {
                     </Popconfirm>
                   </Flex>
                 ),
-                // width: 75
               }
-            ]} dataSource={tagihanListrikData.filter((v: any) => v.id_aset == record.id_aset && v.id_cabang == record.id_cabang && v.id_pelanggan == record.id_pelanggan)} pagination={false}/>
+            ]} dataSource={tagihanListrikData.filter((v: any) => v.id_aset == record.id_aset && v.id_cabang == record.id_cabang && v.id_pelanggan == record.id_pelanggan).map((item: any, index: number) => ({ ...item, key: index }))} pagination={false}/>
           }
         }}
       />
