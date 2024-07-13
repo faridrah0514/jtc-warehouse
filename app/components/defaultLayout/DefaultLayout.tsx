@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import { Breadcrumb, Layout, Menu, theme, Avatar } from 'antd';
 // import type { Metadata } from "next";
 import { items } from "./sidebarMenu"
 // import { Inter } from 'next/font/google';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
+import { UserOutlined } from '@ant-design/icons';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -28,36 +29,49 @@ export default function DefaultLayout({
 
     return (
         // <html lang='en'>
-            // <body className={inter.className}>
-                // <AntdRegistry>
-                    <Layout style={{ minHeight: '100vh' }}>
-                        <Header style={{ padding: 0 }} />
-                        <Layout>
-                            <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-                                <div className="demo-logo-vertical" />
-                                <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items} />
-                            </Sider>
+        // <body className={inter.className}>
+        // <AntdRegistry>
+        <Layout style={{ minHeight: '100vh' }}>
+            <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
+                <div className="demo-logo-vertical pb-20" />
+                <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items} />
+            </Sider>
 
-                            <Content style={{ margin: '0 16px' }}>
-                                <Breadcrumb style={{ margin: '16px 0' }}>
-                                    <Breadcrumb.Item>User</Breadcrumb.Item>
-                                    <Breadcrumb.Item>Bill</Breadcrumb.Item>
-                                </Breadcrumb>
-                                <div
-                                    style={{
-                                        padding: 24,
-                                        minHeight: 360,
-                                        background: colorBgContainer,
-                                        borderRadius: borderRadiusLG,
-                                    }}
-                                >
-                                    {children}
-                                </div>
-                            </Content>
-                        </Layout>
-                    </Layout>
-                // </AntdRegistry>
-            // </body>
+            <Layout>
+                <Header style={{
+                    padding: 0,
+                    display: 'flex',
+                    background: colorBgContainer,
+                    alignItems: 'center',
+                    justifyContent: 'end',
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Avatar icon={<UserOutlined />} />
+                        <span className='pl-2 pr-10'>Hi, Admin</span>
+                    </div>
+                </Header>
+
+                <Content style={{ margin: '0 16px' }}>
+                    {/* <Breadcrumb style={{ margin: '16px 0' }}>
+                        <Breadcrumb.Item>User</Breadcrumb.Item>
+                        <Breadcrumb.Item>Bill</Breadcrumb.Item>
+                    </Breadcrumb> */}
+                    <div
+                        style={{
+                            margin: '16px 0',
+                            padding: 24,
+                            minHeight: 360,
+                            background: colorBgContainer,
+                            // borderRadius: borderRadiusLG,
+                        }}
+                    >
+                        {children}
+                    </div>
+                </Content>
+            </Layout>
+        </Layout>
+        // </AntdRegistry>
+        // </body>
         // </html>
 
     );

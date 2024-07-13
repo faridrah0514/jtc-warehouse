@@ -15,9 +15,7 @@ export default function Page() {
   const [ubahModal, setUbahModal] = useState<boolean>(false)
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
-  const [isEdit, setIsEdit] = useState<boolean>(false)
   const [form] = Form.useForm()
-  const [maxId, setMaxId] = useState<number>(0)
   const [items, setItems] = useState<{ key: number, label: string, children: any }[]>([])
 
   async function getData() {

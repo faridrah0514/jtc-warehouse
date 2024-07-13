@@ -25,33 +25,34 @@ export default function Page() {
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
   const [isEdit, setIsEdit] = useState<boolean>(false)
 
+
+  async function getData() {
+    const response = await fetch('/api/master/cabang', { method: 'GET', cache: 'no-store' })
+    const data = await response.json()
+
+    if (data) {
+      data.data.map(
+        (value: DataCabang, index: number) => {
+          value.no = index + 1
+          value.id_cabang = 'CB-' + value.id.toString().padStart(4, "0")
+          value.kwh_rp_1 = _renderCurrency(value.kwh_rp)
+        }
+      )
+      setCabangData(
+        data.data
+      )
+    }
+  }
+
   useEffect(
     () => {
-      async function getData() {
-        const response = await fetch('/api/master/cabang', { method: 'GET', cache: 'no-store' })
-        const data = await response.json()
-
-        if (data) {
-          data.data.map(
-            (value: DataCabang, index: number) => {
-              value.no = index + 1
-              value.id_cabang = 'CB-' + value.id.toString().padStart(4, "0")
-              value.kwh_rp_1 = _renderCurrency(value.kwh_rp)
-            }
-          )
-          setCabangData(
-            data.data
-          )
-        }
-      }
       getData()
     }, [triggerRefresh]
   )
   return (
     <>
     <Title level={3}>Halaman Data Master Cabang</Title>
-    {/* <Space></Space> */}
-      <Button className="mb-5" onClick={() => { setOpenModal(true); setIsEdit(false) }}>Tambah Cabang</Button>
+      <Button className="mb-5" onClick={() => { setOpenModal(true); setIsEdit(false) }}>+ Tambah Cabang</Button>
       <AddCabangModal isEdit={isEdit} form={form} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
       <Table className='overflow-auto'
         columns={[...column, {

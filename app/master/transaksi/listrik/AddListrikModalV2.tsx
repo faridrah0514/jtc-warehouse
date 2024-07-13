@@ -1,4 +1,4 @@
-import { Button, Form, Input, Modal, Select, Typography, UploadProps, GetProp, DatePicker, Row, Col, FormInstance, Steps } from 'antd'
+import { Button, Form, Input, Modal, Select, Typography, message, GetProp, DatePicker, Row, Col, FormInstance, Steps } from 'antd'
 const { Option } = Select;
 import React, { useEffect, useState } from 'react'
 const { Text, Link } = Typography;
@@ -20,43 +20,17 @@ interface DiffPeriod { tahun: number, bulan: number }
 interface Pemakaian { awal: number, akhir: number }
 
 export default function AddListrikModalV2(props: Status) {
+  const [uploading, setUploading] = useState(false);
   const [pemakaian, setPemakaian] = useState<Pemakaian>({ awal: 0, akhir: 0 })
-  const [selectedCabang, setSelectedCabang] = useState<number | undefined>(undefined)
-  const [selectedPelanggan, setSelectedPelanggan] = useState<number | undefined>(undefined)
-  const [selectedAset, setSelectedAset] = useState<number | undefined>(undefined)
-  const [sewaData, setSewaData] = useState<any[]>();
   const [meteranAkhir, setMeteranAkhir] = useState<number | undefined>(undefined)
 
   async function getAllData() {
     const sewa = await fetch('/api/master/transaksi/sewa', { method: 'GET', cache: 'no-store' })
-    const dataSewa = await sewa.json()
-    setSewaData(dataSewa.data)
     if (props.isEdit && props.openModal) {
-      const masa_sewa = props.form.getFieldValue("masa_sewa")
       setPemakaian({ awal: props.form.getFieldValue("meteran_awal"), akhir: props.form.getFieldValue("meteran_akhir") })
-      setSelectedCabang(props.form.getFieldValue("id_cabang"))
-      setSewaData([{
-        id_pelanggan: props.form.getFieldValue("id_pelanggan"),
-        id_aset: props.form.getFieldValue("id_aset"),
-        nama_pelanggan: props.form.getFieldValue("nama_pelanggan"),
-        nama_cabang: props.form.getFieldValue("nama_cabang"),
-        nama_aset: props.form.getFieldValue("nama_aset"),
-        id_cabang: props.form.getFieldValue("id_cabang"),
-        kwh_rp: props.form.getFieldValue("kwh_rp"),
-        rek_bank_1: props.form.getFieldValue("rek_bank_1"),
-        rek_bank_2: props.form.getFieldValue("rek_bank_2"),
-        rek_norek_1: props.form.getFieldValue("rek_norek_1"),
-        rek_norek_2: props.form.getFieldValue("rek_norek_2"),
-        rek_atas_nama_1: props.form.getFieldValue("rek_atas_nama_1"),
-        rek_atas_nama_2: props.form.getFieldValue("rek_atas_nama_2"),
-      }])
-      setSelectedPelanggan(props.form.getFieldValue("id_pelanggan"))
     }
     setPemakaian({ awal: 0, akhir: 0 })
     setMeteranAkhir(undefined)
-    setSelectedAset(undefined)
-    setSelectedCabang(undefined)
-    setSelectedPelanggan(undefined)
     setCurrent(0)
   }
 
@@ -66,16 +40,11 @@ export default function AddListrikModalV2(props: Status) {
     }, [props.triggerRefresh]
   )
 
-  // useEffect(
-  //   () => {
-  //     setMeteranAkhir(meteranAkhir)
-  //   }, [meteranAkhir]
-  // )
-
   async function addTagihanListrik(value: any) {
+    setUploading(true)
     value.bln_thn = value.bln_thn.format("MM-YYYY").toString()
     const requestType = (props.isEdit) ? 'edit' : 'add'
-    await fetch('/api/master/transaksi/listrik', {
+    fetch('/api/master/transaksi/listrik', {
       method: 'POST', body:
         JSON.stringify({
           requestType: requestType,
@@ -85,15 +54,23 @@ export default function AddListrikModalV2(props: Status) {
       headers: {
         'Content-Type': 'application/json',
       },
-    })
-    props.setOpenModal(false)
+    }).then((res) => res.json())
+      .then((res) => {
+        if (res.status == 200) {
+          message.success("Tambah/Edit tagihan listrik berhasil")
+        } else {
+          message.error("Tambah/Edit tagihan listrik gagal")
+        }
+      })
+      .catch(() => message.error("Tambah/Edit tagihan listrik gagal"))
+      .finally(() => {
+        props.setOpenModal(false)
+        setUploading(false)
+      })
     props.setTriggerRefresh(!props.triggerRefresh)
     props.form.resetFields()
     setPemakaian({ awal: 0, akhir: 0 })
     setMeteranAkhir(0)
-    setSelectedAset(undefined)
-    setSelectedCabang(undefined)
-    setSelectedPelanggan(undefined)
     setCurrent(0)
   }
   const steps = [
@@ -128,21 +105,14 @@ export default function AddListrikModalV2(props: Status) {
         </Col>
         <Col span={20}>
           <Form layout='horizontal' form={props.form}
-            // fields={(props.isEdit) ? [] : [{
-            //   "name": ["id_transaksi"],
-            //   "value": 'TXS-' + props.maxId.toString().padStart(4, "0")
-            // }]}
             onFinish={addTagihanListrik}
             labelAlign='left'
             labelCol={{ span: 7 }}
             labelWrap
             wrapperCol={{ span: 15 }}
-          // initialValues={{ meteran_awal: meteranAkhir }}
           >
             <Row>
               <Col span={24}>
-                {/* {current < steps.length - 1 && ( */}
-                {/* <> */}
                 <Form.Item name='id' label="id" hidden >
                   <Input placeholder='id' autoComplete='off' hidden />
                 </Form.Item>
@@ -185,14 +155,8 @@ export default function AddListrikModalV2(props: Status) {
                         return current <= dayjs(bulanAwal, "DD-MM-YYYY") || current > dayjs(bulanAkhir, "DD-MM-YYYY") || current <= dayjs(Math.max(...props.tagihanListrik.map(value => dayjs(value.bln_thn, "MM-YYYY")).map(value => value.valueOf()))).add(1, 'month')
                       } catch (e) { return false }
                     }}
-                  // disabled={!selectedAset}
                   />
                 </Form.Item>
-                {/* </> */}
-                {/* )} */}
-                {/* {current === steps.length - 1 && ( */}
-                {/* <> */}
-
                 {current == 1 && (
                   <Form.Item
                     name='meteran_awal' label="Meteran Awal"
@@ -214,14 +178,7 @@ export default function AddListrikModalV2(props: Status) {
                       value={meteranAkhir}
                     />
                   </Form.Item>
-                  //   <MeteranAwalInput
-                  //   meteranAwal={meteranAkhir}
-                  //   onChange={(value) => {
-                  //     setMeteranAkhir(value);
-                  //   }}
-                  // />
                 )}
-
                 <Form.Item
                   name='meteran_akhir' label="Meteran Akhir"
                   rules={[
@@ -249,10 +206,6 @@ export default function AddListrikModalV2(props: Status) {
                       </Row>
                       <Row>
                         <Text className='pl-2'>Tarif/Kwh: {_renderCurrency(props.form.getFieldValue("kwh_rp"))}</Text>
-                        {/* {!selectedCabang ?
-                          <Text className='pl-2'>Tarif/Kwh: {_renderCurrency(0)}</Text> :
-                          <Text className='pl-2'>Tarif/Kwh: {_renderCurrency(Number(sewaData?.filter(value => value.id_cabang == selectedCabang)[0].kwh_rp))}</Text>
-                        } */}
                       </Row>
                       <Row>
                         {(pemakaian.akhir - pemakaian.awal) > 0 ?
@@ -265,21 +218,10 @@ export default function AddListrikModalV2(props: Status) {
                           <Text className='pl-2' style={{ display: 'block' }}>Tagihan di transfer ke Rekening Bank {props.form.getFieldValue("rek_bank_1")} {props.form.getFieldValue("rek_norek_1")} a.n {props.form.getFieldValue("rek_atas_nama_1")}</Text>
                           <Text className='pl-2' style={{ display: 'block' }}>Tagihan di transfer ke Rekening Bank {props.form.getFieldValue("rek_bank_2")} {props.form.getFieldValue("rek_norek_2")} a.n {props.form.getFieldValue("rek_atas_nama_2")}</Text>
                         </div>
-                        {/* {selectedCabang ?
-                          <div>
-                            <Text className='pl-2' style={{ display: 'block' }}>Tagihan di transfer ke Rekening Bank {sewaData?.filter(value => value.id_cabang == selectedCabang)[0].rek_bank_1} {sewaData?.filter(value => value.id_cabang == selectedCabang)[0].rek_norek_1} a.n {sewaData?.filter(value => value.id_cabang == selectedCabang)[0].rek_atas_nama_1}</Text>
-                            <Text className='pl-2' style={{ display: 'block' }}>Tagihan di transfer ke Rekening Bank {sewaData?.filter(value => value.id_cabang == selectedCabang)[0].rek_bank_2} {sewaData?.filter(value => value.id_cabang == selectedCabang)[0].rek_norek_2} a.n {sewaData?.filter(value => value.id_cabang == selectedCabang)[0].rek_atas_nama_2}</Text>
-                          </div>
-                          :
-                          <></>
-                        } */}
                       </Row>
                     </Col>
                   </Row>
                 )}
-
-                {/* </> */}
-                {/* )} */}
               </Col>
             </Row>
             <div className="flex justify-end gap-2 pt-5">
@@ -287,11 +229,8 @@ export default function AddListrikModalV2(props: Status) {
                 <Button onClick={() => {
                   props.setOpenModal(false);
                   props.form.resetFields();
-                  setSelectedCabang(undefined)
-                  setSelectedPelanggan(undefined)
                   setPemakaian({ awal: 0, akhir: 0 })
                   setMeteranAkhir(0)
-                  setSelectedAset(undefined)
                   setCurrent(0)
                   props.setTriggerRefresh(!props.triggerRefresh)
                 }}>Cancel</Button>
@@ -308,7 +247,7 @@ export default function AddListrikModalV2(props: Status) {
               )}
               {current === steps.length - 1 && (
                 <Form.Item>
-                  <Button htmlType="submit" type="primary">Buat Tagihan</Button>
+                  <Button htmlType="submit" type="primary" loading={uploading}>{(uploading) ? 'Uploading' : 'Submit'}</Button>
                 </Form.Item>
               )}
             </div>

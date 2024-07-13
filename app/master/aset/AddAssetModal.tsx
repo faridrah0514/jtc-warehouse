@@ -30,6 +30,7 @@ const getBase64 = (file: FileType): Promise<string> =>
   });
 
 export default function AddAssetModal(props: Status) {
+  const [currencyValue, setCurrencyValue] = useState<number>(0)
   const [form] = Form.useForm<DataAset>()
   const [tipeAsetForm] = Form.useForm<any>()
   const [tipeSertifikatForm] = Form.useForm<any>()
@@ -45,7 +46,6 @@ export default function AddAssetModal(props: Status) {
   const [tipeSertifikatValue, setTipeSertifikatValue] = useState<number>(0)
   const [alamatCabang, setAlamatCabang] = useState('')
   const [kotaCabang, setKotaCabang] = useState<string>('')
-  const [currencyValue, setCurrencyValue] = useState<number>(0)
 
   useEffect(
     () => {
@@ -74,14 +74,32 @@ export default function AddAssetModal(props: Status) {
   )
 
   async function addTipeAset(value: any) {
-    const result = await fetch('/api/master/aset/tipe_aset', {
+    // setConfirmLoading(true)
+    setUploading(true)
+    // const result = await 
+    fetch('/api/master/aset/tipe_aset', {
       method: 'POST', body: JSON.stringify({
         requestType: 'add',
         data: value
       }), headers: {
         'Content-Type': 'application/json',
       },
-    })
+    }).then((res) => res.json())
+      .then((res) => {
+        if (res.status == 200) {
+          message.success("Tambah tipe aset berhasil")
+        } else {
+          message.error("Tambah tipe aset gagal")
+        }
+      }).catch(() => message.error("Tambah tipe aset gagal"))
+      .finally(() => setUploading(false))
+    // console.log("result ---> ", result)
+    // if (result.status == 200) {
+    //   message.success("berhasil")
+    // } else {
+    //   message.error("gagal")
+    // }
+    // setConfirmLoading(false)
     setTipeAsetModal(false)
     setTriggerRefresh(!triggerRefresh)
     // setAlamatCabang('')
@@ -89,14 +107,24 @@ export default function AddAssetModal(props: Status) {
   }
 
   async function addTipeSertifikat(value: any) {
-    const result = await fetch('/api/master/aset/tipe_sertifikat', {
+
+    fetch('/api/master/aset/tipe_sertifikat', {
       method: 'POST', body: JSON.stringify({
         requestType: 'add',
         data: value
       }), headers: {
         'Content-Type': 'application/json',
       },
-    })
+    }).then((res) => res.json())
+      .then((res) => {
+        if (res.status == 200) {
+          message.success("Tambah tipe sertifikat berhasil")
+        } else {
+          message.error("Tambah tipe sertifikat gagal")
+        }
+      }).catch(() => message.error("Tambah tipe sertifikat gagal"))
+      .finally(() => setUploading(false))
+
     setTipeSertifikatModal(false)
     setTriggerRefresh(!triggerRefresh)
     tipeSertifikatForm.resetFields()
@@ -109,24 +137,46 @@ export default function AddAssetModal(props: Status) {
       const desiredString = value.id_aset.slice(value.id_aset.indexOf("AS"));
       value.id_aset = 'CB-' + value.id_cabang.toString().padStart(4, "0") + '-' + desiredString
       const requestType = props.isEdit ? 'edit' : ''
-      const result = await fetch('/api/master/aset/add', {
+      fetch('/api/master/aset/add', {
         method: 'POST', body: JSON.stringify({
           requestType: requestType,
           data: value
         }), headers: {
           'Content-Type': 'application/json',
         },
+      }).then((res) => res.json())
+      .then((res) => {
+        if (res.status == 200) {
+          message.success("Edit aset berhasil")
+        } else {
+          message.error("Edit aset gagal")
+        }
+      }).catch(() => message.error("Edit aset gagal"))
+      .finally(() => {
+        props.setOpenModal(false)
+        setUploading(false)
       })
     } else {
       value.id_aset = 'CB-' + value.id_cabang.toString().padStart(4, "0") + '-' + value.id_aset
-      const result = await fetch('/api/master/aset/add', {
+      await fetch('/api/master/aset/add', {
         method: 'POST', body: JSON.stringify({
           requestType: 'add',
           data: value
         }), headers: {
           'Content-Type': 'application/json',
         },
-      })
+      }).then((res) => res.json())
+        .then((res) => {
+          if (res.status == 200) {
+            message.success("Tambah aset berhasil")
+          } else {
+            message.error("Tambah aset gagal")
+          }
+        }).catch(() => message.error("Tambah aset gagal"))
+        .finally(() => {
+          props.setOpenModal(false)
+          setUploading(false)
+        })
     }
 
     inputs.forEach(
@@ -155,10 +205,13 @@ export default function AddAssetModal(props: Status) {
 
           })
           .catch(() => message.error("upload failed"))
-          .finally(() => setUploading(false))
+          .finally(() => {
+            props.setOpenModal(false)
+            setUploading(false)
+          })
       }
     )
-    props.setOpenModal(false)
+    // props.setOpenModal(false)
     props.setTriggerRefresh(!props.triggerRefresh)
     props.form.resetFields()
     setInputs([])
@@ -200,7 +253,7 @@ export default function AddAssetModal(props: Status) {
   return (
     <>
       {/* Modal Tambah Tipe Aset */}
-      <Modal open={tipeAsetModal} closeIcon={null} footer={null} title='Form Tambah Tipe Aset'>
+      <Modal open={tipeAsetModal} closeIcon={null} footer={null} title='Form Tambah Tipe Aset' >
         <Form name="addTipeAsetForm" form={tipeAsetForm} onFinish={addTipeAset}>
           <Form.Item name='tipe_aset' label="Tipe Aset">
             <Input placeholder='Masukkan Tipe Aset' autoComplete='off' />
@@ -480,7 +533,7 @@ export default function AddAssetModal(props: Status) {
                           </Form.Item>
                         </Col>
                       </Row>
-                      {/* <Row>
+                      <Row>
                         <Col span={12}>
                           <Form.Item name='ipl' required label="Iuran IPL" rules={[
                             { required: true },
@@ -488,7 +541,7 @@ export default function AddAssetModal(props: Status) {
                             <CurrencyInput value={currencyValue} onChange={(value) => setCurrencyValue(() => value)} />
                           </Form.Item>
                         </Col>
-                      </Row> */}
+                      </Row>
                     </Col>
                   )
                 }

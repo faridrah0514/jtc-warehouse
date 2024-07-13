@@ -31,12 +31,13 @@ export default function AddSewaModal(props: Status) {
   const [diffPeriod, setDiffPeriod] = useState<DiffPeriod>({ tahun: 0, bulan: 0 })
   const [currencyValue, setCurrencyValue] = useState<number>(0)
   const [iplValue, setIplValue] = useState<number>(0)
-  const [periodePembayaran, setPeriodePembayaran] = useState<string>('Perbulan');
+  const [periodePembayaran, setPeriodePembayaran] = useState<string>('Pertahun');
   const [selectedCabang, setSelectedCabang] = useState<number | undefined>(undefined)
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [listFiles, setListFiles] = useState([])
+  const [uploading, setUploading] = useState(false);
   const dateFormat = 'DD-MM-YYYY'
 
 
@@ -133,31 +134,52 @@ export default function AddSewaModal(props: Status) {
               headers: {
                 'Content-Type': 'application/json',
               },
+            }).then((res) => {
+              return res.json()
             })
-            fileList.forEach(
-              (v: UploadFile, idx: number) => {
-                const formData = new FormData()
-                formData.append('id_transaksi', value.id_transaksi)
-                formData.append('files[]', v as FileType)
+              .then((res) => {
+                if (res) {
+                  fileList.forEach(
+                    (v: UploadFile, idx: number) => {
+                      const formData = new FormData()
+                      formData.append('id_transaksi', value.id_transaksi)
+                      formData.append('files[]', v as FileType)
 
-                fetch('/api/master/transaksi/upload', { method: 'POST', body: formData })
-                  .then((res) => res.json())
-                  .then((res) => {
-                    if (res.status == 200) {
-                      message.success("upload success")
-                    } else {
-                      message.error("upload failed")
+                      fetch('/api/master/transaksi/upload', { method: 'POST', body: formData })
+                        .then((res) => res.json())
+                        .then((res) => {
+                          if (res.status == 200) {
+                            message.success("upload success")
+                          } else {
+                            message.error("upload failed")
+                          }
+                        })
+                        .catch(() => message.error("upload failed"))
                     }
-                  })
-                  .catch(() => message.error("upload failed"))
-              }
-            )
+                  )
+                }
+                if (res.status == 200) {
+                  message.success("Tambah/Edit tagihan listrik berhasil")
+                } else {
+                  message.error("Tambah/Edit tagihan listrik gagal")
+                }
+              })
+              .catch(() => message.error("Tambah/Edit tagihan listrik gagal"))
+              .finally(() => {
+                props.setOpenModal(false)
+                setUploading(false)
+              })
+
+
+
+
             props.setOpenModal(false)
             props.setTriggerRefresh(!props.triggerRefresh)
             props.form.resetFields()
             setListFiles([])
             setFileList([])
           }
+
         }
         labelAlign='left'
         labelCol={{ span: 7 }}
@@ -222,11 +244,11 @@ export default function AddSewaModal(props: Status) {
                 }
               }} format={dateFormat} />
             </Form.Item>
-            <Form.Item name='periode_pembayaran' required label="Periode Pembayaran" initialValue={props.form.getFieldValue('periode_pembayaran') ?? 'Perbulan'}>
+            <Form.Item name='periode_pembayaran' required label="Periode Pembayaran" initialValue={props.form.getFieldValue('periode_pembayaran') ? 'Pertahun' : 'Pertahun'}>
               <Radio.Group value={periodePembayaran} onChange={(e: RadioChangeEvent) => {
                 setPeriodePembayaran(e.target.value);
               }}>
-                <Radio.Button value="Pertahun" disabled={diffPeriod.tahun < 1 ? true : false}> Pertahun</Radio.Button>
+                <Radio.Button value="Pertahun">Pertahun</Radio.Button>
                 <Radio.Button value="Perbulan">Perbulan</Radio.Button>
               </Radio.Group>
             </Form.Item>
@@ -333,22 +355,6 @@ export default function AddSewaModal(props: Status) {
             ></Table>
           </Col>
         </Row>
-
-
-        {/* <Row>
-          <List dataSource={listFiles} itemLayout="horizontal"
-              renderItem={(item, index) => (
-                <List.Item>
-                  <List.Item.Meta
-                    // avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
-                    // title={<a href="https://ant.design">{item}</a>}
-                    // description="Ant Design, a design language for background applications, is refined by Ant UED Team"
-                  />
-                  <a href="https://ant.design">{item}</a>
-                </List.Item>
-              )}
-          />
-        </Row> */}
         <div className="flex justify-end gap-2">
           <Form.Item>
             <Button onClick={() => {
@@ -356,13 +362,13 @@ export default function AddSewaModal(props: Status) {
               props.form.resetFields();
               setDiffPeriod({ tahun: 0, bulan: 0 });
               setCurrencyValue(0)
-              setPeriodePembayaran('Perbulan')
+              setPeriodePembayaran('Pertahun')
               setFileList([])
               setListFiles([])
             }}>Cancel</Button>
           </Form.Item>
           <Form.Item>
-            <Button htmlType="submit" type="primary"> Submit</Button>
+            <Button htmlType="submit" type="primary" loading={uploading}>{(uploading) ? 'Uploading' : 'Submit'}</Button>
           </Form.Item>
         </div>
       </Form>

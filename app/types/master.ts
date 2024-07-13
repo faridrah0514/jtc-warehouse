@@ -18,7 +18,7 @@ export interface DataPelanggan {
   alamat: string,
   kota: string,
   no_tlp: number,
-  contact_person: string
+  nama_kontak: string
 }
 
 export interface DataUtility {

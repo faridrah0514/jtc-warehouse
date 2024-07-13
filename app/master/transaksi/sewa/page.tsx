@@ -138,7 +138,7 @@ export default function Page() {
           ),
           width: 75
         }]}
-        dataSource={sewaData}
+        dataSource={sewaData?.map((item: any, index: number) => ({ ...item, key: index }))}
         rowKey='id'
         size='small'
         loading={sewaData ? false : true}

@@ -1,4 +1,4 @@
-import { Button, Form, FormInstance, Input, InputNumber, Modal, Space } from 'antd'
+import { Button, Form, FormInstance, Input, InputNumber, Modal, Space, message } from 'antd'
 import TextArea from 'antd/es/input/TextArea'
 import React, { useState } from 'react'
 import { DataCabang } from '@/app/types/master'
@@ -17,38 +17,64 @@ interface Status {
 export default function AddCabangModal(props: Status) {
 
   const [currencyValue, setCurrencyValue] = useState<number>(0)
+  const [uploading, setUploading] = useState(false);
+
+  async function addGudang(value: DataCabang) {
+    setUploading(true)
+    if (props.isEdit) {
+      fetch('/api/master/cabang/add', {
+        method: 'POST',
+        body: JSON.stringify({
+          requestType: 'edit',
+          data: value
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }).then((res) => res.json())
+        .then((res) => {
+          if (res.status == 200) {
+            message.success("Edit cabang berhasil")
+          } else {
+            message.error("Edit cabang gagal")
+          }
+
+        })
+        .catch(() => message.error("Edit cabang gagal"))
+        .finally(() => {
+          props.setOpenModal(false)
+          setUploading(false)
+        })
+    } else {
+      fetch('/api/master/cabang/add', {
+        method: 'POST', body: JSON.stringify({
+          requestType: 'add',
+          data: value
+        }), headers: {
+          'Content-Type': 'application/json',
+        },
+      }).then((res) => res.json())
+        .then((res) => {
+          if (res.status == 200) {
+            message.success("Tambah cabang berhasil")
+          } else {
+            message.error("Tambah cabang gagal")
+          }
+
+        })
+        .catch(() => message.error("Tambah cabang gagal"))
+        .finally(() => {
+          props.setOpenModal(false)
+          setUploading(false)
+        })
+    }
+    props.setTriggerRefresh(!props.triggerRefresh)
+    props.form.resetFields()
+  }
+
   return (
     <Modal open={props.openModal} footer={null} title='Form Tambah Cabang' closeIcon={null} width={800} >
-      <Form form={props.form} layout='vertical' autoComplete='off'
-        onFinish={
-          async function addGudang(value: DataCabang) {
-            if (props.isEdit) {
-              const result = await fetch('/api/master/cabang/add', {
-                method: 'POST',
-                body: JSON.stringify({
-                  requestType: 'edit',
-                  data: value
-                }),
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-              })
-            } else {
-              const result = await fetch('/api/master/cabang/add', {
-                method: 'POST', body: JSON.stringify({
-                  requestType: 'add',
-                  data: value
-                }), headers: {
-                  'Content-Type': 'application/json',
-                },
-              })
-            }
-            props.setOpenModal(false)
-            props.setTriggerRefresh(!props.triggerRefresh)
-            props.form.resetFields()
-          }
-        }
-      >
+      <Form form={props.form} layout='vertical' autoComplete='off' onFinish={addGudang}>
         {props.isEdit &&
           <Form.Item name='id' required label="id" rules={[{ required: true }]} hidden>
             <Input placeholder='id' autoComplete='off' />
@@ -107,7 +133,7 @@ export default function AddCabangModal(props: Status) {
             }}>Cancel</Button>
           </Form.Item>
           <Form.Item>
-            <Button htmlType="submit" type="primary">Submit</Button>
+            <Button htmlType="submit" type="primary" loading={uploading}>{uploading ? 'Uploading' : 'Submit'}</Button>
           </Form.Item>
         </div>
       </Form>

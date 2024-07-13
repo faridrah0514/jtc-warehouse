@@ -10,11 +10,6 @@ import AddListrikModalV2 from './AddListrikModalV2'
 
 
 const column = [
-  // { title: "Nomor", dataIndex: 'no', key: 'no' },
-  // { title: "ID Transaksi", dataIndex: 'id', key: 'id' },
-  // { title: "Pelanggan", dataIndex: 'nama_pelanggan', key: 'nama_pelanggan' },
-  // { title: "Cabang", dataIndex: 'nama_cabang', key: 'nama_cabang' },
-  // { title: "Aset", dataIndex: 'nama_aset', key: 'nama_aset' },
   { title: "Bln/Thn", dataIndex: 'bln_thn', key: 'bln_thn' },
   { title: "Meteran Awal", dataIndex: 'meteran_awal', key: 'meteran_awal' },
   { title: "Meteran Akhir", dataIndex: 'meteran_akhir', key: 'meteran_akhir' },
@@ -22,19 +17,11 @@ const column = [
 
 const columnSewa = [
   { title: "Nomor", dataIndex: 'no', key: 'no' },
-  // { title: "ID Transaksi", dataIndex: 'id_transaksi', key: 'id_transaksi' },
   { title: "Cabang", dataIndex: 'nama_cabang', key: 'nama_cabang' },
   { title: "Aset", dataIndex: 'nama_aset', key: 'nama_aset' },
   { title: "Pelanggan", dataIndex: 'nama_pelanggan', key: 'nama_pelanggan' },
-  // { title: "Tanggal Akte", dataIndex: 'tanggal_akte_1', key: 'tanggal_akte' },
-  // { title: "Nomor Akte", dataIndex: 'no_akte', key: 'no_akte' },
-  // { title: "Notaris", dataIndex: 'notaris', key: 'notaris' },
   { title: "Tanggal Awal Sewa", dataIndex: 'start_date_sewa', key: 'start_date_sewa' },
   { title: "Tanggal Akhir Sewa", dataIndex: 'end_date_sewa', key: 'end_date_sewa' },
-  // { title: "Periode Pembayaran", dataIndex: 'periode_pembayaran', key: 'periode_pembayaran' },
-  // { title: "Harga", dataIndex: 'harga_rp', key: 'harga_rp' },
-  // { title: "Total Biaya Sewa", dataIndex: 'total_biaya_sewa_rp', key: 'total_biaya_sewa_rp' },
-  // { title: "Iuran IPL", dataIndex: 'ipl_rp', key: 'ipl_rp' },
 ]
 export default function Page() {
 
