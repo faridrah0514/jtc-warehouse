@@ -330,12 +330,12 @@ export default function AddListrikModal(props: Status) {
                 }}>Cancel</Button>
               </Form.Item>
               {current < steps.length - 1 && (
-                <Button type="primary" onClick={() => { console.log("current: ", current); next() }}>
+                <Button type="primary" onClick={() => { next() }}>
                   Next
                 </Button>
               )}
               {current > 0 && (
-                <Button style={{ margin: '0 8px' }} onClick={() => { console.log("current: ", current); prev() }}>
+                <Button style={{ margin: '0 8px' }} onClick={() => { prev() }}>
                   Previous
                 </Button>
               )}

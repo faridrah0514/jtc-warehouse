@@ -7,7 +7,6 @@ dayjs.extend(customParseFormat);
 
 export const dynamic = 'force-dynamic'
 export async function GET() {
-  console.log("--------")
   const conn = openDB()
   const today = dayjs();
   const [jumlahData, _] = await conn.execute(`
@@ -41,7 +40,6 @@ export async function GET() {
     }
     return acc;
   }, {} as Record<string, number>);
-  console.log("transaksi_sewa: ", jumlahStatusSewa)
   conn.end()
   return Response.json({ jumlahData, jumlahStatusSewa })
 }

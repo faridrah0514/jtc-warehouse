@@ -93,16 +93,8 @@ export default function AddAssetModal(props: Status) {
         }
       }).catch(() => message.error("Tambah tipe aset gagal"))
       .finally(() => setUploading(false))
-    // console.log("result ---> ", result)
-    // if (result.status == 200) {
-    //   message.success("berhasil")
-    // } else {
-    //   message.error("gagal")
-    // }
-    // setConfirmLoading(false)
     setTipeAsetModal(false)
     setTriggerRefresh(!triggerRefresh)
-    // setAlamatCabang('')
     tipeAsetForm.resetFields()
   }
 

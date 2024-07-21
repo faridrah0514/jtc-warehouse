@@ -60,6 +60,7 @@ export default function Page() {
                 { title: "Nama Cabang", key: "nama_cabang", dataIndex: "nama_cabang" },
                 { title: "Nama Aset", key: "nama_aset", dataIndex: "nama_aset" },
                 { title: "Nama Pelanggan", key: "nama_pelanggan", dataIndex: "nama_pelanggan" },
+                { title: "Tagihan IPL", key: "ipl", dataIndex: "ipl", render: (value, record: any) => _renderCurrency(value) },
                 {
                   title: "Status Pembayaran", key: "status_pembayaran", dataIndex: "status_pembayaran",
                   render: (value, record) => {
@@ -70,7 +71,7 @@ export default function Page() {
                     }
                   }
                 },
-                { title: "Tagihan IPL", key: "ipl", dataIndex: "ipl", render: (value, record: any) => _renderCurrency(value) },
+              
                 { title: "Tanggal Pembayaran", key: "tanggal_pembayaran", dataIndex: "tanggal_pembayaran" },
                 {
                   title: "Action",
@@ -108,7 +109,7 @@ export default function Page() {
 
   async function ubahStatusPembayaran(value: any) {
     value.tanggal_pembayaran = value.tanggal_pembayaran.format("DD-MM-YYYY")
-    await fetch('/api/master/transaksi/ipl', {
+    fetch('/api/master/transaksi/ipl', {
       method: 'POST', body:
         JSON.stringify({
           requestType: 'ubahStatusPembayaran',
@@ -118,9 +119,12 @@ export default function Page() {
       headers: {
         'Content-Type': 'application/json',
       },
+    }).then(res => res.json())
+    .then(res => {
+      setUbahModal(false)
+      setTriggerRefresh(!triggerRefresh)
     })
-    setUbahModal(false)
-    setTriggerRefresh(!triggerRefresh)
+
   }
   return (
     <>
@@ -128,12 +132,10 @@ export default function Page() {
       <Flex className='pb-5' gap={'small'} vertical={false}>
         <Button onClick={() => { setOpenModal(true) }}>+ Buat Tagihan IPL</Button>
       </Flex>
-      <Modal open={ubahModal} closeIcon={null} footer={null} title='Form Tambah Tipe Aset'>
+      <Modal open={ubahModal} closeIcon={null} footer={null} title='Form Ubah Status Pembayaran'>
         <Form name="addTipeAsetForm" onFinish={ubahStatusPembayaran} form={form} layout='horizontal'
           labelAlign='left'
           labelCol={{ span: 8 }}
-        // labelWrap
-        // wrapperCol={{ span: 15 }}
         >
           <Form.Item name='id_pelanggan' label='Nama Pelanggan' hidden />
           <Form.Item name='id_cabang' label='Nama Cabang' hidden />

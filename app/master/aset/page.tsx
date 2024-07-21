@@ -258,12 +258,6 @@ export default function Page() {
                         }>
                         <Button size="small">Delete All</Button>
                       </Popconfirm>
-                      {/* <Button size="small" onClick={() => {
-                        console.log("value: ", value, "record: ", record)
-                        // setOpenModal(true)
-                      }}>
-                        Edit Document
-                      </Button> */}
                       <Dropdown.Button placement="bottomLeft" trigger={['click']} size="small" icon={<DownOutlined />} 
                       menu={{
                         items: record.file.map((v, idx) => {

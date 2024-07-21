@@ -31,12 +31,14 @@ export default function Page() {
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
   const [isEdit, setIsEdit] = useState<boolean>(false)
   const [form] = Form.useForm()
+  const [statusSewa, setStatusSewa] = useState<string>('')
 
   async function getData() {
     const response = await fetch('/api/master/transaksi/listrik', { method: 'GET', cache: 'no-store' })
     const sewa = await fetch('/api/master/transaksi/sewa', { method: 'GET', cache: 'no-store' })
     const dataSewa = await sewa.json()
     const data = await response.json()
+    const today = dayjs() 
     if (data) {
       data.data.map((v: any, i: number) => {
         v.no = i + 1
@@ -47,6 +49,15 @@ export default function Page() {
     if (dataSewa) {
       dataSewa.data.map((v: any, i: number) => {
         v.no = i + 1
+        if (dayjs(v.start_date_sewa, "DD-MM-YYYY") > today)
+          // { setStatusSewa('akanDatang'); return <Tag color='processing'>Akan Datang</Tag>}
+          v.statusSewa = 'Akan Datang'
+        else if (dayjs(v.start_date_sewa, "DD-MM-YYYY") <= today && today <= dayjs(v.end_date_sewa, "DD-MM-YYYY"))
+          // { setStatusSewa('aktif'); return <Tag color='success'>Aktif</Tag>}
+          v.statusSewa = 'Aktif'
+        else
+          // { setStatusSewa('nonAktif'); return <Tag color='default'>Non-Aktif</Tag>} 
+          v.statusSewa = 'Non-Aktif'
         return v
       })
       setDataSewa(dataSewa.data.filter((value: any) => value.is_pln == 1))
@@ -71,11 +82,11 @@ export default function Page() {
             render: (_, record: any) => {
               const today = dayjs() 
               if (dayjs(record.start_date_sewa, "DD-MM-YYYY") > today)
-                return <Tag color='processing'>Akan Datang</Tag>
+              { setStatusSewa('akanDatang'); return <Tag color='processing'>Akan Datang</Tag>}
               else if (dayjs(record.start_date_sewa, "DD-MM-YYYY") <= today && today <= dayjs(record.end_date_sewa, "DD-MM-YYYY"))
-                return <Tag color='success'>Aktif</Tag>
+              { setStatusSewa('aktif'); return <Tag color='success'>Aktif</Tag>}
               else
-                return <Tag color='default'>Non-Aktif</Tag>
+              { setStatusSewa('nonAktif'); return <Tag color='default'>Non-Aktif</Tag>} 
             }
           },
           {
@@ -83,7 +94,7 @@ export default function Page() {
             key: "action",
             render: (_, record: any) => (
               <Flex gap="small">
-                <Button type="primary" ghost size="small" onClick={
+                <Button type="primary" ghost size="small" disabled={(record.statusSewa == 'Aktif') ? false: true} onClick={
                   () => {
                     setOpenModal(true)
                     setIsEdit(false)

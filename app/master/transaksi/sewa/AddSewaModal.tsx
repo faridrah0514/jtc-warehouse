@@ -1,17 +1,18 @@
 import { Button, Form, Input, Modal, Select, Typography, message, UploadProps, GetProp, DatePicker, Row, Col, Radio, FormInstance, Upload, UploadFile, Image, Table, Popconfirm } from 'antd'
 const { Option } = Select;
-import React, { useEffect, useRef, useState, ChangeEvent } from 'react'
+import React, { useEffect, useState } from 'react'
 import { DataAset, DataCabang, DataPelanggan } from '@/app/types/master'
 import dayjs, { Dayjs } from 'dayjs';
-const { Text, Link } = Typography;
+const { Text } = Typography;
 const { RangePicker } = DatePicker;
 import type { RadioChangeEvent } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { list } from 'postcss';
 import { _renderCurrency } from '@/app/utils/renderCurrency';
 import { CurrencyInput } from '@/app/components/currencyInput/currencyInput';
+import isBetween from 'dayjs/plugin/isBetween'
 
-
+dayjs.extend(isBetween);
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
 
 interface Status {
@@ -21,7 +22,8 @@ interface Status {
   setTriggerRefresh: React.Dispatch<React.SetStateAction<boolean>>
   form: FormInstance,
   isEdit: boolean,
-  maxId: number
+  maxId: number,
+  sewaData: any[],
 }
 
 interface DiffPeriod { tahun: number, bulan: number }
@@ -33,13 +35,13 @@ export default function AddSewaModal(props: Status) {
   const [iplValue, setIplValue] = useState<number>(0)
   const [periodePembayaran, setPeriodePembayaran] = useState<string>('Pertahun');
   const [selectedCabang, setSelectedCabang] = useState<number | undefined>(undefined)
+  const [selectedAset, setSelectedAset] = useState<number | undefined>(undefined)
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [listFiles, setListFiles] = useState([])
   const [uploading, setUploading] = useState(false);
   const dateFormat = 'DD-MM-YYYY'
-
 
   const getBase64 = (file: FileType): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -79,33 +81,94 @@ export default function AddSewaModal(props: Status) {
     }
   };
 
+  async function addSewa(value: any) {
+    value.start_date_sewa = value.masa_sewa[0].format(dateFormat).toString()
+    value.end_date_sewa = value.masa_sewa[1].format(dateFormat).toString()
+    value.tanggal_akte = value.tanggal_akte.format(dateFormat).toString()
+    value.total_biaya_sewa = hitungHarga(diffPeriod, currencyValue, periodePembayaran)
+    const requestType = (props.isEdit) ? 'edit' : 'add'
+    const result = await fetch('/api/master/transaksi/sewa', {
+      method: 'POST', body:
+        JSON.stringify({
+          requestType: requestType,
+          data: value,
+        })
+      ,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).then((res) => {
+      return res.json()
+    })
+      .then((res) => {
+        if (res) {
+          fileList.forEach(
+            (v: UploadFile, idx: number) => {
+              const formData = new FormData()
+              formData.append('id_transaksi', value.id_transaksi)
+              formData.append('files[]', v as FileType)
+
+              fetch('/api/master/transaksi/upload', { method: 'POST', body: formData })
+                .then((res) => res.json())
+                .then((res) => {
+                  if (res.status == 200) {
+                    message.success("upload success")
+                  } else {
+                    message.error("upload failed")
+                  }
+                })
+                .catch(() => message.error("upload failed"))
+            }
+          )
+        }
+        if (res.status == 200) {
+          message.success("Tambah/Edit sewa aset berhasil")
+        } else {
+          message.error("Tambah/Edit sewa aset gagal")
+        }
+      })
+      .catch(() => message.error("Tambah/Edit sewa aset gagal"))
+      .finally(() => {
+        props.setOpenModal(false)
+        setUploading(false)
+      })
+    props.setOpenModal(false)
+    props.setTriggerRefresh(!props.triggerRefresh)
+    props.form.resetFields()
+    setListFiles([])
+    setFileList([])
+  }
+
+  async function getAllData() {
+    const allCabang = await fetch('/api/master/cabang', { method: 'GET', cache: 'no-store' })
+    const allPelanggan = await fetch('/api/master/pelanggan', { method: 'GET', cache: 'no-store' })
+    const allAset = await fetch('/api/master/aset', { method: 'GET', cache: 'no-store' })
+    const dataCabang = (await allCabang.json()).data.map((value: DataCabang) => {
+      return { id: value.id, nama_perusahaan: value.nama_perusahaan }
+    })
+    console.log("props.sewaData: ", props.sewaData)
+    const dataPelanggan = (await allPelanggan.json()).data.map((value: DataPelanggan) => { return { id: value.id, nama: value.nama } })
+    const dataAset = (await allAset.json()).data.map((value: DataAset) => { return { id: value.id, nama_aset: value.nama_aset, id_cabang: value.id_cabang } })
+    if (dataCabang || dataPelanggan || dataAset) {
+      setAllData({
+        cabang: dataCabang,
+        pelanggan: dataPelanggan,
+        aset: dataAset
+      })
+      console.log("dataCabang: ", dataCabang, "dataAset: ", dataAset, "dataPelanggan: ", dataPelanggan, "sewaData: ", props.sewaData)
+    }
+    if (props.isEdit && props.openModal) {
+      const masa_sewa = props.form.getFieldValue("masa_sewa")
+      handleDateChange(masa_sewa, [masa_sewa[0].format(dateFormat).toString(), masa_sewa[1].format(dateFormat).toString()])
+      setCurrencyValue(props.form.getFieldValue("harga"))
+      setPeriodePembayaran(props.form.getFieldValue("periode_pembayaran"))
+      setSelectedCabang(props.form.getFieldValue("id_cabang"))
+      setListFiles(props.form.getFieldValue('list_files'))
+    }
+  }
+
   useEffect(
     () => {
-      async function getAllData() {
-        const allCabang = await fetch('/api/master/cabang', { method: 'GET', cache: 'no-store' })
-        const allPelanggan = await fetch('/api/master/pelanggan', { method: 'GET', cache: 'no-store' })
-        const allAset = await fetch('/api/master/aset', { method: 'GET', cache: 'no-store' })
-        const dataCabang = (await allCabang.json()).data.map((value: DataCabang) => {
-          return { id: value.id, nama_perusahaan: value.nama_perusahaan }
-        })
-        const dataPelanggan = (await allPelanggan.json()).data.map((value: DataPelanggan) => { return { id: value.id, nama: value.nama } })
-        const dataAset = (await allAset.json()).data.map((value: DataAset) => { return { id: value.id, nama_aset: value.nama_aset, id_cabang: value.id_cabang } })
-        if (dataCabang || dataPelanggan || dataAset) {
-          setAllData({
-            cabang: dataCabang,
-            pelanggan: dataPelanggan,
-            aset: dataAset
-          })
-        }
-        if (props.isEdit && props.openModal) {
-          const masa_sewa = props.form.getFieldValue("masa_sewa")
-          handleDateChange(masa_sewa, [masa_sewa[0].format(dateFormat).toString(), masa_sewa[1].format(dateFormat).toString()])
-          setCurrencyValue(props.form.getFieldValue("harga"))
-          setPeriodePembayaran(props.form.getFieldValue("periode_pembayaran"))
-          setSelectedCabang(props.form.getFieldValue("id_cabang"))
-          setListFiles(props.form.getFieldValue('list_files'))
-        }
-      }
       getAllData()
     }, [props.triggerRefresh]
   )
@@ -117,70 +180,7 @@ export default function AddSewaModal(props: Status) {
           "name": ["id_transaksi"],
           "value": 'TXS-' + props.maxId.toString().padStart(4, "0")
         }]}
-        onFinish={
-          async function addSewa(value) {
-            value.start_date_sewa = value.masa_sewa[0].format(dateFormat).toString()
-            value.end_date_sewa = value.masa_sewa[1].format(dateFormat).toString()
-            value.tanggal_akte = value.tanggal_akte.format(dateFormat).toString()
-            value.total_biaya_sewa = hitungHarga(diffPeriod, currencyValue, periodePembayaran)
-            const requestType = (props.isEdit) ? 'edit' : 'add'
-            const result = await fetch('/api/master/transaksi/sewa', {
-              method: 'POST', body:
-                JSON.stringify({
-                  requestType: requestType,
-                  data: value,
-                })
-              ,
-              headers: {
-                'Content-Type': 'application/json',
-              },
-            }).then((res) => {
-              return res.json()
-            })
-              .then((res) => {
-                if (res) {
-                  fileList.forEach(
-                    (v: UploadFile, idx: number) => {
-                      const formData = new FormData()
-                      formData.append('id_transaksi', value.id_transaksi)
-                      formData.append('files[]', v as FileType)
-
-                      fetch('/api/master/transaksi/upload', { method: 'POST', body: formData })
-                        .then((res) => res.json())
-                        .then((res) => {
-                          if (res.status == 200) {
-                            message.success("upload success")
-                          } else {
-                            message.error("upload failed")
-                          }
-                        })
-                        .catch(() => message.error("upload failed"))
-                    }
-                  )
-                }
-                if (res.status == 200) {
-                  message.success("Tambah/Edit tagihan listrik berhasil")
-                } else {
-                  message.error("Tambah/Edit tagihan listrik gagal")
-                }
-              })
-              .catch(() => message.error("Tambah/Edit tagihan listrik gagal"))
-              .finally(() => {
-                props.setOpenModal(false)
-                setUploading(false)
-              })
-
-
-
-
-            props.setOpenModal(false)
-            props.setTriggerRefresh(!props.triggerRefresh)
-            props.form.resetFields()
-            setListFiles([])
-            setFileList([])
-          }
-
-        }
+        onFinish={addSewa}
         labelAlign='left'
         labelCol={{ span: 7 }}
         labelWrap
@@ -192,6 +192,34 @@ export default function AddSewaModal(props: Status) {
             <Form.Item name='id' label="id" hidden >
               <Input placeholder='id' autoComplete='off' hidden />
             </Form.Item>
+            <Form.Item name='id_cabang' required label="Nama Cabang" rules={[{ required: true }]}>
+              <Select placeholder="Cabang" allowClear onChange={(value) => setSelectedCabang(value) }>
+                {allData.cabang.map(
+                  (value: any) => <Option key={value.id} value={value.id}>{value.nama_perusahaan}</Option>
+                )}
+              </Select>
+            </Form.Item>
+            <Form.Item name='id_aset' required label="Nama Aset" rules={[{ required: true }]}>
+              <Select placeholder="Aset" allowClear disabled={!selectedCabang} onChange={
+                (value) => {
+                  setSelectedAset(value)
+                  console.log("dari aset: ", props.sewaData.filter(
+                    (item) => item.id_aset == selectedAset && item.id_cabang == selectedCabang
+                  ))
+                }
+              }>
+                {allData.aset.filter((item: any) => item.id_cabang == selectedCabang).map(
+                  (value: any) => <Option key={value.id} value={value.id}>{value.nama_aset}</Option>
+                )}
+              </Select>
+            </Form.Item>
+            <Form.Item name='id_pelanggan' required label="Nama Pelanggan" rules={[{ required: true }]}>
+              <Select placeholder="Pelanggan" allowClear>
+                {allData.pelanggan.map(
+                  (value: any) => <Option key={value.id} value={value.id}>{value.nama}</Option>
+                )}
+              </Select>
+            </Form.Item>
             <Form.Item name='no_akte' required label="Nomor Akte" rules={[{ required: true }]}>
               <Input placeholder='Nomor Akte' autoComplete='off' />
             </Form.Item>
@@ -202,28 +230,6 @@ export default function AddSewaModal(props: Status) {
             </Form.Item>
             <Form.Item name='notaris' required label="Notaris" rules={[{ required: true }]}>
               <Input placeholder='Notaris' autoComplete='off' />
-            </Form.Item>
-            <Form.Item name='id_pelanggan' required label="Nama Pelanggan" rules={[{ required: true }]}>
-              <Select placeholder="Pelanggan" allowClear>
-                {allData.pelanggan.map(
-                  (value: any) => <Option key={value.id} value={value.id}>{value.nama}</Option>
-                )}
-              </Select>
-            </Form.Item>
-
-            <Form.Item name='id_cabang' required label="Nama Cabang" rules={[{ required: true }]}>
-              <Select placeholder="Cabang" allowClear onChange={(value) => { setSelectedCabang(value) }}>
-                {allData.cabang.map(
-                  (value: any) => <Option key={value.id} value={value.id}>{value.nama_perusahaan}</Option>
-                )}
-              </Select>
-            </Form.Item>
-            <Form.Item name='id_aset' required label="Nama Aset" rules={[{ required: true }]}>
-              <Select placeholder="Aset" allowClear disabled={!selectedCabang}>
-                {allData.aset.filter((item: any) => item.id_cabang == selectedCabang).map(
-                  (value: any) => <Option key={value.id} value={value.id}>{value.nama_aset}</Option>
-                )}
-              </Select>
             </Form.Item>
             <Form.Item
               name='masa_sewa' required label="Masa Sewa" rules={[{ required: true }]}>
@@ -242,7 +248,15 @@ export default function AddSewaModal(props: Status) {
                   }
                   setDiffPeriod({ tahun: years, bulan: months });
                 }
-              }} format={dateFormat} />
+              }} format={dateFormat} 
+              disabledDate={(current) => {
+                try {
+                  return props.sewaData.filter(i => i.id_aset == selectedAset && i.id_cabang == selectedCabang).some(
+                    range => current.isBetween(dayjs(range.start_date_sewa, dateFormat), dayjs(range.end_date_sewa, dateFormat), null, '[]')
+                  )
+                } catch (e) { return false}
+              }}
+              />
             </Form.Item>
             <Form.Item name='periode_pembayaran' required label="Periode Pembayaran" initialValue={props.form.getFieldValue('periode_pembayaran') ? 'Pertahun' : 'Pertahun'}>
               <Radio.Group value={periodePembayaran} onChange={(e: RadioChangeEvent) => {
@@ -294,7 +308,6 @@ export default function AddSewaModal(props: Status) {
                 src={previewImage}
               />
             }
-
           </Col>
         </Row>
         <Row>

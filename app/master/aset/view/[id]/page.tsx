@@ -1,7 +1,7 @@
 'use client'
 import { DataAset } from '@/app/types/master';
 import { FilePdfOutlined, SnippetsOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, Flex, Image, Modal, Space, Tabs } from 'antd';
+import { Button, Card, Descriptions, Flex, Image, Modal, Space, Tabs, Tag } from 'antd';
 import Title from 'antd/es/typography/Title';
 import { Span } from 'next/dist/trace';
 import Link from 'next/link';
@@ -50,14 +50,10 @@ export default function Page({ params }: { params: { id: string } }) {
         column={2}
         items={[
           {
-            key: '1',
-            label: 'Nama Aset',
-            children: asetData?.nama_aset,
-          },
-          {
-            key: '2',
-            label: 'ID Aset',
-            children: asetData?.id_aset
+            key: '18',
+            label: 'Cabang',
+            children: asetData?.cabang,
+            span: { md: 2 }
           },
           {
             key: '3',
@@ -68,8 +64,21 @@ export default function Page({ params }: { params: { id: string } }) {
           {
             key: '4',
             label: 'Kota',
-            children: asetData?.kota
+            children: asetData?.kota,
+            span: { md: 2 }
           },
+          {
+            key: '1',
+            label: 'Nama Aset',
+            children: asetData?.nama_aset,
+          },
+          {
+            key: '2',
+            label: 'ID Aset',
+            children: asetData?.id_aset
+          },
+
+
           {
             key: '5',
             label: 'Tipe Aset',
@@ -128,7 +137,7 @@ export default function Page({ params }: { params: { id: string } }) {
           {
             key: '16',
             label: 'Listrik Milik PLN?',
-            children: asetData?.is_pln
+            children: (asetData?.is_pln == 1) ? <Tag color='success'>Ya</Tag> : <Tag color='default'>Tidak</Tag>
           },
           {
             key: '17',

@@ -76,8 +76,6 @@ export async function POST(request: Request, response: Response) {
               dayjs(item.periode_pembayaran, "YYYY-MM").isSame(bulan_ipl)
           )
       );
-      console.log("nonExist: ", nonExist)
-
       if (nonExist.length > 0) {
         nonExist.forEach((e) => {
           conn.query(
@@ -119,7 +117,6 @@ export async function POST(request: Request, response: Response) {
       conn.end();
       return Response.json({ status: 200 });
     } else if (value.requestType == "delete_period") {
-      console.log("data --=> ", data);
       await conn.query(
         `delete from transaksi_ipl 
         where periode_pembayaran = ?

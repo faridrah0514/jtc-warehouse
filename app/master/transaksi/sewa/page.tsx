@@ -1,9 +1,8 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 
-import { Button, Flex, Form, Popconfirm, Table, TableProps, Tag } from 'antd'
+import { Button, Flex, Form, Popconfirm, Spin, Table, Tag } from 'antd'
 import AddSewaModal from './AddSewaModal'
-import { DataCabang } from '@/app/types/master'
 import Title from 'antd/es/typography/Title'
 import dayjs from 'dayjs';
 import { _renderCurrency } from '@/app/utils/renderCurrency'
@@ -26,125 +25,144 @@ const column = [
 ]
 export default function Page() {
 
-  const [sewaData, setSewaData] = useState<any[]>();
+  const [sewaData, setSewaData] = useState<any[]>([]);
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
   const [isEdit, setIsEdit] = useState<boolean>(false)
+  const [loading, setLoading] = useState(true);
   const [form] = Form.useForm()
   const [maxId, setMaxId] = useState<number>(0)
 
+  async function getData() {
+    try {
+      const response = await fetch('/api/master/transaksi/sewa', { method: 'GET', cache: 'no-store' })
+      const data = await response.json()
+      if (data) {
+        data.data.map((v: any, i: number) => {
+          v.no = i + 1
+          v.harga_rp = _renderCurrency(v.harga)
+          v.total_biaya_sewa_rp = _renderCurrency(v.total_biaya_sewa)
+          v.ipl_rp = _renderCurrency(v.ipl)
+          return v
+        })
+        console.log("data.data: ", data.data)
+        setSewaData(data.data)
+        setMaxId(data.maxId[0].max_id)
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(
     () => {
-      async function getData() {
-        const response = await fetch('/api/master/transaksi/sewa', { method: 'GET', cache: 'no-store' })
-        const data = await response.json()
-        if (data) {
-          data.data.map((v: any, i: number) => {
-            v.no = i + 1
-            v.harga_rp = _renderCurrency(v.harga)
-            v.total_biaya_sewa_rp = _renderCurrency(v.total_biaya_sewa)
-            v.ipl_rp = _renderCurrency(v.ipl)
-            return v
-          })
-          setSewaData(data.data)
-          setMaxId(data.maxId[0].max_id)
-        }
-      }
       getData()
     }, [triggerRefresh]
   )
+
   return (
     <>
       <Title level={3}>Halaman Data Master Transaksi - Sewa</Title>
       <Flex className='pb-5' gap={'small'} vertical={false}>
         <Button onClick={() => { setOpenModal(true) }}>+ Transaksi Sewa</Button>
       </Flex>
-      <AddSewaModal maxId={maxId} form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
-      <Table className='overflow-auto'
-        scroll={{ x: 2000 }}
-        // scroll={true}
-        columns={[...column, {
-          title: "Dokumen",
-          key: "dokumen",
-          width: 350,
-          render: (_, record) => (
-            <ul>
-              {record.list_files.map((v: string, idx: number) => {
-                return (
-                  <li key={idx}>
-                    <a href={`/upload/txs/${record.id_transaksi}/${v}`} target="_blank" rel="noopener noreferrer">{v}</a>
-                  </li>
-                )
-              })}
-            </ul>
-          )
-        }, 
-        {
-          title: "Status Sewa",
-          key: "status_sewa",
-          render: (_, record: any) => {
-            const today = dayjs() 
-            if (dayjs(record.start_date_sewa, "DD-MM-YYYY") > today)
-              return <Tag color='processing'>Akan Datang</Tag>
-            else if (dayjs(record.start_date_sewa, "DD-MM-YYYY") <= today && today <= dayjs(record.end_date_sewa, "DD-MM-YYYY"))
-              return <Tag color='success'>Aktif</Tag>
-            else
-              return <Tag color='default'>Non-Aktif</Tag>
-          }
-        },
-        {
-          title: "Action",
-          key: "action",
-          render: (_, record:any ) => (
-            <Flex gap="small">
-              <Button type="primary" ghost size="small" onClick={
-                () => {
-                  setOpenModal(true)
-                  setIsEdit(true)
-                  record.tanggal_akte = dayjs(record.tanggal_akte_1, 'DD-MM-YYYY')
-                  record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
-                  form.setFieldsValue(record)
-                  setTriggerRefresh(!triggerRefresh)
-                }
-              }>
-                Edit
-              </Button>
-              <Popconfirm
-                title="sure to delete?"
-                onConfirm={
-                  async function deleteCabang() {
-                    const requstType = 'delete'
-                    const result = await fetch('/api/master/transaksi/sewa', {
-                      method: "POST",
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({
-                        requestType: requstType,
-                        data: { id: record.id, id_transaksi: record.id_transaksi }
-                      })
-                    })
-                    if (result.status == 200) {
+      {(loading) ?
+        <div className="flex justify-center items-center">
+          <Spin size="large" />
+        </div>
+        :
+        <>
+          <AddSewaModal sewaData={sewaData} maxId={maxId} form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
+          <Table className='overflow-auto'
+            scroll={{ x: 2000 }}
+            // scroll={true}
+            columns={[...column, {
+              title: "Dokumen",
+              key: "dokumen",
+              width: 350,
+              render: (_, record) => (
+                <ul>
+                  {record.list_files.map((v: string, idx: number) => {
+                    return (
+                      <li key={idx}>
+                        <a href={`/upload/txs/${record.id_transaksi}/${v}`} target="_blank" rel="noopener noreferrer">{v}</a>
+                      </li>
+                    )
+                  })}
+                </ul>
+              )
+            },
+            {
+              title: "Status Sewa",
+              key: "status_sewa",
+              render: (_, record: any) => {
+                const today = dayjs()
+                if (dayjs(record.start_date_sewa, "DD-MM-YYYY") > today)
+                  return <Tag color='processing'>Akan Datang</Tag>
+                else if (dayjs(record.start_date_sewa, "DD-MM-YYYY") <= today && today <= dayjs(record.end_date_sewa, "DD-MM-YYYY"))
+                  return <Tag color='success'>Aktif</Tag>
+                else
+                  return <Tag color='default'>Non-Aktif</Tag>
+              }
+            },
+            {
+              title: "Action",
+              key: "action",
+              render: (_, record: any) => (
+                <Flex gap="small">
+                  <Button type="primary" ghost size="small" onClick={
+                    () => {
+                      setOpenModal(true)
+                      setIsEdit(true)
+                      record.tanggal_akte = dayjs(record.tanggal_akte_1, 'DD-MM-YYYY')
+                      record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
+                      form.setFieldsValue(record)
                       setTriggerRefresh(!triggerRefresh)
                     }
-                  }
-                }
-              >
-                <Button size="small" danger>
-                  Delete
-                </Button>
-              </Popconfirm>
-            </Flex>
-          ),
-          width: 75
-        }]}
-        dataSource={sewaData?.map((item: any, index: number) => ({ ...item, key: index }))}
-        rowKey='id'
-        size='small'
-        loading={sewaData ? false : true}
-        bordered
-      />
+                  }>
+                    Edit
+                  </Button>
+                  <Popconfirm
+                    title="sure to delete?"
+                    onConfirm={
+                      async function deleteCabang() {
+                        const requstType = 'delete'
+                        await fetch('/api/master/transaksi/sewa', {
+                          method: "POST",
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            requestType: requstType,
+                            data: { id: record.id, id_transaksi: record.id_transaksi }
+                          })
+                        }).then((res) => res.json())
+                          .then((res) => {
+                            if (res.status == 200) {
+                              setTriggerRefresh(!triggerRefresh)
+                            }
+                          })
+                      }
+                    }
+                  >
+                    <Button size="small" danger>
+                      Delete
+                    </Button>
+                  </Popconfirm>
+                </Flex>
+              ),
+              width: 75
+            }]}
+            dataSource={sewaData?.map((item: any, index: number) => ({ ...item, key: index }))}
+            rowKey='id'
+            size='small'
+            loading={sewaData ? false : true}
+            bordered
+          />
+        </>
+      }
     </>
-
   )
 }

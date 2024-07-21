@@ -10,7 +10,6 @@ export default function Page() {
   async function getData() {
     const response = await fetch('/api/dashboard', { method: 'GET', cache: 'no-store' })
     const data = await response.json()
-    console.log("data: ", data)
     if (data) {
       setAllData(data)
     }
