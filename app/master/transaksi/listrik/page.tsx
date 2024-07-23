@@ -81,12 +81,13 @@ export default function Page() {
             key: "status_sewa",
             render: (_, record: any) => {
               const today = dayjs() 
-              if (dayjs(record.start_date_sewa, "DD-MM-YYYY") > today)
-              { setStatusSewa('akanDatang'); return <Tag color='processing'>Akan Datang</Tag>}
-              else if (dayjs(record.start_date_sewa, "DD-MM-YYYY") <= today && today <= dayjs(record.end_date_sewa, "DD-MM-YYYY"))
-              { setStatusSewa('aktif'); return <Tag color='success'>Aktif</Tag>}
-              else
-              { setStatusSewa('nonAktif'); return <Tag color='default'>Non-Aktif</Tag>} 
+              return (<Tag color={(record.statusSewa == 'Aktif') ? 'success' : (record.statusSewa == 'Akan Datang') ? 'processing' : 'default'}>{record.statusSewa}</Tag>)
+              // if (dayjs(record.start_date_sewa, "DD-MM-YYYY") > today)
+              // { setStatusSewa('akanDatang'); return <Tag color='processing'>Akan Datang</Tag>}
+              // else if (dayjs(record.start_date_sewa, "DD-MM-YYYY") <= today && today <= dayjs(record.end_date_sewa, "DD-MM-YYYY"))
+              // { setStatusSewa('aktif'); return <Tag color='success'>Aktif</Tag>}
+              // else
+              // { setStatusSewa('nonAktif'); return <Tag color='default'>Non-Aktif</Tag>} 
             }
           },
           {
@@ -112,11 +113,11 @@ export default function Page() {
         expandable={{
           // fixed:'left',
           expandedRowRender: (record) => {
-            const columns = [
-              {
-                title: 'Jenis Dokumen', dataIndex: 'fileType', key: 'fileType',
-              },
-            ]
+            // const columns = [
+            //   {
+            //     title: 'Jenis Dokumen', dataIndex: 'fileType', key: 'fileType',
+            //   },
+            // ]
             return <Table size='small' columns={[
               ...column,
               {

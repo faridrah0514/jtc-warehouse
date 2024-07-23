@@ -45,7 +45,6 @@ export default function Page() {
           v.ipl_rp = _renderCurrency(v.ipl)
           return v
         })
-        console.log("data.data: ", data.data)
         setSewaData(data.data)
         setMaxId(data.maxId[0].max_id)
       }

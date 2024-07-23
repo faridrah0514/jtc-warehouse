@@ -137,17 +137,17 @@ export default function AddAssetModal(props: Status) {
           'Content-Type': 'application/json',
         },
       }).then((res) => res.json())
-      .then((res) => {
-        if (res.status == 200) {
-          message.success("Edit aset berhasil")
-        } else {
-          message.error("Edit aset gagal")
-        }
-      }).catch(() => message.error("Edit aset gagal"))
-      .finally(() => {
-        props.setOpenModal(false)
-        setUploading(false)
-      })
+        .then((res) => {
+          if (res.status == 200) {
+            message.success("Edit aset berhasil")
+          } else {
+            message.error("Edit aset gagal")
+          }
+        }).catch(() => message.error("Edit aset gagal"))
+        .finally(() => {
+          props.setOpenModal(false)
+          setUploading(false)
+        })
     } else {
       value.id_aset = 'CB-' + value.id_cabang.toString().padStart(4, "0") + '-' + value.id_aset
       await fetch('/api/master/aset/add', {
@@ -459,10 +459,11 @@ export default function AddAssetModal(props: Status) {
                             <Input placeholder='Luas Tanah' autoComplete='off' />
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
-                          <Form.Item name='luas_bangunan' label='Luas Bangunan'>
+                        <Col span={12}> 
+                        <></>
+                          {/* <Form.Item name='luas_bangunan' label='Luas Bangunan'>
                             <Input placeholder='Luas Bangunan' autoComplete='off' />
-                          </Form.Item>
+                          </Form.Item> */}
                         </Col>
                       </Row>
                       <Row>
@@ -472,12 +473,31 @@ export default function AddAssetModal(props: Status) {
                           </Form.Item>
                         </Col> */}
                         <Col span={12}>
-                          <Form.Item name='luas_lt1' label='Luas Lantai 1'>
+                          <Form.Item name='luas_lt1' label='Luas Lantai 1'
+                            rules={[
+                              // { required: true, message: 'Please input a number!' },
+                              {
+                                validator: (_, value) =>
+                                  value && !isNaN(Number(value))
+                                    ? Promise.resolve()
+                                    : Promise.reject('masukkan angka spt 60.5'),
+                              },
+                            ]}>
                             <Input placeholder='Luas Lt.1' autoComplete='off' />
                           </Form.Item>
                         </Col>
                         <Col span={12}>
-                          <Form.Item name='luas_lt2' label='Luas Lantai 2'>
+                          <Form.Item name='luas_lt2' label='Luas Lantai 2'
+                            rules={[
+                              // { required: true, message: 'Please input a number!' },
+                              {
+                                validator: (_, value) =>
+                                  value && !isNaN(Number(value))
+                                    ? Promise.resolve()
+                                    : Promise.reject('masukkan angka spt 60.5'),
+                              },
+                            ]}
+                          >
                             <Input placeholder='Luas Lt.2' autoComplete='off' />
                           </Form.Item>
                         </Col>

@@ -146,7 +146,6 @@ export default function AddSewaModal(props: Status) {
     const dataCabang = (await allCabang.json()).data.map((value: DataCabang) => {
       return { id: value.id, nama_perusahaan: value.nama_perusahaan }
     })
-    console.log("props.sewaData: ", props.sewaData)
     const dataPelanggan = (await allPelanggan.json()).data.map((value: DataPelanggan) => { return { id: value.id, nama: value.nama } })
     const dataAset = (await allAset.json()).data.map((value: DataAset) => { return { id: value.id, nama_aset: value.nama_aset, id_cabang: value.id_cabang } })
     if (dataCabang || dataPelanggan || dataAset) {
@@ -155,7 +154,6 @@ export default function AddSewaModal(props: Status) {
         pelanggan: dataPelanggan,
         aset: dataAset
       })
-      console.log("dataCabang: ", dataCabang, "dataAset: ", dataAset, "dataPelanggan: ", dataPelanggan, "sewaData: ", props.sewaData)
     }
     if (props.isEdit && props.openModal) {
       const masa_sewa = props.form.getFieldValue("masa_sewa")
@@ -203,9 +201,6 @@ export default function AddSewaModal(props: Status) {
               <Select placeholder="Aset" allowClear disabled={!selectedCabang} onChange={
                 (value) => {
                   setSelectedAset(value)
-                  console.log("dari aset: ", props.sewaData.filter(
-                    (item) => item.id_aset == selectedAset && item.id_cabang == selectedCabang
-                  ))
                 }
               }>
                 {allData.aset.filter((item: any) => item.id_cabang == selectedCabang).map(

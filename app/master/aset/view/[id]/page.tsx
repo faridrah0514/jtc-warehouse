@@ -122,7 +122,7 @@ export default function Page({ params }: { params: { id: string } }) {
           {
             key: '13',
             label: 'Luas Bangunan',
-            children: asetData?.luas_bangunan,
+            children: Number(asetData?.luas_lt1) + Number(asetData?.luas_lt2),
           },
           {
             key: '14',

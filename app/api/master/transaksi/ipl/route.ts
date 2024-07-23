@@ -12,11 +12,13 @@ dayjs.extend(customParseFormat);
 export async function GET() {
   const conn = openDB();
   const query = `
-      select ti.*, a.nama_aset, c.nama_perusahaan nama_cabang, p.nama nama_pelanggan, a.ipl ipl from transaksi_ipl ti
+      select ti.*, a.nama_aset, c.nama_perusahaan nama_cabang, p.nama nama_pelanggan, ts.ipl ipl from transaksi_ipl ti
       left join aset a on a.id = ti.id_aset
       left join cabang c on c.id = ti.id_cabang
       left join pelanggan p on p.id = ti.id_pelanggan
+      left join transaksi_sewa ts on ts.id_cabang = ti.id_cabang and ts.id_aset = ti.id_aset and ts.id_pelanggan = ti.id_pelanggan
       order by ti.periode_pembayaran asc
+      
     `;
   const [data, _]: [RowDataPacket[], any] = await conn.execute(query);
   let obj: { [key: string]: any[] } = {};
