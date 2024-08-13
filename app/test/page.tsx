@@ -1,22 +1,56 @@
 'use client'
-import React, { useEffect, useState } from 'react'
-
-import dynamic from 'next/dynamic'; // Import dynamic from next/dynamic
-import { DatePicker, Image, Tabs } from 'antd';
-const { RangePicker } = DatePicker;
+import React, { useRef, useState } from 'react';
+import { Button, DatePicker } from 'antd';
 import dayjs from 'dayjs';
+import { useReactToPrint } from 'react-to-print';
 
+const { RangePicker } = DatePicker;
 const dateFormat = 'YYYY/MM/DD';
 
-export default function page() {
+const Page = () => {
+  const componentRef = useRef<HTMLDivElement>(null);
+  const [a, setA] = useState<string>('');
+
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+    onBeforeGetContent: () => {
+      return new Promise<void>((resolve) => {
+        setA('bijiiii');
+        resolve();
+      });
+    },
+  });
+
   return (
     <>
-      <RangePicker></RangePicker>
-      <RangePicker
-      defaultValue={[dayjs('2015/01/01', dateFormat), dayjs('2015/01/01', dateFormat)]}
-      format={dateFormat}
-    />
+      <Button onClick={handlePrint}>Print</Button>
+      <div ref={componentRef}>
+        <div className="print-only">
+          elelelelelelel {a}
+        </div>
+        <RangePicker />
+        <RangePicker
+          defaultValue={[dayjs('2015/01/01', dateFormat), dayjs('2015/01/01', dateFormat)]}
+          format={dateFormat}
+        />
+      </div>
+      <style jsx>{`
+        .print-only {
+          display: none;
+        }
+
+        @media print {
+          .print-only {
+            display: block;
+          }
+
+          .no-print {
+            display: none;
+          }
+        }
+      `}</style>
     </>
-  )
+  );
 }
 
+export default Page;

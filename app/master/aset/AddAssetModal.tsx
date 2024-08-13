@@ -459,8 +459,8 @@ export default function AddAssetModal(props: Status) {
                             <Input placeholder='Luas Tanah' autoComplete='off' />
                           </Form.Item>
                         </Col>
-                        <Col span={12}> 
-                        <></>
+                        <Col span={12}>
+                          <></>
                           {/* <Form.Item name='luas_bangunan' label='Luas Bangunan'>
                             <Input placeholder='Luas Bangunan' autoComplete='off' />
                           </Form.Item> */}
@@ -475,12 +475,17 @@ export default function AddAssetModal(props: Status) {
                         <Col span={12}>
                           <Form.Item name='luas_lt1' label='Luas Lantai 1'
                             rules={[
-                              // { required: true, message: 'Please input a number!' },
                               {
-                                validator: (_, value) =>
-                                  value && !isNaN(Number(value))
+                                validator: (_, value) => {
+                                  if (!value) {
+                                    // Allow empty values (non-required)
+                                    return Promise.resolve();
+                                  }
+                                  // Validate the number if it's not empty
+                                  return !isNaN(Number(value))
                                     ? Promise.resolve()
-                                    : Promise.reject('masukkan angka spt 60.5'),
+                                    : Promise.reject('masukkan angka spt 60.5');
+                                },
                               },
                             ]}>
                             <Input placeholder='Luas Lt.1' autoComplete='off' />
@@ -489,12 +494,17 @@ export default function AddAssetModal(props: Status) {
                         <Col span={12}>
                           <Form.Item name='luas_lt2' label='Luas Lantai 2'
                             rules={[
-                              // { required: true, message: 'Please input a number!' },
                               {
-                                validator: (_, value) =>
-                                  value && !isNaN(Number(value))
+                                validator: (_, value) => {
+                                  if (!value) {
+                                    // Allow empty values (non-required)
+                                    return Promise.resolve();
+                                  }
+                                  // Validate the number if it's not empty
+                                  return !isNaN(Number(value))
                                     ? Promise.resolve()
-                                    : Promise.reject('masukkan angka spt 60.5'),
+                                    : Promise.reject('masukkan angka spt 60.5');
+                                },
                               },
                             ]}
                           >

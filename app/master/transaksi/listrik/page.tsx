@@ -60,7 +60,7 @@ export default function Page() {
           v.statusSewa = 'Non-Aktif'
         return v
       })
-      setDataSewa(dataSewa.data.filter((value: any) => value.is_pln == 1))
+      setDataSewa(dataSewa.data.filter((value: any) => value.is_pln == 0))
     }
   }
 

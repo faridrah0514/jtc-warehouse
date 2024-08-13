@@ -2,6 +2,7 @@ import {
     CreditCardOutlined,
     FolderOpenOutlined,
     HomeOutlined,
+    InsertRowLeftOutlined,
     PartitionOutlined,
     PieChartOutlined,
     SolutionOutlined,
@@ -38,5 +39,6 @@ export const items: MenuItem[] = [
         getItem(<Link href='/master/transaksi/listrik'>Listrik</Link>, 'Listrik', <ThunderboltOutlined/>),
         getItem(<Link href='/master/transaksi/ipl'>IPL</Link>, 'IPL', <HomeOutlined/>),
     ]),
+    getItem(<Link href='/master/laporan'>Laporan</Link>, 'Laporan', <InsertRowLeftOutlined/>),
 ];
 
