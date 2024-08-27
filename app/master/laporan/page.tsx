@@ -1,12 +1,13 @@
 'use client'
 import React, { useEffect, useState, useRef } from 'react'
 
-import { Button, ConfigProvider, Divider, Flex, Form, Modal, Popconfirm, Spin, Table, TableProps } from 'antd'
+import { Button, ConfigProvider, Divider, Flex, Form, Modal, Popconfirm, Spin, Table, TableProps, message } from 'antd'
 import Title from 'antd/es/typography/Title'
 import AddLaporanModal from './AddLaporanModal'
 import { useReactToPrint } from 'react-to-print'
 
 const column = [
+  // { title: "TEST", },
   { title: "Nomor", dataIndex: 'key', key: 'no' },
   { title: "Laporan", dataIndex: 'jenis_laporan', key: 'jenis_laporan' },
   { title: "Nama Cabang", dataIndex: 'nama_cabang', key: 'nama_cabang' },
@@ -26,6 +27,9 @@ export default function Page() {
   const [printedData, setPrintedData] = useState<any>(undefined)
   const [variable, setVariable] = useState<any>(null)
   const componentRef = useRef(null)
+  const [asetData, setAsetData] = useState<string>('')
+  const [cabangData, setCabangData] = useState<string>('')
+  const [jenisLaporan, setJenisLaporan] = useState<string>('')
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
@@ -68,12 +72,19 @@ export default function Page() {
     });
 
     const res = await response.json();
+    console.log("res ---> ", res)
     setPrintedData(res.laporan);
+    setCabangData(res.cabang);
+    setAsetData(res.aset);
+    setJenisLaporan(res.jenis_laporan)
+    // setPrintedColumn(
+    //   res.columnNames.map((val: any, idx: number) => {
+    //     return { title: val.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '), dataIndex: val, key: val };
+    //   })
+    // );
     setPrintedColumn(
-      res.columnNames.map((val: any, idx: number) => {
-        return { title: val.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '), dataIndex: val, key: val };
-      })
-    ); 
+      res.columnNames
+    )
   }
 
   async function getData() {
@@ -96,6 +107,17 @@ export default function Page() {
     }, [triggerRefresh]
   )
 
+  // Function to apply custom row class
+//   const rowClassName = (record: any) => {
+//     return record.rowHead === 'Total Tagihan' ? 'bold-row' : '';
+//   };
+
+//   // Define CSS style for bold row
+//   const styles = `
+//   .bold-row {
+//     font-weight: bold;
+//   }
+// `;
   return (
     <>
       <Title level={3}>Halaman Laporan</Title>
@@ -115,27 +137,68 @@ export default function Page() {
                 key: 'action',
                 render: (_, record) => (
                   <>
-                    <Button type="link" ghost size="small" onClick={
-                      () => {
-                        handleButtonClick(record)
-                      }
-                    }>
-                      Print
-                    </Button>
+                    <Flex>
+                      <Button type="link" ghost size="small" onClick={
+                        () => {
+                          handleButtonClick(record)
+                        }
+                      }>
+                        Print
+                      </Button>
+                      <Popconfirm
+                        title="sure to delete?"
+                        onConfirm={
+                          async function deleteCabang() {
+                            const result = await (await fetch('/api/master/laporan', {
+                              method: "POST",
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                data: { id: record.id },
+                                requestType: 'delete_laporan'
+                              })
+                            })).json()
+                            setTriggerRefresh(!triggerRefresh)
+                            if (result.status == 200) {
+                              message.success("Delete berhasil")
+                            } else {
+                              message.error(result.error)
+                            }
+                          }
+                        }
+                      >
+                        <Button size="small" danger>
+                          Delete
+                        </Button>
+                      </Popconfirm>
+                    </Flex>
                   </>
                 )
               }
-            ]} dataSource={allData.laporanData.map((item: any, index: number) => ({ ...item, key: index + 1 }))}></Table>
+            ]} dataSource={allData.laporanData?.map((item: any, index: number) => ({ ...item, key: index + 1 }))}></Table>
           <div ref={componentRef} className='print-only'>
-            <div className='print-only mb-10'>
-              <Title level={3} style={{ margin: 0 }}>DATA ASET MILIK PT.JTC WAREHOUSE</Title>
-              <Title level={3} style={{ margin: 0 }}>Kantor pusat: xxxxxx, email: xxxx</Title>
-              <Title level={4} style={{ margin: 0 }}>No. tlp: 0812xxxxx</Title>
-              <Divider></Divider>
-
+            <div>
+              <Title level={3} style={{ margin: 0 }}>CV. JAMBI TRADE CENTER</Title>
+              <Title level={3} style={{ margin: 0 }}>JAMBI</Title>
+              <br></br>
+              <Title level={4} style={{ margin: 0 }}>{jenisLaporan}</Title>
             </div>
-            <Table size='small' bordered columns={printedColumn} dataSource={printedData?.map((item: any, index: number) => ({ ...item, key: index }))}></Table>
-
+            <div>
+              <Flex justify='space-between' className='mb-0'>
+                <Title level={5} style={{ margin: 0 }}>A/N: {cabangData}</Title>
+                <Title level={5} style={{ margin: 0 }}>{asetData}</Title>
+              </Flex>
+            </div>
+            <div>
+              <Divider className='mb-1 pb-0'></Divider>
+            </div>
+            <Table size='small' 
+            bordered columns={printedColumn} 
+            dataSource={printedData?.map((item: any, index: number) => ({ ...item, key: index }))} 
+            rowKey="rowHead"
+            rowClassName={(record) => record.rowHead === 'Total Tagihan' ? 'font-bold' : ''}
+            />
           </div>
           <style jsx global>{`
             .print-only {

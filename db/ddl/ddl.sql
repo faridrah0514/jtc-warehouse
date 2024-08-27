@@ -134,3 +134,14 @@ CREATE TABLE
     FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id`),
     FOREIGN KEY (`id_aset`) REFERENCES `aset` (`id`)
   )
+
+-- jtc_warehouse.laporan definition
+
+CREATE TABLE `laporan` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nama_cabang` json DEFAULT NULL,
+  `nama_aset` json DEFAULT NULL,
+  `periode` json DEFAULT NULL,
+  `jenis_laporan` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+)

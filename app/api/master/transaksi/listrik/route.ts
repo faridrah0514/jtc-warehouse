@@ -18,6 +18,7 @@ export async function GET() {
       left join aset a on tl.id_aset = a.id
     `
     const [data, _] = await conn.execute(query)
+    console.log("Data ----> ", data)
     conn.end()
     return Response.json({ data: data})
 }
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
     const conn = openDB();
     const value = await request.json();
     const data = value.data;
+    console.log("Data ----> ", data)
     if (value.requestType == "add") {
       await conn.query(
         `insert into transaksi_listrik (

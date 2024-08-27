@@ -6,6 +6,7 @@ import { CurrencyInput } from '@/app/components/currencyInput/currencyInput'
 import { SearchOutlined } from '@ant-design/icons'
 const { Option } = Select;
 const { RangePicker } = DatePicker;
+import dayjs from 'dayjs';
 
 interface Status {
   openModal: boolean,
@@ -19,8 +20,8 @@ interface Status {
 
 export default function AddLaporanModal(props: Status) {
 
-  const CABANG_OPTIONS = props.data.cabangData.map((val: any, idx: number) => { return { key: idx, id: val.id, name: val.nama_perusahaan}})
-  const ASET_OPTIONS = props.data.asetData.map((val: any, idx: number) => { return {key: idx, id: val.id, name: val.nama_aset, cabangId: val.id_cabang}})
+  const CABANG_OPTIONS = props.data.cabangData.map((val: any, idx: number) => { return { key: idx, id: val.id, name: val.nama_perusahaan } })
+  const ASET_OPTIONS = props.data.asetData.map((val: any, idx: number) => { return { key: idx, id: val.id, name: val.nama_aset, cabangId: val.id_cabang } })
 
   const [uploading, setUploading] = useState(false);
   const [loading, setloading] = useState(true);
@@ -50,19 +51,23 @@ export default function AddLaporanModal(props: Status) {
 
 
   async function addLaporan(value: any) {
-    
+
     // const result = await 
     // value.aset = value.aset.map((v) => )
-    value.aset = value.aset.map((asetId: number) => {
-      const foundAset = ASET_OPTIONS.find((option:any) => option.id === asetId);
+    value.aset = value.aset?.map((asetId: number) => {
+      const foundAset = ASET_OPTIONS.find((option: any) => option.id === asetId);
       return foundAset ? foundAset.name : null;
-    });
+    }).join(', ');
 
     value.cabang = value.cabang.map((cabangId: number) => {
-      const foundCabang = CABANG_OPTIONS.find((option:any) => option.id === cabangId);
+      const foundCabang = CABANG_OPTIONS.find((option: any) => option.id === cabangId);
       return foundCabang ? foundCabang.name : null;
-    });
-
+    }).join(', ');
+    if (value.jenis_laporan === 'transaksi_listrik_bulanan') {
+      value.periode = dayjs(value.periode).format('MM-YYYY'); // Format as month-year
+    } else {
+      value.periode = dayjs(value.periode).year().toString(); // Format as year only
+    }
     fetch('/api/master/laporan', {
       method: 'POST',
       body: JSON.stringify({
@@ -98,16 +103,19 @@ export default function AddLaporanModal(props: Status) {
             <Input placeholder='id' autoComplete='off' />
           </Form.Item>
         } */}
-        <Form.Item name='jenis_laporan' required label="Jenis Laporan" rules={[{ required: true }]}>
-          <Select placeholder='Jenis Laporan' allowClear onChange={(value) => setJenisLaporan(value)}>
-            <Option value='cabang'>Cabang</Option>
-            <Option value='aset'>Aset</Option>
-            <Option value='transaksi_sewa'>Transaksi Sewa</Option>
-            {/* <Option value='transaksi_listrik'>Transaksi Listrik</Option> */}
-            {/* <Option value='transaksi_ipl'>Transaksi IPL</Option> */}
+        <Form.Item name='jenis_laporan' label="Jenis Laporan" required rules={[{ required: true }]}>
+          <Select placeholder='Jenis Laporan' allowClear onChange={(value) => { setJenisLaporan(value); props.form.resetFields(); props.form.setFieldValue('jenis_laporan', value) }}>
+            {/* <Option value='cabang'>Cabang</Option> */}
+            {/* <Option value='aset'>Aset</Option> */}
+            {/* <Option value='transaksi_sewa'>Transaksi Sewa</Option> */}
+            <Option value='jatuh_tempo'>Jatuh Tempo</Option>
+            <Option value='transaksi_listrik_bulanan'>Transaksi Listrik Bulanan</Option>
+            <Option value='transaksi_listrik_tahunan'>Transaksi Listrik Tahunan</Option>
+            <Option value='transaksi_ipl'>Transaksi IPL</Option>
+            <Option value='daftar_penyewa_per_blok'>Daftar Penyewa Per-Blok</Option>
           </Select>
         </Form.Item>
-        <Form.Item name='cabang' label="Cabang">
+        <Form.Item name='cabang' label="Cabang" required rules={[{ required: true }]}>
           <Select
             mode="multiple"
             placeholder="Pilih Cabang"
@@ -121,13 +129,20 @@ export default function AddLaporanModal(props: Status) {
             }))}
           />
         </Form.Item>
-        <Form.Item name='aset' label="Aset">
+        <Form.Item name='aset' label="Aset"
+          required={jenisLaporan === 'jatuh_tempo' || jenisLaporan === 'daftar_penyewa_per_blok'}
+          rules={[
+            {
+              required: jenisLaporan === 'jatuh_tempo' || jenisLaporan === 'daftar_penyewa_per_blok',
+              message: 'Aset is required',
+            },
+          ]}>
           <Select
             disabled={selectedCabang.length === 0}
             mode="multiple"
             placeholder="Pilih Aset"
             value={selectedAset}
-            onChange={(value) => {setSelectedAset(value)}}
+            onChange={(value) => { setSelectedAset(value) }}
             style={{ width: '100%' }}
             options={filteredAset.map((item: any, idx: number) => ({
               key: item.key,
@@ -138,7 +153,7 @@ export default function AddLaporanModal(props: Status) {
         </Form.Item>
         <Form.Item name='periode' label="Periode">
           {/* <RangePicker picker="month" format={'MM-YYYY'} /> */}
-          <DatePicker picker='year' format='YYYY'/>
+          <DatePicker picker={jenisLaporan != 'transaksi_listrik_bulanan' ? 'year' : 'month'} format={jenisLaporan != 'transaksi_listrik_bulanan' ? 'YYYY' : 'MM-YYYY'} />
         </Form.Item>
         <div className="flex justify-end gap-2">
           <Form.Item>
