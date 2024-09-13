@@ -57,38 +57,3 @@ const handler = NextAuth({
 });
 
 export { handler as GET, handler as POST };
-
-// const handler = NextAuth({
-//   providers: [
-//     CredentialsProvider({
-//       name: 'Credentials',
-//       credentials: {
-//         username: { label: 'Username', type: 'text' },
-//         password: { label: 'Password', type: 'password' }
-//       },
-//       authorize(credentials) {
-//         // Hardcoded credentials
-//         const user = { id: '1', name: 'user', username: 'user', password: 'password' };
-//         console.log("credentials -----> ", credentials)
-
-//         if (
-//           credentials?.username === user.username &&
-//           credentials?.password === user.password
-//         ) {
-//           return user;
-//         } else {
-//           return null;
-//         }
-//       }
-//     })
-//   ],
-//   session: {
-//     strategy: 'jwt', // Use JWT strategy if you want token-based sessions
-//     maxAge: 30 * 60 * 8, // Session max age in seconds (e.g., 30 minutes)
-//   },
-//   pages: {
-//     signIn: '/login',
-//   },
-// });
-
-// export { handler as GET, handler as POST };

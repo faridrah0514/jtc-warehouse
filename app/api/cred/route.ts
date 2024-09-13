@@ -11,12 +11,7 @@ const SALT_ROUNDS = 10;
 export async function POST(req: NextRequest) {
   try {
     const { username, oldPassword, newPassword } = await req.json();
-    console.log(
-      "username, oldPassword, newPassword --> ",
-      username,
-      oldPassword,
-      newPassword
-    );
+
     if (!oldPassword || !newPassword) {
       return NextResponse.json(
         { message: "Old password and new password are required" },
@@ -25,16 +20,13 @@ export async function POST(req: NextRequest) {
     }
     // Hash the new password
     const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-    console.log("hashedNewPassword ---> ", hashedNewPassword)
     // Fetch the user from the database and verify the old password
-    //   const userId = 'some-user-id'; // Replace this with actual user ID logic
-    // const connection = await pool.getConnection();
+
     const conn = openDB();
     const [rows] = await conn.query("SELECT * FROM users WHERE username = ?", [
       username,
     ]);
-    // connection.release();
-    console.log("rows ---> ", rows)
+
     const userRows = rows as mysql.RowDataPacket[];
     if (userRows.length === 0) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });

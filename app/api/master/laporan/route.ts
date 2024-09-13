@@ -60,7 +60,7 @@ export async function POST(request: Request, response: Response) {
     const conn = openDB();
     const value = await request.json();
     const data = value.data;
-    console.log("jenis_laporan ---> ", data);
+
     if (value.requestType == "add" && data) {
       await conn.query(
         `
@@ -181,7 +181,6 @@ export async function POST(request: Request, response: Response) {
             " AND c.nama_perusahaan IN (?) order by ti.periode_pembayaran asc";
           queryParams.push(data.nama_cabang.split(", "));
         }
-        console.log("query -> ", query);
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
           queryParams
@@ -232,14 +231,6 @@ export async function POST(request: Request, response: Response) {
             ),
           }));
         const jenis_laporan = "DATA PEMAKAIAN IPL TAHUN " + data.periode;
-        console.log(
-          "------> ",
-          laporan,
-          columnNames,
-          data.nama_aset,
-          data.nama_cabang,
-          jenis_laporan
-        );
         return Response.json({
           laporan,
           columnNames,
@@ -274,7 +265,6 @@ export async function POST(request: Request, response: Response) {
           query += " AND c.nama_perusahaan IN (?)";
           queryParams.push(data.nama_cabang.split(", "));
         }
-        console.log("query -> ", query);
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
           queryParams
@@ -320,7 +310,6 @@ export async function POST(request: Request, response: Response) {
             total_tagihan: _renderCurrency(item.pemakaian * item.kwh_rp),
           };
         });
-        console.log("laporan ---> ", laporan);
         const transformedData = [
           {
             rowHead: "Meteran Awal",
@@ -442,8 +431,6 @@ export async function POST(request: Request, response: Response) {
           query += " c.nama_perusahaan IN (?)";
           queryParams.push(data.nama_cabang.split(", "));
         }
-        console.log("query -> ", query);
-        console.log("queryParams -> ", queryParams);
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
           queryParams
@@ -459,7 +446,6 @@ export async function POST(request: Request, response: Response) {
           berakhir: dayjs(row.berakhir, 'DD-MM-YYYY').format('D MMMM YYYY'), // Format berakhir
           harga_sewa: _renderCurrency(row.harga_sewa),
         }));
-        console.log("laporan --> ", laporan);
         let columnNames = laporanFields
           .map((fields: any) => fields.name)
           .filter((fieldName) => fieldName != "id")
@@ -479,7 +465,6 @@ export async function POST(request: Request, response: Response) {
               key: val,
             };
           });
-        console.log("columnNames ---> ", columnNames)
         const jenis_laporan = "DAFTAR PENYEWA PER-BLOK";
         return Response.json({
           laporan,
@@ -518,7 +503,6 @@ export async function POST(request: Request, response: Response) {
           query += " AND c.nama_perusahaan IN (?)";
           queryParams.push(data.nama_cabang.split(", "));
         }
-        console.log("query -> ", query);
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
           queryParams
@@ -547,8 +531,6 @@ export async function POST(request: Request, response: Response) {
         const jenis_laporan =
           "DATA PEMAKAIAN LISTRIK " +
           dayjs(data.periode, "MM-YYYY").format("MMMM YYYY");
-        console.log("laporan -> ", laporan);
-        console.log("columnNames -> ", columnNames);
         return Response.json({
           laporan,
           columnNames,
@@ -571,7 +553,6 @@ export async function POST(request: Request, response: Response) {
             data.periode,
           ]
         );
-        console.log("laporan ----> ", laporan);
         laporan = laporan.map((data: any, idx: number) => {
           return {
             ...data,
@@ -581,7 +562,6 @@ export async function POST(request: Request, response: Response) {
             ), // Convert to month name in Bahasa Indonesia
           };
         });
-        console.log("data ---> ", data);
         const columnNames = laporanFields
           .map((fields: any) => fields.name)
           .filter((fieldName) => fieldName != "id")
@@ -600,7 +580,6 @@ export async function POST(request: Request, response: Response) {
 
         columnNames.unshift({ title: "No", dataIndex: "no", key: "no" });
 
-        console.log("laporan ----> ", laporan);
         const jenis_laporan = "DAFTAR JATUH TEMPO TAHUN " + data.periode;
         return Response.json({
           laporan,
@@ -613,7 +592,7 @@ export async function POST(request: Request, response: Response) {
     } else if (value.requestType == "delete_laporan") {
       await conn.query(`delete from laporan where id  = ?`, data.id);
     } else {
-      console.log("this");
+      console.log("else");
     }
     conn.end();
     return Response.json({ status: 200, columnNames: [], laporan: [] });

@@ -72,7 +72,6 @@ export default function Page() {
     });
 
     const res = await response.json();
-    console.log("res ---> ", res)
     setPrintedData(res.laporan);
     setCabangData(res.cabang);
     setAsetData(res.aset);

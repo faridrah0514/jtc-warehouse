@@ -13,7 +13,6 @@ const Page: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { data: session, status } = useSession();
 
-  console.log("session ---> ", session)
   const handleChangePassword = async (values: { oldPassword: string; newPassword: string; confirmPassword: string }) => {
     setLoading(true);
     try {
