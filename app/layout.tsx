@@ -1,26 +1,30 @@
-import "./globals.css";
-import DefaultLayout from "./components/defaultLayout/DefaultLayout";
-import type { Metadata } from "next";
-export const metadata: Metadata = {
-  title: "JTC Warehouse",
-  description: "Aplikasi Sewa Gudang JTC Warehouse",
-};
+
+import './globals.css';
 import { Inter } from 'next/font/google';
-import { AntdRegistry } from "@ant-design/nextjs-registry";
-const inter = Inter({ subsets: ["latin"] });
+import { AntdRegistry } from '@ant-design/nextjs-registry';
+import ClientLayout from './components/clientLayout/ClientLayout';
+import SessionProviderWrapper from './components/sessionProviderWrapper/SessionProviderWrapper';
+
+
+export const metadata = {
+  title: 'JTC Warehouse',
+  description: 'Aplikasi Sewa Gudang JTC Warehouse',
+};
+
+const inter = Inter({ subsets: ['latin'] });
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang='en'>
+    <html lang="en">
       <body className={inter.className}>
         <AntdRegistry>
-          <DefaultLayout>
-            {children}
-          </DefaultLayout>
+          <SessionProviderWrapper>
+            <ClientLayout>{children}</ClientLayout>
+          </SessionProviderWrapper>
         </AntdRegistry>
       </body>
     </html>

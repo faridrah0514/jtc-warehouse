@@ -145,3 +145,11 @@ CREATE TABLE `laporan` (
   `jenis_laporan` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 )
+
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,        -- Unique identifier for each user
+  username VARCHAR(255) NOT NULL UNIQUE,    -- Username (must be unique)
+  password_hash VARCHAR(255) NOT NULL,      -- Hashed password (bcrypt hash stored here)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Time of account creation
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- Auto-update timestamp
+);
