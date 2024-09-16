@@ -35,6 +35,10 @@ export default function DefaultLayout({
     const { data: session, status } = useSession();
     const router = useRouter();
 
+    const capitalizedUsername = session?.user?.name
+    ? session.user.name.charAt(0).toUpperCase() + session.user.name.slice(1)
+    : '';
+    console.log("capitalizedUsername:", capitalizedUsername)
     useEffect(() => {
         if (status === 'unauthenticated') {
             // Redirect to login if user is not logged in
@@ -76,7 +80,7 @@ export default function DefaultLayout({
                                 },
                                 {
                                     type: 'divider',
-                                }, 
+                                },
                                 {
                                     key: 1,
                                     label: 'Log Out',
@@ -85,8 +89,8 @@ export default function DefaultLayout({
                         }} trigger={['click']}>
                             <a onClick={(e) => e.preventDefault()}>
                                 <Space>
-                                    Hi,{session.user?.name}
-                                    <DownOutlined />
+                                    Hi, {capitalizedUsername}
+                                     <DownOutlined />
                                 </Space>
                             </a>
                         </Dropdown>

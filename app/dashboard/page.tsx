@@ -75,7 +75,7 @@ export default function Page() {
           </Card>
         </Col>
         <Col span={12}>
-          <div className='pt-5'>
+          {/* <div className='pt-5'>
             <Title level={3}>Data xx</Title>
           </div>
           <Card>
@@ -96,7 +96,7 @@ export default function Page() {
             <div className={'pt-5'}>
               <Link href={''}>See detail</Link>
             </div>
-          </Card>
+          </Card> */}
         </Col>
       </Row>
     </>

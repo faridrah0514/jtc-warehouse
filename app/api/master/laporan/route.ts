@@ -1,6 +1,5 @@
 import { _renderCurrency } from "@/app/utils/renderCurrency";
 import { openDB } from "@/helper/db";
-import { c } from "tar";
 import { RowDataPacket } from "mysql2";
 import "dayjs/locale/id";
 
@@ -13,7 +12,6 @@ dayjs.locale("id");
 export const dynamic = "force-dynamic";
 export async function GET() {
   const conn = openDB();
-  //   const [data, _] = await conn.execute("select * from pelanggan")
   const [cabangData] = await conn.execute("select * from cabang");
   const [asetData] = await conn.execute<RowDataPacket[]>(
     "select a.* from aset a left join cabang c on a.id_cabang = c.id"
@@ -22,20 +20,6 @@ export async function GET() {
     "select * from laporan"
   );
 
-  // const []
-
-  // laporanData = laporanData.map((item) => {
-  //   return {
-  //     ...item,
-  //     nama_cabang: item.nama_cabang?.join(", "),
-  //     nama_aset: item.nama_aset?.join(", "),
-  //     jenis_laporan: item.jenis_laporan
-  //       .split("_") // Split the string by underscores
-  //       .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize the first letter of each word
-  //       .join(" "), // Join the words back with spaces // Join array elements with a comma and a space
-  //     periode: dayjs(item.periode).year()
-  //   };
-  // });
   laporanData = laporanData.map((item) => {
     return {
       ...item,
@@ -60,7 +44,8 @@ export async function POST(request: Request, response: Response) {
     const conn = openDB();
     const value = await request.json();
     const data = value.data;
-
+    // console.log("data ----> ", data.jenis_laporan.toLowerCase());
+    console.log("data ---> ", data);
     if (value.requestType == "add" && data) {
       await conn.query(
         `
@@ -157,135 +142,174 @@ export async function POST(request: Request, response: Response) {
         return Response.json({ laporan, columnNames });
       } else if (data.jenis_laporan.toLowerCase() == "transaksi ipl") {
         let query = `
-            select c.nama_perusahaan nama_cabang , a.nama_aset, p.nama nama_pelanggan, ti.periode_pembayaran, ti.status_pembayaran, ti.tanggal_pembayaran, ts.ipl from transaksi_ipl ti 
-            left join cabang c on ti.id_cabang = c.id
-            left join aset a on ti.id_aset = a.id 
-            left join pelanggan p on ti.id_pelanggan = p.id 
-            left join transaksi_sewa ts on ts.id_cabang = ti.id_cabang and ts.id_aset = ti.id_aset and ts.id_pelanggan = ti.id_pelanggan
-            where LEFT(ti.periode_pembayaran, 4) = ? 
-  `;
+          SELECT c.nama_perusahaan nama_cabang, a.nama_aset, p.nama nama_pelanggan, 
+                 ti.periode_pembayaran, ti.status_pembayaran, ti.tanggal_pembayaran, ts.ipl
+          FROM transaksi_ipl ti
+          LEFT JOIN cabang c ON ti.id_cabang = c.id
+          LEFT JOIN aset a ON ti.id_aset = a.id
+          LEFT JOIN pelanggan p ON ti.id_pelanggan = p.id
+          LEFT JOIN transaksi_sewa ts ON ts.id_cabang = ti.id_cabang 
+                                       AND ts.id_aset = ti.id_aset 
+                                       AND ts.id_pelanggan = ti.id_pelanggan
+          WHERE LEFT(ti.periode_pembayaran, 4) = ?
+        `;
 
         const queryParams = [data.periode];
 
-        // Add conditions only if both nama_cabang and nama_aset are provided
-        if (data.nama_cabang && data.nama_aset) {
-          query +=
-            " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?) order by ti.periode_pembayaran asc";
-          queryParams.push(
-            data.nama_cabang.split(", "),
-            data.nama_aset.split(", ")
-          );
-        } else if (data.nama_cabang) {
-          // If only nama_cabang is provided
-          query +=
-            " AND c.nama_perusahaan IN (?) order by ti.periode_pembayaran asc";
-          queryParams.push(data.nama_cabang.split(", "));
+        // Adjust for 'Semua Cabang'
+        if (
+          data.nama_cabang &&
+          data.nama_cabang.toLowerCase() !== "semua cabang"
+        ) {
+          if (data.nama_aset) {
+            query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
+            queryParams.push(
+              data.nama_cabang.split(", "),
+              data.nama_aset.split(", ")
+            );
+          } else {
+            query += " AND c.nama_perusahaan IN (?)";
+            queryParams.push(data.nama_cabang.split(", "));
+          }
         }
+
+        // Add ORDER BY clause here to make it apply regardless of conditions
+        query += " ORDER BY ti.periode_pembayaran ASC";
+
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
           queryParams
         );
-        ////////
-        // let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
-        //   `
-        //     select c.nama_perusahaan nama_cabang , a.nama_aset, p.nama nama_pelanggan, ti.periode_pembayaran, ti.status_pembayaran, ti.tanggal_pembayaran, ts.ipl from transaksi_ipl ti
-        //     left join cabang c on ti.id_cabang = c.id
-        //     left join aset a on ti.id_aset = a.id
-        //     left join pelanggan p on ti.id_pelanggan = p.id
-        //     left join transaksi_sewa ts on ts.id_cabang = ti.id_cabang and ts.id_aset = ti.id_aset and ts.id_pelanggan = ti.id_pelanggan
-        //     where a.nama_aset in (?) and c.nama_perusahaan in (?) and LEFT(ti.periode_pembayaran, 4) = ? order by ti.periode_pembayaran asc
-        //     `,
-        //   [
-        //     data.nama_aset.split(", "),
-        //     data.nama_cabang.split(", "),
-        //     data.periode,
-        //   ]
-        // );
+
         const columnNames = laporanFields
           .map((fields: any) => fields.name)
           .filter((fieldName) => fieldName != "id")
-          .map((val: any, idx: number) => {
-            return {
-              title: val
-                .split("_")
-                .map(
-                  (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
-                )
-                .join(" "),
-              dataIndex: val,
-              key: val,
-            };
-          });
+          .map((val: any) => ({
+            title: val
+              .split("_")
+              .map(
+                (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
+              )
+              .join(" "),
+            dataIndex: val,
+            key: val,
+          }));
+
         laporan = laporan
-          .map((item, idx) => {
-            return {
-              ...item,
-              Nomor: idx + 1,
-              ipl: _renderCurrency(item.ipl),
-            };
-          })
+          .map((item, idx) => ({
+            ...item,
+            Nomor: idx + 1,
+            ipl: _renderCurrency(item.ipl),
+          }))
           .map((item: any) => ({
             ...item,
             periode_pembayaran: dayjs(item.periode_pembayaran).format(
               "MMMM YYYY"
             ),
           }));
+
         const jenis_laporan = "DATA PEMAKAIAN IPL TAHUN " + data.periode;
-        return Response.json({
-          laporan,
-          columnNames,
-          aset: data.nama_aset,
-          cabang: data.nama_cabang,
-          jenis_laporan,
-        });
+
+        if (
+          data.nama_cabang &&
+          data.nama_cabang.toLowerCase() === "semua cabang"
+        ) {
+          const groupedLaporan = laporan.reduce((result: any, row) => {
+            const { nama_cabang, nama_aset } = row;
+
+            if (!result[nama_cabang]) {
+              result[nama_cabang] = {};
+            }
+
+            if (!result[nama_cabang][nama_aset]) {
+              result[nama_cabang][nama_aset] = [];
+            }
+
+            result[nama_cabang][nama_aset].push(row);
+            return result;
+          }, {});
+
+          const response = Object.keys(groupedLaporan)
+            .map((cabang) => {
+              return Object.keys(groupedLaporan[cabang]).map((aset) => {
+                return {
+                  laporan: groupedLaporan[cabang][aset],
+                  columnNames,
+                  aset: [aset], // Always an array
+                  cabang: [cabang], // Always an array
+                  jenis_laporan,
+                };
+              });
+            })
+            .flat();
+
+          console.log("semua cabang ---> ", response);
+          return Response.json(response);
+        } else {
+          // For specific cabang, ensure single objects are arrays
+          const laporanArray = Array.isArray(laporan) ? laporan : [laporan]; // Ensure laporan is always an array
+          const asetArray = Array.isArray(data.nama_aset)
+            ? data.nama_aset.split(", ")
+            : [data.nama_aset]; // Ensure aset is an array
+          const cabangArray = Array.isArray(data.nama_cabang)
+            ? data.nama_cabang.split(", ")
+            : [data.nama_cabang]; // Ensure cabang is an array
+
+          console.log("cabang tertentu ---> ", {
+            laporan: laporanArray,
+            columnNames,
+            aset: asetArray,
+            cabang: cabangArray,
+            jenis_laporan,
+          });
+
+          return Response.json([
+            {
+              laporan: laporanArray,
+              columnNames,
+              aset: asetArray,
+              cabang: cabangArray,
+              jenis_laporan,
+            },
+          ]);
+        }
       } else if (
         data.jenis_laporan.toLowerCase() == "transaksi listrik tahunan"
       ) {
         let query = `
-            select c.nama_perusahaan nama_cabang, a.nama_aset, p.nama nama_pelanggan, 
-            tl.bln_thn Bulan, tl.meteran_awal, tl.meteran_akhir, tl.meteran_akhir - meteran_awal pemakaian, c.kwh_rp
-            from transaksi_listrik tl
-            left join pelanggan p on tl.id_pelanggan = p.id
-            left join cabang c on tl.id_cabang = c.id
-            left join aset a on tl.id_aset = a.id
-            where RIGHT(tl.bln_thn, 4) = ?
-      `;
+          SELECT c.nama_perusahaan nama_cabang, a.nama_aset, p.nama nama_pelanggan, 
+          tl.bln_thn Bulan, tl.meteran_awal, tl.meteran_akhir, tl.meteran_akhir - meteran_awal pemakaian, c.kwh_rp
+          FROM transaksi_listrik tl
+          LEFT JOIN pelanggan p ON tl.id_pelanggan = p.id
+          LEFT JOIN cabang c ON tl.id_cabang = c.id
+          LEFT JOIN aset a ON tl.id_aset = a.id
+          WHERE RIGHT(tl.bln_thn, 4) = ?
+        `;
 
         const queryParams = [data.periode];
 
-        // Add conditions only if both nama_cabang and nama_aset are provided
-        if (data.nama_cabang && data.nama_aset) {
-          query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
-          queryParams.push(
-            data.nama_cabang.split(", "),
-            data.nama_aset.split(", ")
-          );
-        } else if (data.nama_cabang) {
-          // If only nama_cabang is provided
-          query += " AND c.nama_perusahaan IN (?)";
-          queryParams.push(data.nama_cabang.split(", "));
+        // Adjust for 'Semua Cabang'
+        if (
+          data.nama_cabang &&
+          data.nama_cabang.toLowerCase() !== "semua cabang"
+        ) {
+          if (data.nama_aset) {
+            query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
+            queryParams.push(
+              data.nama_cabang.split(", "),
+              data.nama_aset.split(", ")
+            );
+          } else {
+            query += " AND c.nama_perusahaan IN (?)";
+            queryParams.push(data.nama_cabang.split(", "));
+          }
         }
+
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
           queryParams
         );
-        /////
-        // let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
-        //   `
-        //     select c.nama_perusahaan nama_cabang, a.nama_aset, p.nama nama_pelanggan,
-        //     tl.bln_thn Bulan, tl.meteran_awal, tl.meteran_akhir, tl.meteran_akhir - meteran_awal pemakaian, c.kwh_rp
-        //     from transaksi_listrik tl
-        //     left join pelanggan p on tl.id_pelanggan = p.id
-        //     left join cabang c on tl.id_cabang = c.id
-        //     left join aset a on tl.id_aset = a.id
-        //     where a.nama_aset in (?) and c.nama_perusahaan in (?) and RIGHT(tl.bln_thn, 4) = ?
-        //   `,
-        //   [
-        //     data.nama_aset.split(", "),
-        //     data.nama_cabang.split(", "),
-        //     data.periode,
-        //   ]
-        // );
+
         // Define all months in Indonesian
         const months = [
           "Januari",
@@ -301,15 +325,15 @@ export async function POST(request: Request, response: Response) {
           "November",
           "Desember",
         ];
-        laporan = laporan.map((item, idx) => {
-          return {
-            ...item,
-            Bulan: dayjs(item.Bulan, "MM-YYYY").format("MMMM"),
-            Nomor: idx + 1,
-            kwh_rp: _renderCurrency(item.kwh_rp),
-            total_tagihan: _renderCurrency(item.pemakaian * item.kwh_rp),
-          };
-        });
+
+        laporan = laporan.map((item, idx) => ({
+          ...item,
+          Bulan: dayjs(item.Bulan, "MM-YYYY").format("MMMM"),
+          Nomor: idx + 1,
+          kwh_rp: _renderCurrency(item.kwh_rp),
+          total_tagihan: _renderCurrency(item.pemakaian * item.kwh_rp),
+        }));
+
         const transformedData = [
           {
             rowHead: "Meteran Awal",
@@ -386,209 +410,567 @@ export async function POST(request: Request, response: Response) {
             key: month,
           })),
         ];
+
         const jenis_laporan = "DATA PEMAKAIAN LISTRIK TAHUN " + data.periode;
-        return Response.json({
-          laporan: transformedData,
-          columnNames,
-          aset: data.nama_aset.split(", "),
-          cabang: data.nama_cabang.split(", "),
-          jenis_laporan,
-        });
-      } else if (
-        data.jenis_laporan.toLowerCase() == "daftar penyewa per blok"
-      ) {
-        let query = `
-            select p.nama nama_penyewa, a.nama_aset nama_aset, 
-              CONCAT(
-                FLOOR(TIMESTAMPDIFF(MONTH, 
-                  STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y'), 
-                  STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
-                ) / 12), ' tahun ',
-                MOD(TIMESTAMPDIFF(MONTH, 
-                  STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y'), 
-                  STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
-                ), 12), ' bulan'
-              ) AS masa,
-            ts.start_date_sewa mulai, ts.end_date_sewa berakhir, ts.total_biaya_sewa harga_sewa
-          from transaksi_sewa ts 
-            left join cabang c on ts.id_cabang =  c.id
-            left join pelanggan p on ts.id_pelanggan = p.id
-            left join aset a on ts.id_aset = a.id
-            where 
-      `;
 
-        const queryParams = [];
+        if (
+          data.nama_cabang &&
+          data.nama_cabang.toLowerCase() === "semua cabang"
+        ) {
+          const groupedLaporan = laporan.reduce((result: any, row) => {
+            const { nama_cabang, nama_aset } = row;
 
-        // Add conditions only if both nama_cabang and nama_aset are provided
-        if (data.nama_cabang && data.nama_aset) {
-          query += " c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
-          queryParams.push(
-            data.nama_cabang.split(", "),
-            data.nama_aset.split(", ")
-          );
-        } else if (data.nama_cabang) {
-          // If only nama_cabang is provided
-          query += " c.nama_perusahaan IN (?)";
-          queryParams.push(data.nama_cabang.split(", "));
+            if (!result[nama_cabang]) {
+              result[nama_cabang] = {};
+            }
+
+            if (!result[nama_cabang][nama_aset]) {
+              result[nama_cabang][nama_aset] = [];
+            }
+
+            result[nama_cabang][nama_aset].push(row);
+            return result;
+          }, {});
+
+          const response = Object.keys(groupedLaporan)
+            .map((cabang) => {
+              return Object.keys(groupedLaporan[cabang]).map((aset) => {
+                return {
+                  laporan: transformedData, // Apply transformedData for grouped report
+                  columnNames,
+                  aset: [aset], // Always an array
+                  cabang: [cabang], // Always an array
+                  jenis_laporan,
+                };
+              });
+            })
+            .flat();
+
+          console.log("semua cabang ---> ", response);
+          return Response.json(response);
+        } else {
+          // For specific cabang, ensure single objects are arrays
+          const laporanArray = Array.isArray(laporan) ? laporan : [laporan]; // Ensure laporan is always an array
+          const asetArray = Array.isArray(data.nama_aset)
+            ? data.nama_aset.split(", ")
+            : [data.nama_aset]; // Ensure aset is an array
+          const cabangArray = Array.isArray(data.nama_cabang)
+            ? data.nama_cabang.split(", ")
+            : [data.nama_cabang]; // Ensure cabang is an array
+
+          console.log("cabang tertentu ---> ", {
+            laporan: transformedData,
+            columnNames,
+            aset: asetArray,
+            cabang: cabangArray,
+            jenis_laporan,
+          });
+
+          return Response.json([
+            {
+              laporan: transformedData,
+              columnNames,
+              aset: asetArray,
+              cabang: cabangArray,
+              jenis_laporan,
+            },
+          ]);
         }
-        let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
-          query,
-          queryParams
-        );
-        
-        
-
+      } else if (data.jenis_laporan.toLowerCase() == "daftar penyewa per blok") {
+        let query = `
+          SELECT 
+            c.nama_perusahaan AS nama_cabang, 
+            p.nama AS nama_penyewa, 
+            a.nama_aset AS nama_aset,
+            a.no_sertifikat,
+            CONCAT(a.luas_lt1, ' - ', a.luas_lt2) AS luas_bangunan, -- Concatenate luas_lt1 and luas_lt2
+            a.luas_tanah,
+            CONCAT(
+              FLOOR(TIMESTAMPDIFF(MONTH, 
+                STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y'), 
+                STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
+              ) / 12), ' tahun ',
+              MOD(TIMESTAMPDIFF(MONTH, 
+                STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y'), 
+                STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
+              ), 12), ' bulan'
+            ) AS masa,
+            ts.start_date_sewa AS mulai, 
+            ts.end_date_sewa AS berakhir, 
+            ts.total_biaya_sewa AS harga_sewa
+          FROM transaksi_sewa ts
+          LEFT JOIN cabang c ON ts.id_cabang = c.id
+          LEFT JOIN pelanggan p ON ts.id_pelanggan = p.id
+          LEFT JOIN aset a ON ts.id_aset = a.id
+          WHERE 1
+        `;
+      
+        const queryParams: any[] = [];
+      
+        // Handle 'Semua Cabang' in the query
+        if (data.nama_cabang && data.nama_cabang.toLowerCase() !== "semua cabang") {
+          if (data.nama_aset) {
+            query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
+            queryParams.push(
+              data.nama_cabang.split(", "),
+              data.nama_aset.split(", ")
+            );
+          } else {
+            query += " AND c.nama_perusahaan IN (?)";
+            queryParams.push(data.nama_cabang.split(", "));
+          }
+        }
+      
+        let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(query, queryParams);
+      
+        // Extract unique values for all nama_aset
+        const uniqueValues = laporan.reduce((acc: any, row: any) => {
+          const key = row.nama_aset;
+          if (!acc[key]) {
+            acc[key] = {
+              no_sertifikat: row.no_sertifikat,
+              luas_bangunan: row.luas_bangunan,
+              luas_tanah: row.luas_tanah
+            };
+          }
+          return acc;
+        }, {});
+      
+        // Format laporan data
         laporan = laporan.map((row: any, idx: number) => ({
           ...row,
-          // kwh_rp: _renderCurrency(row.kwh_rp),
           nomor: idx + 1,
-          mulai: dayjs(row.mulai, 'DD-MM-YYYY').format('D MMMM YYYY'), // Format mulai
-          berakhir: dayjs(row.berakhir, 'DD-MM-YYYY').format('D MMMM YYYY'), // Format berakhir
+          mulai: dayjs(row.mulai, "DD-MM-YYYY").format("D MMMM YYYY"), // Format mulai
+          berakhir: dayjs(row.berakhir, "DD-MM-YYYY").format("D MMMM YYYY"), // Format berakhir
           harga_sewa: _renderCurrency(row.harga_sewa),
         }));
+      
+        // Extract column names
         let columnNames = laporanFields
           .map((fields: any) => fields.name)
-          .filter((fieldName) => fieldName != "id")
-
-        columnNames.unshift("nomor");
-
-        columnNames = columnNames
-          .map((val: any, idx: number) => {
-            return {
-              title: val
-                .split("_")
-                .map(
-                  (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
-                )
-                .join(" "),
-              dataIndex: val,
-              key: val,
-            };
-          });
-        const jenis_laporan = "DAFTAR PENYEWA PER-BLOK";
-        return Response.json({
-          laporan,
-          columnNames,
-          aset: data.nama_aset.split(", "),
-          cabang: data.nama_cabang.split(", "),
-          jenis_laporan,
+          .filter((fieldName) => !["id", "no_sertifikat", "luas_bangunan", "luas_tanah"].includes(fieldName))
+          .map((val: any, idx: number) => ({
+            title: val
+              .split("_")
+              .map(
+                (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
+              )
+              .join(" "),
+            dataIndex: val,
+            key: val,
+          }));
+      
+        columnNames.unshift({
+          title: "Nomor",
+          dataIndex: "nomor",
+          key: "nomor",
         });
-      } else if (
+      
+        const jenis_laporan = "DAFTAR PENYEWA PER-BLOK";
+      
+        // Handle the case where nama_cabang is "Semua Cabang"
+        if (data.nama_cabang && data.nama_cabang.toLowerCase() === "semua cabang") {
+          // Group by cabang and then by aset
+          const groupedLaporan = laporan.reduce((result: any, row) => {
+            const { nama_cabang, nama_aset } = row;
+      
+            if (!result[nama_cabang]) {
+              result[nama_cabang] = {};
+            }
+      
+            if (!result[nama_cabang][nama_aset]) {
+              result[nama_cabang][nama_aset] = [];
+            }
+      
+            result[nama_cabang][nama_aset].push(row);
+            return result;
+          }, {});
+      
+          const response = Object.keys(groupedLaporan).flatMap((cabang) =>
+            Object.keys(groupedLaporan[cabang]).map((aset) => ({
+              laporan: groupedLaporan[cabang][aset], // Array of rows for the specific cabang and aset
+              columnNames,
+              aset: [aset], // Always an array
+              cabang: [cabang], // Always an array
+              no_sertifikat: uniqueValues[aset].no_sertifikat,
+              luas_bangunan: uniqueValues[aset].luas_bangunan,
+              luas_tanah: uniqueValues[aset].luas_tanah,
+              jenis_laporan,
+            }))
+          );
+      
+          console.log("semua cabang ---> ", response);
+          return Response.json(response);
+        } else {
+          // For specific cabang, ensure single objects are arrays
+          const laporanArray = Array.isArray(laporan) ? laporan : [laporan]; // Ensure laporan is always an array
+          const asetArray = Array.isArray(data.nama_aset)
+            ? data.nama_aset.split(", ")
+            : [data.nama_aset]; // Ensure aset is an array
+          const cabangArray = Array.isArray(data.nama_cabang)
+            ? data.nama_cabang.split(", ")
+            : [data.nama_cabang]; // Ensure cabang is an array
+      
+          console.log("cabang tertentu ---> ", {
+            laporan: laporanArray,
+            columnNames,
+            aset: asetArray,
+            cabang: cabangArray,
+            no_sertifikat: uniqueValues[asetArray[0]]?.no_sertifikat,
+            luas_bangunan: uniqueValues[asetArray[0]]?.luas_bangunan,
+            luas_tanah: uniqueValues[asetArray[0]]?.luas_tanah,
+            jenis_laporan,
+          });
+      
+          return Response.json([
+            {
+              laporan: laporanArray,
+              columnNames,
+              aset: asetArray,
+              cabang: cabangArray,
+              no_sertifikat: uniqueValues[asetArray[0]]?.no_sertifikat,
+              luas_bangunan: uniqueValues[asetArray[0]]?.luas_bangunan,
+              luas_tanah: uniqueValues[asetArray[0]]?.luas_tanah,
+              jenis_laporan,
+            },
+          ]);
+        }
+      }
+       else if (
         data.jenis_laporan.toLowerCase() == "transaksi listrik bulanan"
       ) {
+        console.log("data ----> ", data);
+
         let query = `
-        SELECT c.nama_perusahaan nama_cabang, a.nama_aset, p.nama nama_pelanggan, 
-        tl.bln_thn Bulan, tl.meteran_awal, tl.meteran_akhir, 
-        tl.meteran_akhir - tl.meteran_awal pemakaian, 
-        c.kwh_rp, 
-        (tl.meteran_akhir - tl.meteran_awal) * c.kwh_rp total_biaya
-        FROM transaksi_listrik tl
-        LEFT JOIN pelanggan p ON tl.id_pelanggan = p.id
-        LEFT JOIN cabang c ON tl.id_cabang = c.id
-        LEFT JOIN aset a ON tl.id_aset = a.id
-        WHERE tl.bln_thn = ?
-      `;
+          SELECT c.nama_perusahaan AS nama_cabang, a.nama_aset, p.nama AS nama_pelanggan, 
+          tl.bln_thn AS Bulan, tl.meteran_awal, tl.meteran_akhir, 
+          tl.meteran_akhir - tl.meteran_awal AS pemakaian, 
+          c.kwh_rp, 
+          (tl.meteran_akhir - tl.meteran_awal) * c.kwh_rp AS total_biaya
+          FROM transaksi_listrik tl
+          LEFT JOIN pelanggan p ON tl.id_pelanggan = p.id
+          LEFT JOIN cabang c ON tl.id_cabang = c.id
+          LEFT JOIN aset a ON tl.id_aset = a.id
+          WHERE tl.bln_thn = ?
+        `;
 
         const queryParams = [data.periode];
 
-        // Add conditions only if both nama_cabang and nama_aset are provided
-        if (data.nama_cabang && data.nama_aset) {
-          query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
-          queryParams.push(
-            data.nama_cabang.split(", "),
-            data.nama_aset.split(", ")
-          );
-        } else if (data.nama_cabang) {
-          // If only nama_cabang is provided
-          query += " AND c.nama_perusahaan IN (?)";
-          queryParams.push(data.nama_cabang.split(", "));
+        // Add conditions only if nama_cabang is provided
+        if (
+          data.nama_cabang &&
+          data.nama_cabang.toLowerCase() !== "semua cabang"
+        ) {
+          if (data.nama_aset) {
+            query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
+            queryParams.push(
+              data.nama_cabang.split(", "),
+              data.nama_aset.split(", ")
+            );
+          } else {
+            query += " AND c.nama_perusahaan IN (?)";
+            queryParams.push(data.nama_cabang.split(", "));
+          }
         }
+
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
           queryParams
         );
-        // Apply the _renderCurrency function to the kwh_rp and total_biaya fields
+
+        // Apply currency formatting
         laporan = laporan.map((row) => ({
           ...row,
           kwh_rp: _renderCurrency(row.kwh_rp),
           total_biaya: _renderCurrency(row.total_biaya),
         }));
+
+        // Extract column names
         const columnNames = laporanFields
           .map((fields: any) => fields.name)
           .filter((fieldName) => fieldName != "id")
-          .map((val: any, idx: number) => {
-            return {
-              title: val
-                .split("_")
-                .map(
-                  (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
-                )
-                .join(" "),
-              dataIndex: val,
-              key: val,
-            };
+          .map((val: any) => ({
+            title: val
+              .split("_")
+              .map(
+                (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
+              )
+              .join(" "),
+            dataIndex: val,
+            key: val,
+          }));
+
+        // If nama_cabang is 'Semua Cabang', group by cabang and aggregate aset names
+        if (
+          data.nama_cabang &&
+          data.nama_cabang.toLowerCase() === "semua cabang"
+        ) {
+          const groupedLaporan = laporan.reduce((result: any, row) => {
+            const { nama_cabang, nama_aset } = row;
+
+            if (!result[nama_cabang]) {
+              result[nama_cabang] = {
+                laporan: [],
+                aset: new Set<string>(),
+              };
+            }
+
+            result[nama_cabang].laporan.push(row);
+            result[nama_cabang].aset.add(nama_aset);
+
+            return result;
+          }, {});
+
+          const response = Object.keys(groupedLaporan).map((cabang) => ({
+            laporan: groupedLaporan[cabang].laporan, // Always an array
+            columnNames,
+            aset: Array.from(groupedLaporan[cabang].aset), // Convert Set to array
+            cabang: [cabang], // Always an array
+            jenis_laporan:
+              "DATA PEMAKAIAN LISTRIK " +
+              dayjs(data.periode, "MM-YYYY").format("MMMM YYYY"),
+          }));
+
+          console.log("semua cabang ---> ", response);
+          return Response.json(response);
+        } else {
+          // For specific cabang, ensure single objects are arrays
+          const jenis_laporan =
+            "DATA PEMAKAIAN LISTRIK " +
+            dayjs(data.periode, "MM-YYYY").format("MMMM YYYY");
+
+          const laporanArray = Array.isArray(laporan) ? laporan : [laporan]; // Ensure laporan is always an array
+          const asetArray = Array.isArray(data.nama_aset)
+            ? data.nama_aset.split(", ")
+            : [data.nama_aset]; // Ensure aset is an array
+          const cabangArray = Array.isArray(data.nama_cabang)
+            ? data.nama_cabang.split(", ")
+            : [data.nama_cabang]; // Ensure cabang is an array
+
+          console.log("cabang tertentu ---> ", {
+            laporan: laporanArray,
+            columnNames,
+            aset: asetArray,
+            cabang: cabangArray,
+            jenis_laporan,
           });
-        const jenis_laporan =
-          "DATA PEMAKAIAN LISTRIK " +
-          dayjs(data.periode, "MM-YYYY").format("MMMM YYYY");
-        return Response.json({
-          laporan,
-          columnNames,
-          aset: data.nama_aset.split(", "),
-          cabang: data.nama_cabang.split(", "),
-          jenis_laporan,
-        });
+
+          return Response.json([
+            {
+              laporan: laporanArray,
+              columnNames,
+              aset: asetArray,
+              cabang: cabangArray,
+              jenis_laporan,
+            },
+          ]);
+        }
       } else if (data.jenis_laporan.toLowerCase() == "jatuh tempo") {
+        let query = `
+          SELECT c.nama_perusahaan AS nama_cabang, a.nama_aset, p.nama AS nama_penyewa, ts.end_date_sewa AS jatuh_tempo
+          FROM transaksi_sewa ts
+          LEFT JOIN cabang c ON ts.id_cabang = c.id
+          LEFT JOIN aset a ON ts.id_aset = a.id
+          LEFT JOIN pelanggan p ON ts.id_pelanggan = p.id
+          WHERE RIGHT(ts.end_date_sewa, 4) = ?
+        `;
+
+        const queryParams = [data.periode];
+
+        // Add conditions only if nama_cabang is provided
+        if (
+          data.nama_cabang &&
+          data.nama_cabang.toLowerCase() !== "semua cabang"
+        ) {
+          query += " AND c.nama_perusahaan IN (?)";
+          queryParams.push(data.nama_cabang.split(", "));
+        }
+
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
-          `
-            select p.nama 'nama_penyewa', a.nama_aset 'nama_aset', ts.end_date_sewa 'jatuh_tempo' from transaksi_sewa ts
-            left join cabang c on ts.id_cabang = c.id
-            left join aset a on ts.id_aset = a.id
-            left join pelanggan p on ts.id_pelanggan = p.id
-            where c.nama_perusahaan in (?) and RIGHT(ts.end_date_sewa, 4) = ?
-          `,
-          [
-            // data.nama_aset.split(", "),
-            data.nama_cabang.split(", "),
-            data.periode,
-          ]
+          query,
+          queryParams
         );
-        laporan = laporan.map((data: any, idx: number) => {
-          return {
-            ...data,
-            no: idx + 1,
-            jatuh_tempo: dayjs(data.jatuh_tempo, "DD-MM-YYYY").format(
-              "DD MMMM YYYY"
-            ), // Convert to month name in Bahasa Indonesia
-          };
-        });
+
+        // Apply date formatting and add 'no' field
+        laporan = laporan.map((data: any, idx: number) => ({
+          ...data,
+          no: idx + 1,
+          jatuh_tempo: dayjs(data.jatuh_tempo, "DD-MM-YYYY").format(
+            "DD MMMM YYYY"
+          ), // Convert to month name in Bahasa Indonesia
+        }));
+
+        // Extract column names
         const columnNames = laporanFields
           .map((fields: any) => fields.name)
           .filter((fieldName) => fieldName != "id")
-          .map((val: any, idx: number) => {
-            return {
-              title: val
-                .split("_")
-                .map(
-                  (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
-                )
-                .join(" "),
-              dataIndex: val,
-              key: val,
-            };
-          });
+          .map((val: any) => ({
+            title: val
+              .split("_")
+              .map(
+                (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
+              )
+              .join(" "),
+            dataIndex: val,
+            key: val,
+          }));
 
         columnNames.unshift({ title: "No", dataIndex: "no", key: "no" });
 
         const jenis_laporan = "DAFTAR JATUH TEMPO TAHUN " + data.periode;
-        return Response.json({
+
+        if (
+          data.nama_cabang &&
+          data.nama_cabang.toLowerCase() === "semua cabang"
+        ) {
+          // Group by cabang and aggregate aset names
+          const groupedLaporan = laporan.reduce((result: any, row) => {
+            const { nama_cabang, nama_aset } = row;
+
+            if (!result[nama_cabang]) {
+              result[nama_cabang] = {
+                laporan: [],
+                aset: new Set<string>(),
+              };
+            }
+
+            result[nama_cabang].laporan.push(row);
+            result[nama_cabang].aset.add(nama_aset);
+
+            return result;
+          }, {});
+
+          // Transform grouped data into the required format
+          const response = Object.keys(groupedLaporan).map((cabang) => ({
+            laporan: groupedLaporan[cabang].laporan, // Always an array
+            columnNames,
+            aset: Array.from(groupedLaporan[cabang].aset), // Convert Set to array
+            cabang: [cabang], // Always an array
+            jenis_laporan,
+          }));
+
+          console.log("semua cabang ---> ", response);
+          return Response.json(response);
+        } else {
+          // For specific cabang, ensure single objects are arrays
+          const laporanArray = Array.isArray(laporan) ? laporan : [laporan]; // Ensure laporan is always an array
+          const asetArray = Array.isArray(data.nama_aset)
+            ? data.nama_aset.split(", ")
+            : [data.nama_aset]; // Ensure aset is an array
+          const cabangArray = Array.isArray(data.nama_cabang)
+            ? data.nama_cabang.split(", ")
+            : [data.nama_cabang]; // Ensure cabang is an array
+
+          console.log("cabang tertentu ---> ", {
+            laporan: laporanArray,
+            columnNames,
+            aset: asetArray,
+            cabang: cabangArray,
+            jenis_laporan,
+          });
+
+          return Response.json([
+            {
+              laporan: laporanArray,
+              columnNames,
+              aset: asetArray,
+              cabang: cabangArray,
+              jenis_laporan,
+            },
+          ]);
+        }
+      } else if (data.jenis_laporan.toLowerCase() === "daftar penyewa per tahun") {
+        console.log("masooooookkkkkk");
+      
+        let query = `
+          SELECT 
+            p.nama AS nama_penyewa, 
+            a.nama_aset AS nama_aset, 
+            CONCAT(
+              FLOOR(TIMESTAMPDIFF(MONTH, 
+                STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y'), 
+                STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
+              ) / 12), ' tahun ',
+              MOD(TIMESTAMPDIFF(MONTH, 
+                STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y'), 
+                STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
+              ), 12), ' bulan'
+            ) AS masa_sewa,
+            ts.start_date_sewa AS mulai, 
+            ts.end_date_sewa AS berakhir, 
+            ts.total_biaya_sewa AS harga_sewa, 
+            ts.ipl AS ipl, 
+            CONCAT(ts.no_akte, ' - ', ts.notaris) AS nomor_akta_dan_notaris
+          FROM transaksi_sewa ts 
+            LEFT JOIN cabang c ON ts.id_cabang = c.id
+            LEFT JOIN pelanggan p ON ts.id_pelanggan = p.id
+            LEFT JOIN aset a ON ts.id_aset = a.id
+          WHERE YEAR(STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y')) <= ?
+            AND YEAR(STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')) >= ?
+        `;
+      
+        const queryParams: any[] = [data.periode, data.periode];
+      
+        // Handle cabang conditions
+        // if (data.nama_cabang === "semua cabang") {
+        //   // No filter on cabang
+        // } else if (data.nama_cabang) {
+        //   query += " AND c.nama_perusahaan IN (?)";
+        //   queryParams.push(data.nama_cabang.split(", "));
+        // }
+      
+        // // Handle aset condition
+        // if (data.nama_aset) {
+        //   query += " AND a.nama_aset IN (?)";
+        //   queryParams.push(data.nama_aset.split(", "));
+        // }
+      
+        let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(query, queryParams);
+      
+        laporan = laporan.map((row: any, idx: number) => ({
+          ...row,
+          nomor: idx + 1,
+          mulai: dayjs(row.mulai, "DD-MM-YYYY").format("D MMMM YYYY"), // Format mulai
+          berakhir: dayjs(row.berakhir, "DD-MM-YYYY").format("D MMMM YYYY"), // Format berakhir
+          harga_sewa: _renderCurrency(row.harga_sewa),
+          ipl: _renderCurrency(row.ipl),
+        }));
+      
+        let columnNames = laporanFields
+          .map((fields: any) => fields.name)
+          .filter((fieldName) => fieldName !== "id");
+      
+        columnNames.unshift("nomor");
+      
+        columnNames = columnNames.map((val: any) => ({
+          title: val
+            .split("_")
+            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" "),
+          dataIndex: val,
+          key: val,
+        }));
+      
+        const jenis_laporan = "DAFTAR PENYEWA PER-TAHUN";
+      
+        // Structure the response
+        const response = {
           laporan,
           columnNames,
-          aset: data.nama_aset.split(", "),
-          cabang: data.nama_cabang.split(", "),
+          aset: data.nama_aset,
+          cabang: data.nama_cabang,
           jenis_laporan,
-        });
+        };
+      
+        console.log("semuaaaa ---> ", response);
+      
+        // Send the response
+        // return response;
+        return Response.json([response])
       }
+      
+      
+      
     } else if (value.requestType == "delete_laporan") {
       await conn.query(`delete from laporan where id  = ?`, data.id);
     } else {
