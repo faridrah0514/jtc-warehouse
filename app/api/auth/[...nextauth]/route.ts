@@ -1,8 +1,10 @@
+// app/api/auth/[...nextauth]/route.ts
+
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import bcrypt from 'bcrypt'; // For password hashing
-import mysql from "mysql2/promise";
-import { openDB } from "@/helper/db";
+import bcrypt from 'bcrypt';
+import mysql from 'mysql2/promise';
+import { openDB } from '@/helper/db';
 
 const handler = NextAuth({
   providers: [
@@ -17,7 +19,6 @@ const handler = NextAuth({
           return null;
         }
 
-        // Fetch the user from the database
         try {
           const connection = openDB();
           const [rows] = await connection.query('SELECT * FROM users WHERE username = ?', [credentials.username]);
@@ -26,33 +27,45 @@ const handler = NextAuth({
           const userRows = rows as mysql.RowDataPacket[];
 
           if (userRows.length === 0) {
-            return null; // User not found
+            return null;
           }
 
           const user = userRows[0];
 
-          // Compare the provided password with the hashed password
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password_hash);
 
           if (isPasswordValid) {
-            // Return the user object if authentication is successful
-            return { id: user.id, name: user.username, username: user.username };
+            return { id: user.id, name: user.username, username: user.username, role: user.role };
           } else {
-            return null; // Invalid password
+            return null;
           }
         } catch (error) {
           console.error('Error during authentication:', error);
-          return null; // Internal server error
+          return null;
         }
       },
     }),
   ],
   session: {
-    strategy: 'jwt', // Use JWT strategy if you want token-based sessions
-    maxAge: 30 * 60 * 8, // Session max age in seconds (e.g., 30 minutes)
+    strategy: 'jwt',
+    maxAge: 30 * 60 * 8,
   },
   pages: {
     signIn: '/login',
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.username = user.username;
+        token.role = user.role;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      session.user.username = token.username as string;
+      session.user.role = token.role as string;
+      return session;
+    },
   },
 });
 

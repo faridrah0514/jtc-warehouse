@@ -44,8 +44,6 @@ export async function POST(request: Request, response: Response) {
     const conn = openDB();
     const value = await request.json();
     const data = value.data;
-    // console.log("data ----> ", data.jenis_laporan.toLowerCase());
-    console.log("data ---> ", data);
     if (value.requestType == "add" && data) {
       await conn.query(
         `
@@ -242,8 +240,6 @@ export async function POST(request: Request, response: Response) {
               });
             })
             .flat();
-
-          console.log("semua cabang ---> ", response);
           return Response.json(response);
         } else {
           // For specific cabang, ensure single objects are arrays
@@ -254,14 +250,6 @@ export async function POST(request: Request, response: Response) {
           const cabangArray = Array.isArray(data.nama_cabang)
             ? data.nama_cabang.split(", ")
             : [data.nama_cabang]; // Ensure cabang is an array
-
-          console.log("cabang tertentu ---> ", {
-            laporan: laporanArray,
-            columnNames,
-            aset: asetArray,
-            cabang: cabangArray,
-            jenis_laporan,
-          });
 
           return Response.json([
             {
@@ -445,8 +433,6 @@ export async function POST(request: Request, response: Response) {
               });
             })
             .flat();
-
-          console.log("semua cabang ---> ", response);
           return Response.json(response);
         } else {
           // For specific cabang, ensure single objects are arrays
@@ -457,14 +443,6 @@ export async function POST(request: Request, response: Response) {
           const cabangArray = Array.isArray(data.nama_cabang)
             ? data.nama_cabang.split(", ")
             : [data.nama_cabang]; // Ensure cabang is an array
-
-          console.log("cabang tertentu ---> ", {
-            laporan: transformedData,
-            columnNames,
-            aset: asetArray,
-            cabang: cabangArray,
-            jenis_laporan,
-          });
 
           return Response.json([
             {
@@ -599,7 +577,6 @@ export async function POST(request: Request, response: Response) {
             }))
           );
       
-          console.log("semua cabang ---> ", response);
           return Response.json(response);
         } else {
           // For specific cabang, ensure single objects are arrays
@@ -610,17 +587,6 @@ export async function POST(request: Request, response: Response) {
           const cabangArray = Array.isArray(data.nama_cabang)
             ? data.nama_cabang.split(", ")
             : [data.nama_cabang]; // Ensure cabang is an array
-      
-          console.log("cabang tertentu ---> ", {
-            laporan: laporanArray,
-            columnNames,
-            aset: asetArray,
-            cabang: cabangArray,
-            no_sertifikat: uniqueValues[asetArray[0]]?.no_sertifikat,
-            luas_bangunan: uniqueValues[asetArray[0]]?.luas_bangunan,
-            luas_tanah: uniqueValues[asetArray[0]]?.luas_tanah,
-            jenis_laporan,
-          });
       
           return Response.json([
             {
@@ -639,7 +605,6 @@ export async function POST(request: Request, response: Response) {
        else if (
         data.jenis_laporan.toLowerCase() == "transaksi listrik bulanan"
       ) {
-        console.log("data ----> ", data);
 
         let query = `
           SELECT c.nama_perusahaan AS nama_cabang, a.nama_aset, p.nama AS nama_pelanggan, 
@@ -731,7 +696,6 @@ export async function POST(request: Request, response: Response) {
               dayjs(data.periode, "MM-YYYY").format("MMMM YYYY"),
           }));
 
-          console.log("semua cabang ---> ", response);
           return Response.json(response);
         } else {
           // For specific cabang, ensure single objects are arrays
@@ -746,14 +710,6 @@ export async function POST(request: Request, response: Response) {
           const cabangArray = Array.isArray(data.nama_cabang)
             ? data.nama_cabang.split(", ")
             : [data.nama_cabang]; // Ensure cabang is an array
-
-          console.log("cabang tertentu ---> ", {
-            laporan: laporanArray,
-            columnNames,
-            aset: asetArray,
-            cabang: cabangArray,
-            jenis_laporan,
-          });
 
           return Response.json([
             {
@@ -848,8 +804,6 @@ export async function POST(request: Request, response: Response) {
             cabang: [cabang], // Always an array
             jenis_laporan,
           }));
-
-          console.log("semua cabang ---> ", response);
           return Response.json(response);
         } else {
           // For specific cabang, ensure single objects are arrays
@@ -860,15 +814,6 @@ export async function POST(request: Request, response: Response) {
           const cabangArray = Array.isArray(data.nama_cabang)
             ? data.nama_cabang.split(", ")
             : [data.nama_cabang]; // Ensure cabang is an array
-
-          console.log("cabang tertentu ---> ", {
-            laporan: laporanArray,
-            columnNames,
-            aset: asetArray,
-            cabang: cabangArray,
-            jenis_laporan,
-          });
-
           return Response.json([
             {
               laporan: laporanArray,
@@ -880,7 +825,7 @@ export async function POST(request: Request, response: Response) {
           ]);
         }
       } else if (data.jenis_laporan.toLowerCase() === "daftar penyewa per tahun") {
-        console.log("masooooookkkkkk");
+
       
         let query = `
           SELECT 
@@ -961,8 +906,6 @@ export async function POST(request: Request, response: Response) {
           cabang: data.nama_cabang,
           jenis_laporan,
         };
-      
-        console.log("semuaaaa ---> ", response);
       
         // Send the response
         // return response;

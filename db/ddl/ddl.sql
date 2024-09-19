@@ -146,10 +146,15 @@ CREATE TABLE `laporan` (
   PRIMARY KEY (`id`)
 )
 
-CREATE TABLE users (
-  id INT AUTO_INCREMENT PRIMARY KEY,        -- Unique identifier for each user
-  username VARCHAR(255) NOT NULL UNIQUE,    -- Username (must be unique)
-  password_hash VARCHAR(255) NOT NULL,      -- Hashed password (bcrypt hash stored here)
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Time of account creation
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- Auto-update timestamp
-);
+-- jtc_warehouse.users definition
+
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `role` enum('admin','supervisor','reporter') NOT NULL DEFAULT 'reporter',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+) 

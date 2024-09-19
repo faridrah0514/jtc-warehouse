@@ -75,8 +75,6 @@ export default function AddLaporanModal(props: Status) {
     } else {
       value.periode = dayjs(value.periode).year().toString();
     } // Format as year only
-
-    console.log("value ---> ", value)
     // Send the data to the server
     fetch('/api/master/laporan', {
       method: 'POST',
