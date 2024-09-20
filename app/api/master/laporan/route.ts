@@ -10,6 +10,19 @@ dayjs.extend(customParseFormat);
 dayjs.locale("id");
 
 export const dynamic = "force-dynamic";
+
+// Helper function to calculate masa using dayjs
+const calculateMasa = (start: string, end: string) => {
+  const startDate = dayjs(start, "DD-MM-YYYY");
+  const endDate = dayjs(end, "DD-MM-YYYY");
+
+  const diffInMonths = endDate.diff(startDate, "months", true); // Calculate month difference, accounting for days
+  const years = Math.floor(diffInMonths / 12); // Full years
+  const months = Math.round(diffInMonths % 12); // Remaining months
+
+  return `${years} tahun ${months} bulan`;
+};
+
 export async function GET() {
   const conn = openDB();
   const [cabangData] = await conn.execute("select * from cabang");
@@ -141,7 +154,7 @@ export async function POST(request: Request, response: Response) {
       } else if (data.jenis_laporan.toLowerCase() == "transaksi ipl") {
         let query = `
           SELECT c.nama_perusahaan nama_cabang, a.nama_aset, p.nama nama_pelanggan, 
-                 ti.periode_pembayaran, ti.status_pembayaran, ti.tanggal_pembayaran, ts.ipl
+                 ti.periode_pembayaran, ti.status_pembayaran, ti.tanggal_pembayaran, ts.ipl IPL
           FROM transaksi_ipl ti
           LEFT JOIN cabang c ON ti.id_cabang = c.id
           LEFT JOIN aset a ON ti.id_aset = a.id
@@ -197,7 +210,7 @@ export async function POST(request: Request, response: Response) {
           .map((item, idx) => ({
             ...item,
             Nomor: idx + 1,
-            ipl: _renderCurrency(item.ipl),
+            IPL: _renderCurrency(item.IPL),
           }))
           .map((item: any) => ({
             ...item,
@@ -461,18 +474,8 @@ export async function POST(request: Request, response: Response) {
             p.nama AS nama_penyewa, 
             a.nama_aset AS nama_aset,
             a.no_sertifikat,
-            CONCAT(a.luas_lt1, ' - ', a.luas_lt2) AS luas_bangunan, -- Concatenate luas_lt1 and luas_lt2
+            CONCAT(a.luas_lt1, ' - ', a.luas_lt2) AS luas_bangunan,
             a.luas_tanah,
-            CONCAT(
-              FLOOR(TIMESTAMPDIFF(MONTH, 
-                STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y'), 
-                STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
-              ) / 12), ' tahun ',
-              MOD(TIMESTAMPDIFF(MONTH, 
-                STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y'), 
-                STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
-              ), 12), ' bulan'
-            ) AS masa,
             ts.start_date_sewa AS mulai, 
             ts.end_date_sewa AS berakhir, 
             ts.total_biaya_sewa AS harga_sewa
@@ -485,7 +488,7 @@ export async function POST(request: Request, response: Response) {
       
         const queryParams: any[] = [];
       
-        // Handle 'Semua Cabang' in the query
+        // Handle specific cabang and aset filtering
         if (data.nama_cabang && data.nama_cabang.toLowerCase() !== "semua cabang") {
           if (data.nama_aset) {
             query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
@@ -520,7 +523,8 @@ export async function POST(request: Request, response: Response) {
           nomor: idx + 1,
           mulai: dayjs(row.mulai, "DD-MM-YYYY").format("D MMMM YYYY"), // Format mulai
           berakhir: dayjs(row.berakhir, "DD-MM-YYYY").format("D MMMM YYYY"), // Format berakhir
-          harga_sewa: _renderCurrency(row.harga_sewa),
+          masa: calculateMasa(row.mulai, row.berakhir), // Calculate masa
+          // harga_sewa: _renderCurrency(row.harga_sewa),
         }));
       
         // Extract column names
@@ -557,28 +561,44 @@ export async function POST(request: Request, response: Response) {
             }
       
             if (!result[nama_cabang][nama_aset]) {
-              result[nama_cabang][nama_aset] = [];
+              result[nama_cabang][nama_aset] = {
+                rows: [],
+                total_harga_sewa: 0,
+              };
             }
       
-            result[nama_cabang][nama_aset].push(row);
+            result[nama_cabang][nama_aset].rows.push(row);
+            result[nama_cabang][nama_aset].total_harga_sewa += parseFloat(row.harga_sewa);
             return result;
           }, {});
       
           const response = Object.keys(groupedLaporan).flatMap((cabang) =>
             Object.keys(groupedLaporan[cabang]).map((aset) => ({
-              laporan: groupedLaporan[cabang][aset], // Array of rows for the specific cabang and aset
+              laporan: groupedLaporan[cabang][aset].rows.map((row: any, idx: number) => ({
+                ...row,
+                harga_sewa: _renderCurrency(row.harga_sewa),
+              })), // Array of rows for the specific cabang and aset
               columnNames,
               aset: [aset], // Always an array
               cabang: [cabang], // Always an array
               no_sertifikat: uniqueValues[aset].no_sertifikat,
               luas_bangunan: uniqueValues[aset].luas_bangunan,
               luas_tanah: uniqueValues[aset].luas_tanah,
+              total_harga_sewa: _renderCurrency(groupedLaporan[cabang][aset].total_harga_sewa), // Total harga sewa
               jenis_laporan,
             }))
           );
       
           return Response.json(response);
         } else {
+          // Calculate total harga_sewa for specific cabang/aset
+       
+          const totalHargaSewa = laporan.reduce((acc: number, row: any) => acc + parseFloat(row.harga_sewa), 0);
+      
+          laporan = laporan.map((row: any, idx: number) => ({
+            ...row,
+            harga_sewa: _renderCurrency(row.harga_sewa),
+          }));
           // For specific cabang, ensure single objects are arrays
           const laporanArray = Array.isArray(laporan) ? laporan : [laporan]; // Ensure laporan is always an array
           const asetArray = Array.isArray(data.nama_aset)
@@ -597,11 +617,13 @@ export async function POST(request: Request, response: Response) {
               no_sertifikat: uniqueValues[asetArray[0]]?.no_sertifikat,
               luas_bangunan: uniqueValues[asetArray[0]]?.luas_bangunan,
               luas_tanah: uniqueValues[asetArray[0]]?.luas_tanah,
+              total_harga_sewa: _renderCurrency(totalHargaSewa), // Total for specific cabang/aset
               jenis_laporan,
             },
           ]);
         }
       }
+      
        else if (
         data.jenis_laporan.toLowerCase() == "transaksi listrik bulanan"
       ) {
@@ -825,26 +847,14 @@ export async function POST(request: Request, response: Response) {
           ]);
         }
       } else if (data.jenis_laporan.toLowerCase() === "daftar penyewa per tahun") {
-
-      
         let query = `
           SELECT 
             p.nama AS nama_penyewa, 
             a.nama_aset AS nama_aset, 
-            CONCAT(
-              FLOOR(TIMESTAMPDIFF(MONTH, 
-                STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y'), 
-                STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
-              ) / 12), ' tahun ',
-              MOD(TIMESTAMPDIFF(MONTH, 
-                STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y'), 
-                STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
-              ), 12), ' bulan'
-            ) AS masa_sewa,
             ts.start_date_sewa AS mulai, 
             ts.end_date_sewa AS berakhir, 
             ts.total_biaya_sewa AS harga_sewa, 
-            ts.ipl AS ipl, 
+            ts.ipl AS IPL, 
             CONCAT(ts.no_akte, ' - ', ts.notaris) AS nomor_akta_dan_notaris
           FROM transaksi_sewa ts 
             LEFT JOIN cabang c ON ts.id_cabang = c.id
@@ -856,37 +866,31 @@ export async function POST(request: Request, response: Response) {
       
         const queryParams: any[] = [data.periode, data.periode];
       
-        // Handle cabang conditions
-        // if (data.nama_cabang === "semua cabang") {
-        //   // No filter on cabang
-        // } else if (data.nama_cabang) {
-        //   query += " AND c.nama_perusahaan IN (?)";
-        //   queryParams.push(data.nama_cabang.split(", "));
-        // }
+        let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
+          query,
+          queryParams
+        );
       
-        // // Handle aset condition
-        // if (data.nama_aset) {
-        //   query += " AND a.nama_aset IN (?)";
-        //   queryParams.push(data.nama_aset.split(", "));
-        // }
-      
-        let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(query, queryParams);
-      
+        // Format laporan data and calculate masa
         laporan = laporan.map((row: any, idx: number) => ({
           ...row,
           nomor: idx + 1,
           mulai: dayjs(row.mulai, "DD-MM-YYYY").format("D MMMM YYYY"), // Format mulai
           berakhir: dayjs(row.berakhir, "DD-MM-YYYY").format("D MMMM YYYY"), // Format berakhir
+          masa: calculateMasa(row.mulai, row.berakhir), // Calculate masa using the helper function
           harga_sewa: _renderCurrency(row.harga_sewa),
-          ipl: _renderCurrency(row.ipl),
+          IPL: _renderCurrency(row.IPL),
         }));
       
+        // Extract column names and add "Masa" before "Mulai"
         let columnNames = laporanFields
           .map((fields: any) => fields.name)
           .filter((fieldName) => fieldName !== "id");
       
+        // Add "Nomor" to the start of the columns
         columnNames.unshift("nomor");
       
+        // Convert column names to the required format and place "Masa" before "Mulai"
         columnNames = columnNames.map((val: any) => ({
           title: val
             .split("_")
@@ -895,6 +899,15 @@ export async function POST(request: Request, response: Response) {
           dataIndex: val,
           key: val,
         }));
+      
+        // Find index of "mulai" and insert "Masa" before it
+        columnNames.splice(
+          columnNames.findIndex((column) => column.dataIndex === "mulai"), 0, {
+            title: "Masa",
+            dataIndex: "masa",
+            key: "masa",
+          }
+        );
       
         const jenis_laporan = "DAFTAR PENYEWA PER-TAHUN";
       
@@ -908,11 +921,8 @@ export async function POST(request: Request, response: Response) {
         };
       
         // Send the response
-        // return response;
-        return Response.json([response])
+        return Response.json([response]);
       }
-      
-      
       
     } else if (value.requestType == "delete_laporan") {
       await conn.query(`delete from laporan where id  = ?`, data.id);

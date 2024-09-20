@@ -1,17 +1,15 @@
 'use client'
 import React, { useEffect, useRef, useState } from 'react'
-
-import { Button, Divider, Flex, Form, Popconfirm, Spin, Table, Tag } from 'antd'
+import { Button, Divider, Flex, Form, Popconfirm, Spin, Table, Tag, Input } from 'antd'
 import AddSewaModal from './AddSewaModal'
 import Title from 'antd/es/typography/Title'
 import dayjs from 'dayjs';
 import { _renderCurrency } from '@/app/utils/renderCurrency'
 import { useReactToPrint } from 'react-to-print'
+import { SearchOutlined } from '@ant-design/icons';
 import type { TableColumnsType } from 'antd';
 
-
 export default function Page() {
-
   const [sewaData, setSewaData] = useState<any[]>([]);
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
@@ -19,19 +17,67 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [form] = Form.useForm()
   const [maxId, setMaxId] = useState<number>(0)
+  const [searchTextCabang, setSearchTextCabang] = useState<string>('')
+  const [searchTextAset, setSearchTextAset] = useState<string>('')
 
   const column: TableColumnsType<any> = [
     { title: "Nomor", dataIndex: 'no', key: 'no' },
     { title: "ID Transaksi", dataIndex: 'id_transaksi', key: 'id_transaksi' },
     {
       title: "Cabang", dataIndex: 'nama_cabang', key: 'nama_cabang',
-      filters: Array.from(new Set(sewaData?.map((x: any, y: number) => x.nama_cabang))).map((val: any, idx: number) => { return { text: val, value: val } }),
-      onFilter: (val, record) => record.nama_cabang.indexOf(val as string) === 0
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Cari Cabang"
+            value={selectedKeys[0]}
+            onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: 'block' }}
+          />
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90, marginRight: 8 }}
+          >
+            Cari
+          </Button>
+          <Button onClick={() => clearFilters && clearFilters()} size="small" style={{ width: 90 }}>
+            Reset
+          </Button>
+        </div>
+      ),
+      filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+      onFilter: (value, record) => String(record.nama_cabang).toLowerCase().includes(String(value).toLowerCase()),
     },
     {
       title: "Aset", dataIndex: 'nama_aset', key: 'nama_aset',
-      filters: Array.from(new Set(sewaData?.map((x: any, y: number) => x.nama_aset))).map((val: any, idx: number) => { return { text: val, value: val } }),
-      onFilter: (val, record) => record.nama_aset.indexOf(val as string) === 0
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Cari Aset"
+            value={selectedKeys[0]}
+            onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: 'block' }}
+          />
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90, marginRight: 8 }}
+          >
+            Cari
+          </Button>
+          <Button onClick={() => clearFilters && clearFilters()} size="small" style={{ width: 90 }}>
+            Reset
+          </Button>
+        </div>
+      ),
+      filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+      onFilter: (value, record) => String(record.nama_aset).toLowerCase().includes(String(value).toLowerCase()),
     },
     { title: "Pelanggan", dataIndex: 'nama_pelanggan', key: 'nama_pelanggan' },
     { title: "Tanggal Akte", dataIndex: 'tanggal_akte_1', key: 'tanggal_akte' },
@@ -47,16 +93,13 @@ export default function Page() {
       title: "Dokumen",
       key: "dokumen",
       ellipsis: true,
-      // width: 350,
       render: (_, record) => (
         <ul>
-          {record.list_files.map((v: string, idx: number) => {
-            return (
-              <li key={idx}>
-                <a href={`/upload/txs/${record.id_transaksi}/${v}`} target="_blank" rel="noopener noreferrer">{v}</a>
-              </li>
-            )
-          })}
+          {record.list_files.map((v: string, idx: number) => (
+            <li key={idx}>
+              <a href={`/upload/txs/${record.id_transaksi}/${v}`} target="_blank" rel="noopener noreferrer">{v}</a>
+            </li>
+          ))}
         </ul>
       )
     },
@@ -90,44 +133,32 @@ export default function Page() {
       key: "action",
       render: (_, record: any) => (
         <Flex gap="small">
-          <Button type="primary" ghost size="small" onClick={
-            () => {
-              setOpenModal(true)
-              setIsEdit(true)
-              record.tanggal_akte = dayjs(record.tanggal_akte_1, 'DD-MM-YYYY')
-              record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
-              form.setFieldsValue(record)
-              setTriggerRefresh(!triggerRefresh)
-            }
-          }>
+          <Button type="primary" ghost size="small" onClick={() => {
+            setOpenModal(true)
+            setIsEdit(true)
+            record.tanggal_akte = dayjs(record.tanggal_akte_1, 'DD-MM-YYYY')
+            record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
+            form.setFieldsValue(record)
+            setTriggerRefresh(!triggerRefresh)
+          }}>
             Edit
           </Button>
-          <Popconfirm
-            title="sure to delete?"
-            onConfirm={
-              async function deleteCabang() {
-                const requstType = 'delete'
-                await fetch('/api/master/transaksi/sewa', {
-                  method: "POST",
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    requestType: requstType,
-                    data: { id: record.id, id_transaksi: record.id_transaksi }
-                  })
-                }).then((res) => res.json())
-                  .then((res) => {
-                    if (res.status == 200) {
-                      setTriggerRefresh(!triggerRefresh)
-                    }
-                  })
+          <Popconfirm title="sure to delete?" onConfirm={async () => {
+            const requstType = 'delete'
+            await fetch('/api/master/transaksi/sewa', {
+              method: "POST",
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                requestType: requstType,
+                data: { id: record.id, id_transaksi: record.id_transaksi }
+              })
+            }).then((res) => res.json()).then((res) => {
+              if (res.status == 200) {
+                setTriggerRefresh(!triggerRefresh)
               }
-            }
-          >
-            <Button size="small" danger>
-              Delete
-            </Button>
+            })
+          }}>
+            <Button size="small" danger>Delete</Button>
           </Popconfirm>
         </Flex>
       ),
@@ -139,19 +170,11 @@ export default function Page() {
   const componentRef = useRef(null)
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
-    onBeforeGetContent: () => {
-      return new Promise<void>((resolve) => {
-        setPrint(true)
-        resolve()
-      })
-    },
-    onBeforePrint: () => {
-
-    },
-    onAfterPrint: () => {
-      setPrint(false)
-    }
-
+    onBeforeGetContent: () => new Promise<void>((resolve) => {
+      setPrint(true)
+      resolve()
+    }),
+    onAfterPrint: () => setPrint(false)
   })
 
   async function getData() {
@@ -176,18 +199,15 @@ export default function Page() {
     }
   }
 
-  useEffect(
-    () => {
-      getData()
-    }, [triggerRefresh]
-  )
+  useEffect(() => {
+    getData()
+  }, [triggerRefresh])
 
   return (
     <>
       <Title level={3}>Halaman Data Master Transaksi - Sewa</Title>
       <Flex className='pb-5' gap={'small'} vertical={false}>
         <Button onClick={() => { setOpenModal(true) }}>+ Transaksi Sewa</Button>
-        {/* <Button onClick={handlePrint}>Print Laporan</Button> */}
       </Flex>
       {(loading) ?
         <div className="flex justify-center items-center">
@@ -206,70 +226,25 @@ export default function Page() {
             <div className='print-table-container'>
               <Table className='overflow-auto'
                 scroll={{ x: 2000 }}
-                // scroll={true}
-                columns={print ? column.filter(col => col.key != 'dokumen' && col.key != 'action'  && col.key != 'no_akte' && col.key != 'notaris' && col.key != 'tanggal_akte') : column}
+                columns={print ? column.filter(col => col.key != 'dokumen' && col.key != 'action' && col.key != 'no_akte' && col.key != 'notaris' && col.key != 'tanggal_akte') : column}
                 dataSource={sewaData?.map((item: any, index: number) => ({ ...item, key: index }))}
                 rowKey='id'
                 size='small'
                 loading={sewaData ? false : true}
-                bordered
+                pagination={{pageSize: 100}}
               />
             </div>
           </div>
           <style jsx global>{`
-            .print-only {
-              display: none;
-            }
-              .ant-table {
-                width: 100% !important;
-              }
-
-              .ant-table-wrapper {
-                width: 100%;
-              }
-            .no-print {
-              display: block;
-            }
-
-            .print-table-container {
-              display: block;
-              width: 100%;
-              overflow-x: auto;
-            }
-
+            .print-only { display: none; }
+            .no-print { display: block; }
+            .print-table-container { display: block; width: 100%; overflow-x: auto; }
             @media print {
-              @page {
-                size: landscape;
-                margin: 5mm;
-              }
-
-              .print-only {
-                text-align: center;
-                display: block;
-              }
-
-              .no-print {
-                display: none;
-              }
-                
-              .ant-table {
-                width: 100% !important;
-              }
-
-              .ant-table-wrapper {
-                width: 100% !important;
-              }
-
-              .print-table-container {
-                display: block;
-                margin: 0 auto;
-                width: 100% !important;
-                max-width: 100%;
-              }
-
-              .ant-table-pagination {
-                display: none !important;
-              }
+              @page { size: landscape; margin: 5mm; }
+              .print-only { display: block; text-align: center; }
+              .no-print { display: none; }
+              .print-table-container { margin: 0 auto; width: auto; max-width: 100%; }
+              .ant-table-pagination { display: none !important; }
             }
           `}</style>
         </>

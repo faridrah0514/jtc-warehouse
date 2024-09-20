@@ -109,6 +109,7 @@ export default function Page() {
           <Button className="mb-5" onClick={() => { setOpenModal(true) }}>Buat Laporan</Button>
           <AddLaporanModal data={allData} form={form} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
           <Table
+            pagination={{ pageSize: 100 }}
             size='small'
             columns={[
               ...column,
@@ -152,45 +153,116 @@ export default function Page() {
               }
             ]} dataSource={allData.laporanData?.map((item: any, index: number) => ({ ...item, key: index + 1 }))}></Table>
           <div ref={componentRef} className='print-only'>
-            {respData?.map((item: any, idx: number) => (
-              <>
-                <div>
-                  <Title level={3} style={{ margin: 0 }}>CV. JAMBI TRADE CENTER</Title>
-                  <Title level={3} style={{ margin: 0 }}>JAMBI</Title>
-                  <br></br>
-                  <Title level={4} style={{ margin: 0 }}>{item.jenis_laporan}</Title>
-                </div>
-                <div>
-                  <Flex justify='space-between' className='mb-0'>
-                    <Title level={5} style={{ margin: '5px 0' }}>A/N: {item.cabang}</Title>
-                    <Title level={5} style={{ margin: '5px 0' }}>{item.aset}</Title>
-                  </Flex>
-                </div>
-                {item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK" && (
+            {respData?.map((item: any, idx: number) => {
+              let dataSourceWithTotal = item.laporan.map((laporanItem: any, index: number) => ({
+                ...laporanItem,
+                key: index,
+              }));
+
+              // Append the total row if jenis_laporan is "DAFTAR PENYEWA PER-BLOK"
+              if (item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK") {
+                dataSourceWithTotal = [
+                  ...dataSourceWithTotal,
+                  {
+                    key: 'total',
+                    rowHead: 'Total Tagihan',
+                    nama_cabang: 'Total Harga Sewa', // Merged title for the total row
+                    harga_sewa: item.total_harga_sewa, // Use total_harga_sewa from backend
+                  }
+                ];
+              }
+
+              // Adjust column rendering for merging all except 'harga_sewa'
+              const columnsWithMerge = item.columnNames.map((col: any) => {
+                if (col.dataIndex === 'nama_cabang') {
+                  return {
+                    ...col,
+                    render: (text: any, record: any) => {
+                      if (record.key === 'total') {
+                        return {
+                          children: (
+                            <div style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                              Total Harga Sewa
+                            </div>
+                          ), // Merged title for total row, aligned right
+                          props: {
+                            colSpan: item.columnNames.length - 1, // Merge all columns except 'harga_sewa'
+                          },
+                        };
+                      }
+                      return text;
+                    },
+                  };
+                }
+
+                // Skip rendering for all columns except 'harga_sewa' in the total row
+                if (col.dataIndex !== 'harga_sewa') {
+                  return {
+                    ...col,
+                    render: (text: any, record: any) => {
+                      if (record.key === 'total') {
+                        return {
+                          props: {
+                            colSpan: 0, // Skip merged columns
+                          },
+                        };
+                      }
+                      return text;
+                    },
+                  };
+                }
+
+                // Leave 'harga_sewa' column untouched for the total row
+                if (col.dataIndex === 'harga_sewa') {
+                  return {
+                    ...col,
+                    render: (text: any, record: any) => {
+                      if (record.key === 'total') {
+                        return {
+                          children: record.harga_sewa,
+                          props: {
+                            colSpan: 1, // Keep this column
+                          },
+                        };
+                      }
+                      return text;
+                    },
+                  };
+                }
+
+                return col;
+              });
+
+              return (
+                <>
                   <div>
-                    <Row>
-                      <Col span={12}><Title level={5} style={{ margin: '5px 0', textAlign: 'left' }}>No Sertifikat: {item.no_sertifikat}</Title></Col>
-                      <Col span={12}><Title level={5} style={{ margin: '5px 0', textAlign: 'right' }}>Luas Bangunan: {item.luas_bangunan} M2</Title></Col>
-                    </Row>
-                    <Row>
-                      <Col span={12}><Title level={5} style={{ margin: '5px 0', textAlign: 'left' }}>Luas Bangunan: {item.luas_Tanah} M2</Title></Col>
-                      {/* <Col span={12}><Title level={5} style={{ margin: 0 }}>Luas Bangunan: {item.luas_bangunan}</Title></Col> */}
-                    </Row>
+                    <Title level={3} style={{ margin: 0 }}>CV. JAMBI TRADE CENTER</Title>
+                    <Title level={3} style={{ margin: 0 }}>JAMBI</Title>
+                    <br />
+                    <Title level={4} style={{ margin: 0 }}>{item.jenis_laporan}</Title>
                   </div>
-                )}
-                <div>
-                  <Divider className='mb-1 pb-0'></Divider>
-                </div>
-                <Table size='small'
-                  bordered
-                  columns={item.columnNames}
-                  dataSource={item.laporan.map((item: any, index: number) => ({ ...item, key: index }))}
-                  rowKey="rowHead"
-                  rowClassName={(record) => record.rowHead === 'Total Tagihan' ? 'font-bold' : ''}
-                />
-                <div className="page-break" />
-              </>
-            ))}
+                  <div>
+                    <Flex justify='space-between' className='mb-0'>
+                      <Title level={5} style={{ margin: '5px 0', textAlign: 'left' }}>A/N: {item.cabang}</Title>
+                      <Title level={5} style={{ margin: '5px 0', textAlign: 'right' }}>{item.aset}</Title>
+                    </Flex>
+                  </div>
+                  <div>
+                    <Divider className='mb-1 pb-0'></Divider>
+                  </div>
+                  <Table
+                    size='small'
+                    bordered
+                    columns={columnsWithMerge}
+                    dataSource={dataSourceWithTotal}
+                    rowKey="key"
+                    rowClassName={(record) => record.key === 'total' ? 'font-bold' : ''}
+                    pagination={false} // Disable pagination for printing purposes
+                  />
+                  <div className="page-break" />
+                </>
+              );
+            })}
           </div>
           <style jsx global>{`
             .print-only {

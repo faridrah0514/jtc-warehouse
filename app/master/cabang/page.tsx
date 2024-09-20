@@ -1,30 +1,67 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 
-import { Button, ConfigProvider, Flex, Form, Modal, Popconfirm, Space, Table, TableProps, message } from 'antd'
+import { Button, ConfigProvider, Flex, Form, Input, Modal, Popconfirm, Space, Table, TableProps, message } from 'antd'
 import AddCabangModal from './AddCabangModal'
 import { DataCabang } from '@/app/types/master'
 import { useForm } from 'antd/es/form/Form'
 import Title from 'antd/es/typography/Title'
 import { _renderCurrency } from '@/app/utils/renderCurrency'
+import { SearchOutlined } from '@ant-design/icons'
+import type { ColumnType, FilterDropdownProps } from 'antd/es/table/interface'
 
-const column = [
+const column = (searchText: string, setSearchText: Function): ColumnType<DataCabang>[] => [
   { title: "Nomor", dataIndex: 'no', key: 'no' },
   { title: "ID Cabang", dataIndex: 'id_cabang', key: 'id_cabang' },
-  { title: "Nama Perusahaan", dataIndex: 'nama_perusahaan', key: 'nama_perusahaan' },
+  {
+    title: "Nama Perusahaan",
+    dataIndex: 'nama_perusahaan',
+    key: 'nama_perusahaan',
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: FilterDropdownProps) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          placeholder="Cari Nama Perusahaan"
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => confirm()}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Button
+          type="primary"
+          onClick={() => confirm()}
+          icon={<SearchOutlined />}
+          size="small"
+          style={{ width: 90, marginRight: 8 }}
+        >
+          Cari
+        </Button>
+        <Button onClick={() => clearFilters && clearFilters()} size="small" style={{ width: 90 }}>
+          Reset
+        </Button>
+      </div>
+    ),
+    filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) => String(record.nama_perusahaan).toLowerCase().includes(String(value).toLowerCase()),
+    render: (text) => (
+      text.toLowerCase().includes(searchText.toLowerCase()) ? (
+        <span>{text}</span>
+      ) : text
+    ),
+  },
   { title: "Alamat", dataIndex: 'alamat', key: 'alamat' },
   { title: "Kota", dataIndex: 'kota', key: 'kota' },
   { title: "No Tlp", dataIndex: 'no_tlp', key: 'no_tlp' },
   { title: "Status", dataIndex: 'status', key: 'status' },
   { title: "Kwh Rp", dataIndex: 'kwh_rp_1', key: 'kwh_rp_1' },
 ]
+
 export default function Page() {
   const [form] = Form.useForm()
   const [cabangData, setCabangData] = useState<DataCabang[]>();
   const [openModal, setOpenModal] = useState<boolean>(false)
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
   const [isEdit, setIsEdit] = useState<boolean>(false)
-
+  const [searchText, setSearchText] = useState<string>('')
 
   async function getData() {
     const response = await fetch('/api/master/cabang', { method: 'GET', cache: 'no-store' })
@@ -49,13 +86,14 @@ export default function Page() {
       getData()
     }, [triggerRefresh]
   )
+  
   return (
     <>
     <Title level={3}>Halaman Data Master Cabang</Title>
       <Button className="mb-5" onClick={() => { setOpenModal(true); setIsEdit(false) }}>+ Tambah Cabang</Button>
       <AddCabangModal isEdit={isEdit} form={form} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
       <Table className='overflow-auto'
-        columns={[...column, {
+        columns={[...column(searchText, setSearchText), {
           title: "Action",
           key: "action",
           render: (_, record) => (
@@ -70,7 +108,6 @@ export default function Page() {
                   }
                 }}
               >
-            
               </ConfigProvider>
               <Button type="primary" ghost size="small" onClick={
                 () => {
@@ -107,14 +144,14 @@ export default function Page() {
               </Popconfirm>
             </Flex>
           ),
-        },]}
+        }]}
         dataSource={cabangData}
         rowKey='id'
         size='small'
         loading={cabangData ? false : true}
-        bordered
+        pagination={{pageSize: 100}}
+        // bordered
       />
     </>
-
   )
 }

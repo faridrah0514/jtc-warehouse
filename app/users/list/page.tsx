@@ -146,6 +146,7 @@ const Page: React.FC = () => {
           rowKey="id"
           loading={loading}
           pagination={{ pageSize: 5 }}
+          size='small'
         />
       </div>
     </div>

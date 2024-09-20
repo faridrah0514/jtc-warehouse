@@ -70,7 +70,8 @@ CREATE TABLE
     `ipl` int DEFAULT NULL,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`id_cabang`) REFERENCES `cabang` (`id`),
-    FOREIGN KEY (`id_tipe_aset`) REFERENCES `tipe_aset` (`id`) FOREIGN KEY (`id_tipe_sertifikat`) REFERENCES `tipe_sertifikat` (`id`)
+    FOREIGN KEY (`id_tipe_aset`) REFERENCES `tipe_aset` (`id`) 
+    FOREIGN KEY (`id_tipe_sertifikat`) REFERENCES `tipe_sertifikat` (`id`)
   );
 
 -- jtc_warehouse.transaksi_sewa definition

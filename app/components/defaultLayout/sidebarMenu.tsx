@@ -1,4 +1,5 @@
 import {
+    BuildOutlined,
     CreditCardOutlined,
     FolderOpenOutlined,
     HomeOutlined,
@@ -40,5 +41,6 @@ export const items: MenuItem[] = [
         getItem(<Link href='/master/transaksi/ipl'>IPL</Link>, 'IPL', <HomeOutlined/>),
     ]),
     getItem(<Link href='/master/laporan'>Laporan</Link>, 'Laporan', <InsertRowLeftOutlined/>),
+    getItem(<Link href='/master/other'>Lain-Lain</Link>, 'Tipe Aset & Sertifikat', <BuildOutlined />),
 ];
 
