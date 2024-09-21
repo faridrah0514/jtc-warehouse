@@ -523,11 +523,10 @@ export async function POST(request: Request, response: Response) {
           nomor: idx + 1,
           mulai: dayjs(row.mulai, "DD-MM-YYYY").format("D MMMM YYYY"), // Format mulai
           berakhir: dayjs(row.berakhir, "DD-MM-YYYY").format("D MMMM YYYY"), // Format berakhir
-          masa: calculateMasa(row.mulai, row.berakhir), // Calculate masa
-          // harga_sewa: _renderCurrency(row.harga_sewa),
+          masa_sewa: calculateMasa(row.mulai, row.berakhir), // Calculate Masa Sewa
         }));
       
-        // Extract column names
+        // Extract column names and add "Masa Sewa" before "Mulai"
         let columnNames = laporanFields
           .map((fields: any) => fields.name)
           .filter((fieldName) => !["id", "no_sertifikat", "luas_bangunan", "luas_tanah"].includes(fieldName))
@@ -541,6 +540,13 @@ export async function POST(request: Request, response: Response) {
             dataIndex: val,
             key: val,
           }));
+      
+        // Add the "Masa Sewa" column before "Mulai"
+        columnNames.splice(columnNames.findIndex((column) => column.dataIndex === "mulai"), 0, {
+          title: "Masa Sewa",
+          dataIndex: "masa_sewa",
+          key: "masa_sewa",
+        });
       
         columnNames.unshift({
           title: "Nomor",

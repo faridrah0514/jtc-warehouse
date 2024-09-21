@@ -130,6 +130,8 @@ export default function AddSewaModal(props: Status) {
       .catch(() => message.error("Tambah/Edit sewa aset gagal"))
       .finally(() => {
         props.setOpenModal(false)
+        setSelectedAset(undefined)
+        setSelectedCabang(undefined)
         setUploading(false)
       })
     props.setOpenModal(false)
@@ -227,30 +229,60 @@ export default function AddSewaModal(props: Status) {
               <Input placeholder='Notaris' autoComplete='off' />
             </Form.Item>
             <Form.Item
-              name='masa_sewa' required label="Masa Sewa" rules={[{ required: true }]}>
-              <RangePicker allowClear={false} onChange={(dates, dateStrings) => {
-                const dFormat = dateFormat
-                if (dates && dates[0] && dates[1]) {
-                  const totalMonths = dayjs(dateStrings[1], dFormat).diff(dayjs(dateStrings[0], dFormat).subtract(1, 'day'), 'month');
-                  const years = Math.floor(totalMonths / 12);
-                  let months = totalMonths % 12;
-                  const endOfMonthPeriod = dayjs(dateStrings[0], dFormat).add(months, 'month').add(years, 'years');
+              name="masa_sewa"
+              required
+              label="Masa Sewa"
+              rules={[{ required: true }]}
+            >
+              <RangePicker
+                allowClear={false}
+                onChange={(dates, dateStrings) => {
+                  const dFormat = dateFormat;
+                  if (dates && dates[0] && dates[1]) {
+                    const totalMonths = dayjs(dateStrings[1], dFormat).diff(dayjs(dateStrings[0], dFormat).subtract(1, 'day'), 'month');
+                    const years = Math.floor(totalMonths / 12);
+                    let months = totalMonths % 12;
+                    const endOfMonthPeriod = dayjs(dateStrings[0], dFormat).add(months, 'month').add(years, 'years');
 
-                  let days = dayjs(dateStrings[1], dFormat).diff(endOfMonthPeriod.subtract(1, 'day'), 'day');
-                  if (days > 1) {
-                    months += 1;
-                    days = 0;
+                    let days = dayjs(dateStrings[1], dFormat).diff(endOfMonthPeriod.subtract(1, 'day'), 'day');
+                    if (days > 1) {
+                      months += 1;
+                      days = 0;
+                    }
+                    setDiffPeriod({ tahun: years, bulan: months });
                   }
-                  setDiffPeriod({ tahun: years, bulan: months });
-                }
-              }} format={dateFormat} 
-              disabledDate={(current) => {
-                try {
-                  return props.sewaData.filter(i => i.id_aset == selectedAset && i.id_cabang == selectedCabang).some(
-                    range => current.isBetween(dayjs(range.start_date_sewa, dateFormat), dayjs(range.end_date_sewa, dateFormat), null, '[]')
-                  )
-                } catch (e) { return false}
-              }}
+                }}
+                format={dateFormat}
+                disabledDate={(date, info) => {
+                  // Get the sewa data based on selected Aset and Cabang
+                  const sewaRanges = props.sewaData.filter(
+                    (i) => i.id_aset === selectedAset && i.id_cabang === selectedCabang
+                  );
+
+                  // Handle year selection if the user is on the year panel
+                  if (info.type === 'year') {
+                    // Allow selection of all years
+                    return false;
+                  }
+
+                  // Disable specific dates between start_date_sewa and end_date_sewa
+                  return sewaRanges.some((range) => {
+                    const start = dayjs(range.start_date_sewa, dateFormat);
+                    const end = dayjs(range.end_date_sewa, dateFormat);
+
+                    // If the user has already selected a start date (info.from), restrict the second date
+                    if (info.from) {
+                      // Disable any dates before the selected start date and within the existing sewa range
+                      return (
+                        date.isBefore(info.from, 'day') || // Ensure the second date is after the first
+                        date.isBetween(start, end, null, '[]') // Disable dates overlapping the existing sewa range
+                      );
+                    }
+
+                    // For the first date selection, disable any dates within the existing sewa ranges
+                    return date.isBetween(start, end, null, '[]'); // Disable range overlap
+                  });
+                }}
               />
             </Form.Item>
             <Form.Item name='periode_pembayaran' required label="Periode Pembayaran" initialValue={props.form.getFieldValue('periode_pembayaran') ? 'Pertahun' : 'Pertahun'}>
@@ -373,6 +405,8 @@ export default function AddSewaModal(props: Status) {
               setPeriodePembayaran('Pertahun')
               setFileList([])
               setListFiles([])
+              setSelectedAset(undefined)
+              setSelectedCabang(undefined)
             }}>Cancel</Button>
           </Form.Item>
           <Form.Item>
