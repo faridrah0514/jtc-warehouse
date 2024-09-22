@@ -10,6 +10,8 @@ import { DownOutlined, ExclamationCircleFilled, SearchOutlined } from '@ant-desi
 import Title from 'antd/es/typography/Title'
 import path from "path";
 import { useReactToPrint } from 'react-to-print'
+import { getTanggalEntriColumn } from '@/app/utils/dateColumns'
+import RoleProtected from '@/app/components/roleProtected/RoleProtected'
 
 interface ExpandedDataType {
   key: React.Key;
@@ -129,112 +131,137 @@ export default function Page() {
     },
     { title: "Alamat", dataIndex: 'alamat', key: 'alamat', width: 150 },
     { title: "No. tlp", dataIndex: 'no_tlp', key: 'no_tlp', width: 100 },
+    getTanggalEntriColumn(150),
     {
       title: "Action",
       key: "action",
       width: 350,
       render: (_, record) => (
-        <Dropdown.Button placement="bottomLeft" trigger={['click']} size="small" icon={<DownOutlined />} menu={{
-          items: [
-            {
-              key: 1,
-              label: (
-                <ConfigProvider
-                  theme={{
-                    components: {
-                      Button: {
-                        colorPrimary: '#00b96b',
-                        colorPrimaryHover: '#00db7f'
+        <Dropdown.Button
+      placement="bottomLeft"
+      trigger={["click"]}
+      size="small"
+      icon={<DownOutlined />}
+      menu={{
+        items: [
+          {
+            key: 1,
+            label: (
+              <ConfigProvider
+                theme={{
+                  components: {
+                    Button: {
+                      colorPrimary: '#00b96b',
+                      colorPrimaryHover: '#00db7f',
+                    },
+                  },
+                }}
+              >
+                <Link href={`/master/aset/view/${record.id_aset}`}>
+                  View
+                </Link>
+              </ConfigProvider>
+            ),
+          },
+          {
+            key: 2,
+            label: (
+              <RoleProtected allowedRoles={["admin", "supervisor"]} actionType="edit" createdAt={record.created_at}>
+                {({ disabled }) => (
+                  <a
+                    className={`text-blue-500 hover:text-blue-700 ${disabled ? 'pointer-events-none opacity-50' : ''}`}
+                    onClick={() => {
+                      if (!disabled) {
+                        setOpenModal(true);
+                        setIsEdit(true);
+                        setIsAddDocument(false);
+                        form.setFieldsValue(record);
                       }
-                    }
-                  }}
-                >
-                  <Link href={`/master/aset/view/${record.id_aset}`}>
-                    View
-                  </Link>
-                </ConfigProvider>
-              ),
-            },
-            {
-              key: 2,
-              label: (
-                <a
-                  onClick={
-                    () => {
-                      setOpenModal(true)
-                      setIsEdit(true)
-                      setIsAddDocument(false)
-                      form.setFieldsValue(record)
-                    }
-                  }>
-                  Edit
-                </a>
-              )
-            },
-            {
-              key: 3, label: (
-                <a
-                  onClick={
-                    () => {
-                      setOpenModal(true)
-                      setIsEdit(false)
-                      setIsAddDocument(true)
-                      form.setFieldsValue(record)
-                    }
-                  }>
-                  Tambah Dokumen
-                </a>
-              )
-            },
-            {
-              key: 4,
-              label: (
-                <a
-                  onClick={
-                    () => {
-                      confirm({
-                        title: 'Are you sure delete this asset?',
-                        icon: <ExclamationCircleFilled />,
-                        content: `Nama Aset: ${record.nama_aset}`,
-                        okText: 'Yes',
-                        okType: 'danger',
-                        okButtonProps: {
-                          disabled: false,
-                        },
-                        cancelText: 'No',
-                        onOk() {
-                          async function deleteAset() {
-                            const result = await fetch('/api/master/aset/delete', {
-                              method: "POST",
-                              headers: {
-                                'Content-Type': 'application/json',
-                              },
-                              body: JSON.stringify({
-                                id: record.id,
-                                id_aset: record.id_aset,
-                                nama_aset: record.nama_aset
-                              })
-                            })
-                            if (result.status == 200) {
-                              message.success("Delete berhasil")
-                            } else {
-                              message.error("Delete gagal")
+                    }}
+                  >
+                    Edit
+                  </a>
+                )}
+              </RoleProtected>
+            ),
+          },
+          {
+            key: 3,
+            label: (
+              <RoleProtected allowedRoles={["admin", "supervisor", "reporter"]} actionType="add">
+                {({ disabled }) => (
+                  <a
+                    className="text-blue-500 hover:text-blue-700"
+                    onClick={() => {
+                      if (!disabled) {
+                        setOpenModal(true);
+                        setIsEdit(false);
+                        setIsAddDocument(true);
+                        form.setFieldsValue(record);
+                      }
+                    }}
+                  >
+                    Tambah Dokumen
+                  </a>
+                )}
+              </RoleProtected>
+            ),
+          },
+          {
+            key: 4,
+            label: (
+              <RoleProtected allowedRoles={["admin"]} actionType="delete">
+                {({ disabled }) => (
+                  <a
+                    className={`text-red-500 hover:text-red-700 ${disabled ? 'pointer-events-none opacity-50' : ''}`}
+                    onClick={() => {
+                      if (!disabled) {
+                        confirm({
+                          title: "Are you sure delete this asset?",
+                          icon: <ExclamationCircleFilled />,
+                          content: `Nama Aset: ${record.nama_aset}`,
+                          okText: "Yes",
+                          okType: "danger",
+                          onOk() {
+                            async function deleteAset() {
+                              const result = await fetch("/api/master/aset/delete", {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify({
+                                  id: record.id,
+                                  id_aset: record.id_aset,
+                                  nama_aset: record.nama_aset,
+                                }),
+                              });
+                              if (result.status === 200) {
+                                message.success("Delete berhasil");
+                              } else {
+                                message.error("Delete gagal");
+                              }
+                              setTriggerRefresh(!triggerRefresh);
                             }
-                            setTriggerRefresh(!triggerRefresh)
-                          }
-                          deleteAset()
-                        },
-                        onCancel() {
-                          console.log('Cancel');
-                        },
-                      });
-                    }
-                  }
-                >Delete</a>
-              )
-            }
-          ]
-        }}>Actions</Dropdown.Button>
+                            deleteAset();
+                          },
+                          onCancel() {
+                            console.log("Cancel");
+                          },
+                        });
+                      }
+                    }}
+                  >
+                    Delete
+                  </a>
+                )}
+              </RoleProtected>
+            ),
+          },
+        ],
+      }}
+    >
+      Actions
+    </Dropdown.Button>
       ),
     }
   ]
@@ -300,7 +327,7 @@ export default function Page() {
         <div className='print-table-container'>
           <Table className='overflow-auto'
             columns={print ? column.filter(col => col.key !== 'no' && col.key !== 'action') : column}
-            pagination={{pageSize: 100}}           
+            pagination={{ pageSize: 100 }}
             expandable={print ? {} : {
               fixed: 'left',
               expandedRowRender: (record) => {

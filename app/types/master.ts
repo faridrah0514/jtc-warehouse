@@ -8,7 +8,8 @@ export interface DataCabang {
     status: string,
     kwh_rp: number,
     kwh_rp_1: string,
-    id_cabang: string
+    id_cabang: string,
+    created_at: string
 }
 
 export interface DataPelanggan {
@@ -19,7 +20,8 @@ export interface DataPelanggan {
   kota: string,
   no_tlp: number,
   nama_kontak: string,
-  id_pelanggan: string
+  id_pelanggan: string,
+  created_at: string,
 }
 
 export interface DataUtility {

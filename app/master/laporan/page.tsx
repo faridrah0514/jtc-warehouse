@@ -5,6 +5,11 @@ import { Button, Col, ConfigProvider, Divider, Flex, Form, Modal, Popconfirm, Ro
 import Title from 'antd/es/typography/Title'
 import AddLaporanModal from './AddLaporanModal'
 import { useReactToPrint } from 'react-to-print'
+import { useSession } from 'next-auth/react'
+import dayjs from 'dayjs';
+import { Typography } from 'antd';
+
+const { Text } = Typography;
 
 const column = [
   { title: "Nomor", dataIndex: 'key', key: 'no' },
@@ -30,6 +35,7 @@ export default function Page() {
   const [cabangData, setCabangData] = useState<string>('')
   const [jenisLaporan, setJenisLaporan] = useState<string>('')
   const [respData, setRespData] = useState<any>()
+  const { data: session, status } = useSession();
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
@@ -166,7 +172,7 @@ export default function Page() {
                   {
                     key: 'total',
                     rowHead: 'Total Tagihan',
-                    nama_cabang: 'Total Harga Sewa', // Merged title for the total row
+                    nama_cabang: 'Total Harga Sewa (Rp)', // Merged title for the total row
                     harga_sewa: item.total_harga_sewa, // Use total_harga_sewa from backend
                   }
                 ];
@@ -174,7 +180,7 @@ export default function Page() {
 
               // Adjust column rendering for merging all except 'harga_sewa'
               const columnsWithMerge = item.columnNames.map((col: any) => {
-                if (col.dataIndex === 'nama_cabang') {
+                if (col.dataIndex === 'nama_penyewa') {
                   return {
                     ...col,
                     render: (text: any, record: any) => {
@@ -235,6 +241,16 @@ export default function Page() {
 
               return (
                 <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    {/* Left Side: Username */}
+                    <div style={{ textAlign: 'left' }}>
+                      <Text type="secondary" style={{ fontSize: '12px' }}>{session?.user?.name}</Text>
+                    </div>
+                    {/* Right Side: Date */}
+                    <div style={{ textAlign: 'right' }}>
+                      <Text type="secondary" style={{ fontSize: '12px' }}>{dayjs().format('DD-MM-YYYY HH:mm')}</Text>
+                    </div>
+                  </div>
                   <div>
                     <Title level={3} style={{ margin: 0 }}>CV. JAMBI TRADE CENTER</Title>
                     <Title level={3} style={{ margin: 0 }}>JAMBI</Title>

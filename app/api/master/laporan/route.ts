@@ -17,8 +17,12 @@ const calculateMasa = (start: string, end: string) => {
   const endDate = dayjs(end, "DD-MM-YYYY");
 
   const diffInMonths = endDate.diff(startDate, "months", true); // Calculate month difference, accounting for days
-  const years = Math.floor(diffInMonths / 12); // Full years
-  const months = Math.round(diffInMonths % 12); // Remaining months
+  let years = Math.floor(diffInMonths / 12); // Full years
+  let months = Math.round(diffInMonths % 12); // Remaining months
+  if (months == 12) {
+    years = years + 1
+    months = 0
+  }
 
   return `${years} tahun ${months} bulan`;
 };
@@ -146,8 +150,8 @@ export async function POST(request: Request, response: Response) {
             return {
               ...item,
               Nomor: idx + 1,
-              harga_sewa: _renderCurrency(item.harga_sewa),
-              total_harga_sewa: _renderCurrency(item.total_harga_sewa),
+              harga_sewa: _renderCurrency(item.harga_sewa, true),
+              total_harga_sewa: _renderCurrency(item.total_harga_sewa, true),
             };
           });
         return Response.json({ laporan, columnNames });
@@ -191,7 +195,6 @@ export async function POST(request: Request, response: Response) {
           query,
           queryParams
         );
-
         const columnNames = laporanFields
           .map((fields: any) => fields.name)
           .filter((fieldName) => fieldName != "id")
@@ -218,6 +221,8 @@ export async function POST(request: Request, response: Response) {
               "MMMM YYYY"
             ),
           }));
+
+          
 
         const jenis_laporan = "DATA PEMAKAIAN IPL TAHUN " + data.periode;
 
@@ -332,7 +337,7 @@ export async function POST(request: Request, response: Response) {
           Bulan: dayjs(item.Bulan, "MM-YYYY").format("MMMM"),
           Nomor: idx + 1,
           kwh_rp: _renderCurrency(item.kwh_rp),
-          total_tagihan: _renderCurrency(item.pemakaian * item.kwh_rp),
+          total_tagihan: _renderCurrency(item.pemakaian * item.kwh_rp, true),
         }));
 
         const transformedData = [
@@ -384,7 +389,7 @@ export async function POST(request: Request, response: Response) {
             ),
           },
           {
-            rowHead: "Total Tagihan",
+            rowHead: "Total Tagihan (Rp)",
             ...months.reduce(
               (acc, month) => ({
                 ...acc,
@@ -526,20 +531,29 @@ export async function POST(request: Request, response: Response) {
           masa_sewa: calculateMasa(row.mulai, row.berakhir), // Calculate Masa Sewa
         }));
       
-        // Extract column names and add "Masa Sewa" before "Mulai"
-        let columnNames = laporanFields
-          .map((fields: any) => fields.name)
-          .filter((fieldName) => !["id", "no_sertifikat", "luas_bangunan", "luas_tanah"].includes(fieldName))
-          .map((val: any, idx: number) => ({
-            title: val
-              .split("_")
-              .map(
-                (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
-              )
-              .join(" "),
-            dataIndex: val,
-            key: val,
-          }));
+// Extract column names and customize the title for specific fields
+let columnNames = laporanFields
+  .map((fields: any) => fields.name)
+  .filter((fieldName) => !["id", "no_sertifikat", "luas_bangunan", "luas_tanah", "nama_aset", "nama_cabang"].includes(fieldName))
+  .map((val: any, idx: number) => {
+    let title = val
+      .split("_")
+      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+    
+    // Special case for harga_sewa
+    if (val === "harga_sewa") {
+      title = "Harga Sewa (Rp)";
+    }
+
+    return {
+      title: title,
+      dataIndex: val,
+      key: val,
+    };
+  });
+
+
       
         // Add the "Masa Sewa" column before "Mulai"
         columnNames.splice(columnNames.findIndex((column) => column.dataIndex === "mulai"), 0, {
@@ -582,7 +596,7 @@ export async function POST(request: Request, response: Response) {
             Object.keys(groupedLaporan[cabang]).map((aset) => ({
               laporan: groupedLaporan[cabang][aset].rows.map((row: any, idx: number) => ({
                 ...row,
-                harga_sewa: _renderCurrency(row.harga_sewa),
+                harga_sewa: _renderCurrency(row.harga_sewa, true),
               })), // Array of rows for the specific cabang and aset
               columnNames,
               aset: [aset], // Always an array
@@ -590,7 +604,7 @@ export async function POST(request: Request, response: Response) {
               no_sertifikat: uniqueValues[aset].no_sertifikat,
               luas_bangunan: uniqueValues[aset].luas_bangunan,
               luas_tanah: uniqueValues[aset].luas_tanah,
-              total_harga_sewa: _renderCurrency(groupedLaporan[cabang][aset].total_harga_sewa), // Total harga sewa
+              total_harga_sewa: _renderCurrency(groupedLaporan[cabang][aset].total_harga_sewa, true), // Total harga sewa
               jenis_laporan,
             }))
           );
@@ -603,7 +617,7 @@ export async function POST(request: Request, response: Response) {
       
           laporan = laporan.map((row: any, idx: number) => ({
             ...row,
-            harga_sewa: _renderCurrency(row.harga_sewa),
+            harga_sewa: _renderCurrency(row.harga_sewa, true),
           }));
           // For specific cabang, ensure single objects are arrays
           const laporanArray = Array.isArray(laporan) ? laporan : [laporan]; // Ensure laporan is always an array
@@ -623,7 +637,7 @@ export async function POST(request: Request, response: Response) {
               no_sertifikat: uniqueValues[asetArray[0]]?.no_sertifikat,
               luas_bangunan: uniqueValues[asetArray[0]]?.luas_bangunan,
               luas_tanah: uniqueValues[asetArray[0]]?.luas_tanah,
-              total_harga_sewa: _renderCurrency(totalHargaSewa), // Total for specific cabang/aset
+              total_harga_sewa: _renderCurrency(totalHargaSewa, true), // Total for specific cabang/aset
               jenis_laporan,
             },
           ]);
@@ -675,23 +689,31 @@ export async function POST(request: Request, response: Response) {
         laporan = laporan.map((row) => ({
           ...row,
           kwh_rp: _renderCurrency(row.kwh_rp),
-          total_biaya: _renderCurrency(row.total_biaya),
+          total_biaya: _renderCurrency(row.total_biaya, true),
         }));
 
-        // Extract column names
+        // Extract column names and customize the title for specific fields
         const columnNames = laporanFields
           .map((fields: any) => fields.name)
           .filter((fieldName) => fieldName != "id")
-          .map((val: any) => ({
-            title: val
+          .map((val: any) => {
+            let title = val
               .split("_")
-              .map(
-                (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
-              )
-              .join(" "),
-            dataIndex: val,
-            key: val,
-          }));
+              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ");
+
+            // Special cases for specific fields
+            if (val === "total_biaya") {
+              title = "Total Biaya (Rp)";
+            }
+            return {
+              title: title,
+              dataIndex: val,
+              key: val,
+            };
+          });
+
+
 
         // If nama_cabang is 'Semua Cabang', group by cabang and aggregate aset names
         if (
@@ -888,23 +910,31 @@ export async function POST(request: Request, response: Response) {
           IPL: _renderCurrency(row.IPL),
         }));
       
-        // Extract column names and add "Masa" before "Mulai"
         let columnNames = laporanFields
-          .map((fields: any) => fields.name)
-          .filter((fieldName) => fieldName !== "id");
+        .map((fields: any) => fields.name)
+        .filter((fieldName) => fieldName !== "id");
       
         // Add "Nomor" to the start of the columns
         columnNames.unshift("nomor");
-      
+        
         // Convert column names to the required format and place "Masa" before "Mulai"
-        columnNames = columnNames.map((val: any) => ({
-          title: val
+        columnNames = columnNames.map((val: any) => {
+          let title = val
             .split("_")
             .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" "),
-          dataIndex: val,
-          key: val,
-        }));
+            .join(" ");
+        
+          // Special case for harga_sewa
+          if (val === "harga_sewa") {
+            title = "Harga Sewa (Rp)";
+          }
+        
+          return {
+            title: title,
+            dataIndex: val,
+            key: val,
+          };
+        });
       
         // Find index of "mulai" and insert "Masa" before it
         columnNames.splice(

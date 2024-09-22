@@ -9,6 +9,8 @@ import Title from 'antd/es/typography/Title'
 import { _renderCurrency } from '@/app/utils/renderCurrency'
 import { SearchOutlined } from '@ant-design/icons'
 import type { ColumnType, FilterDropdownProps } from 'antd/es/table/interface'
+import { getTanggalEntriColumn } from '@/app/utils/dateColumns'
+import RoleProtected from '@/app/components/roleProtected/RoleProtected'
 
 const column = (searchText: string, setSearchText: Function): ColumnType<DataCabang>[] => [
   { title: "Nomor", dataIndex: 'no', key: 'no' },
@@ -53,6 +55,7 @@ const column = (searchText: string, setSearchText: Function): ColumnType<DataCab
   { title: "No Tlp", dataIndex: 'no_tlp', key: 'no_tlp' },
   { title: "Status", dataIndex: 'status', key: 'status' },
   { title: "Kwh Rp", dataIndex: 'kwh_rp_1', key: 'kwh_rp_1' },
+  getTanggalEntriColumn(),
 ]
 
 export default function Page() {
@@ -86,10 +89,9 @@ export default function Page() {
       getData()
     }, [triggerRefresh]
   )
-  
   return (
     <>
-    <Title level={3}>Halaman Data Master Cabang</Title>
+      <Title level={3}>Halaman Data Master Cabang</Title>
       <Button className="mb-5" onClick={() => { setOpenModal(true); setIsEdit(false) }}>+ Tambah Cabang</Button>
       <AddCabangModal isEdit={isEdit} form={form} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
       <Table className='overflow-auto'
@@ -109,15 +111,17 @@ export default function Page() {
                 }}
               >
               </ConfigProvider>
-              <Button type="primary" ghost size="small" onClick={
-                () => {
-                  setOpenModal(true)
-                  setIsEdit(true)
-                  form.setFieldsValue(record)
-                }
-              }>
-                Edit
-              </Button>
+              <RoleProtected allowedRoles={['admin', 'supervisor']} actionType='edit' createdAt={record.created_at}>
+                <Button type="primary" ghost size="small" onClick={
+                  () => {
+                    setOpenModal(true)
+                    setIsEdit(true)
+                    form.setFieldsValue(record)
+                  }
+                }>
+                  Edit
+                </Button>
+              </RoleProtected>
               <Popconfirm
                 title="sure to delete?"
                 onConfirm={
@@ -138,9 +142,11 @@ export default function Page() {
                   }
                 }
               >
-                <Button size="small" danger>
-                  Delete
-                </Button>
+                <RoleProtected allowedRoles={['admin']} actionType='delete'>
+                  <Button size="small" danger>
+                    Delete
+                  </Button>
+                </RoleProtected>
               </Popconfirm>
             </Flex>
           ),
@@ -149,8 +155,7 @@ export default function Page() {
         rowKey='id'
         size='small'
         loading={cabangData ? false : true}
-        pagination={{pageSize: 100}}
-        // bordered
+        pagination={{ pageSize: 100 }}
       />
     </>
   )

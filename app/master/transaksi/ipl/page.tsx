@@ -9,6 +9,8 @@ import dayjs from 'dayjs';
 import { _renderCurrency } from '@/app/utils/renderCurrency'
 import type { CollapseProps } from 'antd';
 import AddIPLModal from './AddIPLModal';
+import { getTanggalEntriColumn } from '@/app/utils/dateColumns';
+import RoleProtected from '@/app/components/roleProtected/RoleProtected';
 
 export default function Page() {
 
@@ -27,28 +29,28 @@ export default function Page() {
       Object.keys(data.dataobj).forEach((element, i) => {
         a.push({
           key: i,
-          label: 
+          label:
             <Flex gap={'small'} align='flex-start' justify='space-between'>
               <Text>{dayjs(element, 'YYYY-MM').format('MM-YYYY')}</Text>
               <Popconfirm title="sure to delete?"
-              onConfirm={
-                async function deleteAset() {
-                  const result = await fetch('/api/master/transaksi/ipl', {
-                    method: "POST",
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                      // folder: record.url,
-                      data: {periode_pembayaran: element},
-                      requestType: "delete_period",
+                onConfirm={
+                  async function deleteAset() {
+                    const result = await fetch('/api/master/transaksi/ipl', {
+                      method: "POST",
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        // folder: record.url,
+                        data: { periode_pembayaran: element },
+                        requestType: "delete_period",
+                      })
                     })
-                  })
-                  if (result.status == 200) {
-                    setTriggerRefresh(!triggerRefresh)
+                    if (result.status == 200) {
+                      setTriggerRefresh(!triggerRefresh)
+                    }
                   }
                 }
-              }
               >
                 <Button danger type='text' size="small">Delete</Button>
               </Popconfirm>
@@ -57,6 +59,7 @@ export default function Page() {
           children:
             <>
               <Table pagination={false} key={i} size='small' bordered columns={[
+                getTanggalEntriColumn(),
                 { title: "Nama Cabang", key: "nama_cabang", dataIndex: "nama_cabang" },
                 { title: "Nama Aset", key: "nama_aset", dataIndex: "nama_aset" },
                 { title: "Nama Pelanggan", key: "nama_pelanggan", dataIndex: "nama_pelanggan" },
@@ -71,24 +74,26 @@ export default function Page() {
                     }
                   }
                 },
-              
+
                 { title: "Tanggal Pembayaran", key: "tanggal_pembayaran", dataIndex: "tanggal_pembayaran" },
                 {
                   title: "Action",
                   key: "action",
                   render: (_, record: any) => (
-                    <Button type="primary" ghost size="small" onClick={
-                      () => {
-                        setUbahModal(true)
-                        if (record.tanggal_pembayaran) {
-                          record.tanggal_pembayaran = dayjs(record.tanggal_pembayaran, 'DD-MM-YYYY')
-                        }
+                    <RoleProtected allowedRoles={['admin', 'supervisor']} actionType='edit' createdAt={record.created_at}>
+                      <Button type="primary" ghost size="small" onClick={
+                        () => {
+                          setUbahModal(true)
+                          if (record.tanggal_pembayaran) {
+                            record.tanggal_pembayaran = dayjs(record.tanggal_pembayaran, 'DD-MM-YYYY')
+                          }
 
-                        form.setFieldsValue(record)
-                      }
-                    }>
-                      Ubah Status Pembayaran
-                    </Button>
+                          form.setFieldsValue(record)
+                        }
+                      }>
+                        Ubah Status Pembayaran
+                      </Button>
+                    </RoleProtected>
                   ),
                 }
               ]}
@@ -120,10 +125,10 @@ export default function Page() {
         'Content-Type': 'application/json',
       },
     }).then(res => res.json())
-    .then(res => {
-      setUbahModal(false)
-      setTriggerRefresh(!triggerRefresh)
-    })
+      .then(res => {
+        setUbahModal(false)
+        setTriggerRefresh(!triggerRefresh)
+      })
 
   }
   return (

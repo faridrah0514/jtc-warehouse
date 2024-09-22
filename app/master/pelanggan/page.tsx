@@ -7,9 +7,12 @@ import { DataPelanggan } from '@/app/types/master'
 import Title from 'antd/es/typography/Title'
 import { SearchOutlined } from '@ant-design/icons'
 import type { ColumnType, FilterDropdownProps } from 'antd/es/table/interface' // Import types
+import { getTanggalEntriColumn } from '@/app/utils/dateColumns'
+import RoleProtected from '@/app/components/roleProtected/RoleProtected'
 
 const column = (searchText: string, setSearchText: Function): ColumnType<DataPelanggan>[] => [
   { title: "Nomor", dataIndex: 'no', key: 'no' },
+  { title: "ID Pelanggan", dataIndex: 'id_pelanggan', key: 'id_pelanggan' },
   {
     title: "Nama",
     dataIndex: 'nama',
@@ -49,7 +52,8 @@ const column = (searchText: string, setSearchText: Function): ColumnType<DataPel
   { title: "Alamat", dataIndex: 'alamat', key: 'alamat' },
   { title: "Kota", dataIndex: 'kota', key: 'kota' },
   { title: "No Tlp", dataIndex: 'no_tlp', key: 'no_tlp' },
-  { title: "Contact Person", dataIndex: 'contact_person', key: 'contact_person' }
+  { title: "Contact Person", dataIndex: 'contact_person', key: 'contact_person' },
+  getTanggalEntriColumn(),
 ]
 
 export default function Page() {
@@ -103,15 +107,17 @@ export default function Page() {
                 }}
               >
               </ConfigProvider>
-              <Button type="primary" ghost size="small" onClick={
-                () => {
-                  setOpenModal(true)
-                  setIsEdit(true)
-                  form.setFieldsValue(record)
-                }
-              }>
-                Edit
-              </Button>
+              <RoleProtected allowedRoles={['admin', 'supervisor']} actionType='edit' createdAt={record.created_at}>
+                <Button type="primary" ghost size="small" onClick={
+                  () => {
+                    setOpenModal(true)
+                    setIsEdit(true)
+                    form.setFieldsValue(record)
+                  }
+                }>
+                  Edit
+                </Button>
+              </RoleProtected>
               <Popconfirm
                 title="sure to delete?"
                 onConfirm={
@@ -129,9 +135,11 @@ export default function Page() {
                   }
                 }
               >
-                <Button size="small" danger>
-                  Delete
-                </Button>
+                <RoleProtected allowedRoles={['admin']} actionType='delete'>
+                  <Button size="small" danger>
+                    Delete
+                  </Button>
+                </RoleProtected>
               </Popconfirm>
             </Flex>
           ),

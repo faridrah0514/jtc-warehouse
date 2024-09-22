@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
 
     if (data.requestType === 'add-user') {
       // Extract the data fields from the request body
-      const { username, password, role } = data.data;
+      const { username, password, role, editable_until } = data.data;
 
       // Validate input fields
       if (!username || !password || !role) {
@@ -58,10 +58,13 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      // Determine the editable_until value
+      const editableUntilValue = role === 'supervisor' ? (editable_until ?? null) : null;
+
       // Insert the new user into the database
       await conn.query(
-        "INSERT INTO users (username, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())",
-        [username, hashedPassword, role]
+        "INSERT INTO users (username, password_hash, role, editable_until, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())",
+        [username, hashedPassword, role, editableUntilValue]
       );
 
       // Close the DB connection
@@ -121,7 +124,6 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
 // DELETE request to delete a user by ID
 export async function DELETE(req: NextRequest) {
   try {

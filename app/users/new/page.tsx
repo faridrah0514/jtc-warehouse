@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Form, Input, Button, Select, message } from 'antd';
+import { Form, Input, Button, Select, message, InputNumber } from 'antd';
 import { useRouter } from 'next/navigation';
 
 const { Option } = Select;
@@ -10,8 +10,9 @@ const Page: React.FC = () => {
   const [form] = Form.useForm();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState<string>('');
 
-  const handleCreateUser = async (values: { username: string; password: string; verifiedPassword: string; role: string }) => {
+  const handleCreateUser = async (values: { username: string; password: string; verifiedPassword: string; role: string; editable_until?: number }) => {
     setLoading(true);
     try {
       const response = await fetch('/api/cred', {
@@ -25,6 +26,7 @@ const Page: React.FC = () => {
             username: values.username,
             password: values.password,
             role: values.role,
+            editable_until: values.editable_until,
           },
         }),
       });
@@ -94,12 +96,22 @@ const Page: React.FC = () => {
             label="Role"
             rules={[{ required: true, message: 'Please select a role' }]}
           >
-            <Select placeholder="Select a role" className="w-full">
+            <Select placeholder="Select a role" className="w-full" onChange={(value) => setRole(value)}>
               <Option value="admin">Admin</Option>
               <Option value="supervisor">Supervisor</Option>
               <Option value="reporter">Reporter</Option>
             </Select>
           </Form.Item>
+
+          {role === 'supervisor' && (
+            <Form.Item
+              name="editable_until"
+              label="Days Editable"
+              rules={[{ required: true, message: 'Please enter the number of days the entry is editable' }]}
+            >
+              <InputNumber min={1} className="w-full" />
+            </Form.Item>
+          )}
 
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading} className="w-full">

@@ -35,7 +35,7 @@ const handler = NextAuth({
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password_hash);
 
           if (isPasswordValid) {
-            return { id: user.id, name: user.username, username: user.username, role: user.role };
+            return { id: user.id, name: user.username, username: user.username, role: user.role, editable_until: user.editable_until };
           } else {
             return null;
           }
@@ -58,12 +58,14 @@ const handler = NextAuth({
       if (user) {
         token.username = user.username;
         token.role = user.role;
+        token.editable_until = user.editable_until
       }
       return token;
     },
     async session({ session, token }) {
       session.user.username = token.username as string;
       session.user.role = token.role as string;
+      session.user.editable_until = token.editable_until as number;
       return session;
     },
   },

@@ -135,7 +135,7 @@ const Page: React.FC = () => {
     <div className="flex flex-col items-center p-6 bg-gray-100">
       <div className="w-full max-w-4xl bg-white p-6 rounded-lg shadow-md">
         <div className="flex justify-between mb-4">
-          <h1 className="text-2xl font-semibold">User List</h1>
+          <h1 className="text-2xl font-semibold">User Management</h1>
           <Button type="primary" onClick={handleCreateUser} disabled={currentUserRole !== 'admin'}>
             Create New User
           </Button>

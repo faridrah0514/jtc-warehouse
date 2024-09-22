@@ -56,7 +56,7 @@ export default function DefaultLayout({
     const dropdownMenuItems: MenuProps['items'] = [
         ...(userRole === 'admin' ? [{
             key: '0',
-            label: 'User list',
+            label: 'User Management',
             onClick: () => { router.push('/users/list') }
         }] : []),
         {

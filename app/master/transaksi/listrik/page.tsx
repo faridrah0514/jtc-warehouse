@@ -7,9 +7,12 @@ import Title from 'antd/es/typography/Title'
 import dayjs from 'dayjs';
 import Link from 'next/link'
 import AddListrikModalV2 from './AddListrikModalV2'
+import { getTanggalEntriColumn } from '@/app/utils/dateColumns'
+import RoleProtected from '@/app/components/roleProtected/RoleProtected'
 
 
 const column = [
+  getTanggalEntriColumn(),
   { title: "Bln/Thn", dataIndex: 'bln_thn', key: 'bln_thn' },
   { title: "Meteran Awal", dataIndex: 'meteran_awal', key: 'meteran_awal' },
   { title: "Meteran Akhir", dataIndex: 'meteran_akhir', key: 'meteran_akhir' },
@@ -38,7 +41,7 @@ export default function Page() {
     const sewa = await fetch('/api/master/transaksi/sewa', { method: 'GET', cache: 'no-store' })
     const dataSewa = await sewa.json()
     const data = await response.json()
-    const today = dayjs() 
+    const today = dayjs()
     if (data) {
       data.data.map((v: any, i: number) => {
         v.no = i + 1
@@ -80,7 +83,7 @@ export default function Page() {
             title: "Status Sewa",
             key: "status_sewa",
             render: (_, record: any) => {
-              const today = dayjs() 
+              const today = dayjs()
               return (<Tag color={(record.statusSewa == 'Aktif') ? 'success' : (record.statusSewa == 'Akan Datang') ? 'processing' : 'default'}>{record.statusSewa}</Tag>)
               // if (dayjs(record.start_date_sewa, "DD-MM-YYYY") > today)
               // { setStatusSewa('akanDatang'); return <Tag color='processing'>Akan Datang</Tag>}
@@ -95,7 +98,7 @@ export default function Page() {
             key: "action",
             render: (_, record: any) => (
               <Flex gap="small">
-                <Button type="primary" ghost size="small" disabled={(record.statusSewa == 'Aktif') ? false: true} onClick={
+                <Button type="primary" ghost size="small" disabled={(record.statusSewa == 'Aktif') ? false : true} onClick={
                   () => {
                     setOpenModal(true)
                     setIsEdit(false)
@@ -141,17 +144,19 @@ export default function Page() {
                         </Link>
                       </Button>
                     </ConfigProvider>
-                    <Button type="primary" ghost size="small" onClick={
-                      () => {
-                        setOpenModal(true)
-                        setIsEdit(true)
-                        record.bln_thn = dayjs(record.bln_thn, 'MM-YYYY')
-                        form.setFieldsValue(record)
-                        setTriggerRefresh(!triggerRefresh)
-                      }
-                    }>
-                      Edit
-                    </Button>
+                    <RoleProtected allowedRoles={['admin', 'supervisor']} actionType='edit' createdAt={record.created_at}>
+                      <Button type="primary" ghost size="small" onClick={
+                        () => {
+                          setOpenModal(true)
+                          setIsEdit(true)
+                          record.bln_thn = dayjs(record.bln_thn, 'MM-YYYY')
+                          form.setFieldsValue(record)
+                          setTriggerRefresh(!triggerRefresh)
+                        }
+                      }>
+                        Edit
+                      </Button>
+                    </RoleProtected>
                     <Popconfirm
                       title="sure to delete?"
                       onConfirm={
@@ -173,14 +178,16 @@ export default function Page() {
                         }
                       }
                     >
-                      <Button size="small" danger>
-                        Delete
-                      </Button>
+                      <RoleProtected allowedRoles={['admin']} actionType='delete'>
+                        <Button size="small" danger>
+                          Delete
+                        </Button>
+                      </RoleProtected>
                     </Popconfirm>
                   </Flex>
                 ),
               }
-            ]} dataSource={tagihanListrikData.filter((v: any) => v.id_aset == record.id_aset && v.id_cabang == record.id_cabang && v.id_pelanggan == record.id_pelanggan).map((item: any, index: number) => ({ ...item, key: index }))} pagination={false}/>
+            ]} dataSource={tagihanListrikData.filter((v: any) => v.id_aset == record.id_aset && v.id_cabang == record.id_cabang && v.id_pelanggan == record.id_pelanggan).map((item: any, index: number) => ({ ...item, key: index }))} pagination={false} />
           }
         }}
       />

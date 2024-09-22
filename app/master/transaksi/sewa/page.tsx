@@ -8,6 +8,8 @@ import { _renderCurrency } from '@/app/utils/renderCurrency'
 import { useReactToPrint } from 'react-to-print'
 import { SearchOutlined } from '@ant-design/icons';
 import type { TableColumnsType } from 'antd';
+import { getTanggalEntriColumn } from '@/app/utils/dateColumns'
+import RoleProtected from '@/app/components/roleProtected/RoleProtected'
 
 export default function Page() {
   const [sewaData, setSewaData] = useState<any[]>([]);
@@ -128,21 +130,24 @@ export default function Page() {
         return val === status
       }
     },
+    getTanggalEntriColumn(),
     {
       title: "Action",
       key: "action",
       render: (_, record: any) => (
         <Flex gap="small">
-          <Button type="primary" ghost size="small" onClick={() => {
-            setOpenModal(true)
-            setIsEdit(true)
-            record.tanggal_akte = dayjs(record.tanggal_akte_1, 'DD-MM-YYYY')
-            record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
-            form.setFieldsValue(record)
-            setTriggerRefresh(!triggerRefresh)
-          }}>
-            Edit
-          </Button>
+          <RoleProtected allowedRoles={['admin', 'supervisor']} actionType='edit' createdAt={record.created_at}>
+            <Button type="primary" ghost size="small" onClick={() => {
+              setOpenModal(true)
+              setIsEdit(true)
+              record.tanggal_akte = dayjs(record.tanggal_akte_1, 'DD-MM-YYYY')
+              record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
+              form.setFieldsValue(record)
+              setTriggerRefresh(!triggerRefresh)
+            }}>
+              Edit
+            </Button>
+          </RoleProtected>
           <Popconfirm title="sure to delete?" onConfirm={async () => {
             const requstType = 'delete'
             await fetch('/api/master/transaksi/sewa', {
@@ -158,7 +163,9 @@ export default function Page() {
               }
             })
           }}>
-            <Button size="small" danger>Delete</Button>
+            <RoleProtected allowedRoles={['admin']} actionType='delete'>
+              <Button size="small" danger>Delete</Button>
+            </RoleProtected>
           </Popconfirm>
         </Flex>
       ),
@@ -231,7 +238,7 @@ export default function Page() {
                 rowKey='id'
                 size='small'
                 loading={sewaData ? false : true}
-                pagination={{pageSize: 100}}
+                pagination={{ pageSize: 100 }}
               />
             </div>
           </div>
