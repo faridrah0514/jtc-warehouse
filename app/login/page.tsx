@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Form, Input, Button, Typography, Alert } from 'antd';
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 export default function Page() {
   const [error, setError] = useState('');
@@ -26,25 +27,46 @@ export default function Page() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <div style={{ width: '300px' }}>
-        <Title level={2}>Sign In</Title>
-        {error &&  <div className='pb-2'><Alert  message={error} type="error" showIcon /></div>}
-        <Form onFinish={handleLogin}>
+    <div className="flex items-center justify-center h-screen bg-gray-100">
+      <div className="w-full max-w-xl p-6 bg-white shadow-lg rounded-lg">
+        {/* Logo added here */}
+        <div className="flex justify-center mb-4">
+          <img src="/jtc-logo.png" alt="JTC Warehouse Logo" className="h-20 w-20" />
+        </div>
+        
+        <Title level={2} className="text-center">Welcome To JTC Warehouse App</Title>
+        <Text type="secondary" className="block text-center mb-4">
+          Please login to your account
+        </Text>
+        {error && <Alert message={error} type="error" showIcon className="mb-4" />}
+        
+        <Form onFinish={handleLogin} className="space-y-4">
           <Form.Item
             name="username"
             rules={[{ required: true, message: 'Please input your username!' }]}
           >
-            <Input placeholder="Username" />
+            <Input
+              prefix={<UserOutlined />}
+              placeholder="Username"
+              size="large"
+              className="rounded-lg"
+            />
           </Form.Item>
+          
           <Form.Item
             name="password"
             rules={[{ required: true, message: 'Please input your password!' }]}
           >
-            <Input.Password placeholder="Password" />
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Password"
+              size="large"
+              className="rounded-lg"
+            />
           </Form.Item>
+
           <Form.Item>
-            <Button type="primary" htmlType="submit" block>
+            <Button type="primary" htmlType="submit" block size="large" className="rounded-lg">
               Sign In
             </Button>
           </Form.Item>

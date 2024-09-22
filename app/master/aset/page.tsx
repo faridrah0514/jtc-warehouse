@@ -316,14 +316,7 @@ export default function Page() {
       <Flex className='pb-5' gap={'small'} vertical={false} justify='space-between'>
         <Button onClick={() => { setOpenModal(true); setIsEdit(false) }}>Tambah Aset</Button>
       </Flex>
-
-      <div ref={componentRef}>
-        <div className='print-only mb-10'>
-          <Title level={3} style={{ margin: 0 }}>DATA ASET MILIK PT.JTC WAREHOUSE</Title>
-          <Title level={3} style={{ margin: 0 }}>Kantor pusat: xxxxxx, email: xxxx</Title>
-          <Title level={4} style={{ margin: 0 }}>No. tlp: 0812xxxxx</Title>
-          <Divider></Divider>
-        </div>
+      <div>
         <div className='print-table-container'>
           <Table className='overflow-auto'
             columns={print ? column.filter(col => col.key !== 'no' && col.key !== 'action') : column}
@@ -410,18 +403,6 @@ export default function Page() {
           />
         </div>
       </div>
-      <style jsx global>{`
-          .print-only { display: none; }
-          .no-print { display: block; }
-          .print-table-container { display: block; width: 100%; overflow-x: auto; }
-          @media print {
-            @page { size: landscape; margin: 5mm; }
-            .print-only { text-align: center; display: block; }
-            .no-print { display: none; }
-            .print-table-container { margin: 0 auto; width: auto; max-width: 100%; }
-            .ant-table-pagination { display: none !important; }
-          }
-        `}</style>
     </>
   )
 }
