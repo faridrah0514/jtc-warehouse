@@ -20,8 +20,8 @@ const calculateMasa = (start: string, end: string) => {
   let years = Math.floor(diffInMonths / 12); // Full years
   let months = Math.round(diffInMonths % 12); // Remaining months
   if (months == 12) {
-    years = years + 1
-    months = 0
+    years = years + 1;
+    months = 0;
   }
 
   return `${years} tahun ${months} bulan`;
@@ -221,8 +221,6 @@ export async function POST(request: Request, response: Response) {
               "MMMM YYYY"
             ),
           }));
-
-          
 
         const jenis_laporan = "DATA PEMAKAIAN IPL TAHUN " + data.periode;
 
@@ -472,7 +470,9 @@ export async function POST(request: Request, response: Response) {
             },
           ]);
         }
-      } else if (data.jenis_laporan.toLowerCase() == "daftar penyewa per blok") {
+      } else if (
+        data.jenis_laporan.toLowerCase() == "daftar penyewa per blok"
+      ) {
         let query = `
           SELECT 
             c.nama_perusahaan AS nama_cabang, 
@@ -490,11 +490,14 @@ export async function POST(request: Request, response: Response) {
           LEFT JOIN aset a ON ts.id_aset = a.id
           WHERE 1
         `;
-      
+
         const queryParams: any[] = [];
-      
+
         // Handle specific cabang and aset filtering
-        if (data.nama_cabang && data.nama_cabang.toLowerCase() !== "semua cabang") {
+        if (
+          data.nama_cabang &&
+          data.nama_cabang.toLowerCase() !== "semua cabang"
+        ) {
           if (data.nama_aset) {
             query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
             queryParams.push(
@@ -506,9 +509,12 @@ export async function POST(request: Request, response: Response) {
             queryParams.push(data.nama_cabang.split(", "));
           }
         }
-      
-        let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(query, queryParams);
-      
+
+        let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
+          query,
+          queryParams
+        );
+
         // Extract unique values for all nama_aset
         const uniqueValues = laporan.reduce((acc: any, row: any) => {
           const key = row.nama_aset;
@@ -516,12 +522,12 @@ export async function POST(request: Request, response: Response) {
             acc[key] = {
               no_sertifikat: row.no_sertifikat,
               luas_bangunan: row.luas_bangunan,
-              luas_tanah: row.luas_tanah
+              luas_tanah: row.luas_tanah,
             };
           }
           return acc;
         }, {});
-      
+
         // Format laporan data
         laporan = laporan.map((row: any, idx: number) => ({
           ...row,
@@ -530,91 +536,118 @@ export async function POST(request: Request, response: Response) {
           berakhir: dayjs(row.berakhir, "DD-MM-YYYY").format("D MMMM YYYY"), // Format berakhir
           masa_sewa: calculateMasa(row.mulai, row.berakhir), // Calculate Masa Sewa
         }));
-      
-// Extract column names and customize the title for specific fields
-let columnNames = laporanFields
-  .map((fields: any) => fields.name)
-  .filter((fieldName) => !["id", "no_sertifikat", "luas_bangunan", "luas_tanah", "nama_aset", "nama_cabang"].includes(fieldName))
-  .map((val: any, idx: number) => {
-    let title = val
-      .split("_")
-      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-    
-    // Special case for harga_sewa
-    if (val === "harga_sewa") {
-      title = "Harga Sewa (Rp)";
-    }
 
-    return {
-      title: title,
-      dataIndex: val,
-      key: val,
-    };
-  });
+        // Extract column names and customize the title for specific fields
+        let columnNames = laporanFields
+          .map((fields: any) => fields.name)
+          .filter(
+            (fieldName) =>
+              ![
+                "id",
+                "no_sertifikat",
+                "luas_bangunan",
+                "luas_tanah",
+                "nama_aset",
+                "nama_cabang",
+              ].includes(fieldName)
+          )
+          .map((val: any, idx: number) => {
+            let title = val
+              .split("_")
+              .map(
+                (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
+              )
+              .join(" ");
 
+            // Special case for harga_sewa
+            if (val === "harga_sewa") {
+              title = "Harga Sewa (Rp)";
+            }
 
-      
+            return {
+              title: title,
+              dataIndex: val,
+              key: val,
+            };
+          });
+
         // Add the "Masa Sewa" column before "Mulai"
-        columnNames.splice(columnNames.findIndex((column) => column.dataIndex === "mulai"), 0, {
-          title: "Masa Sewa",
-          dataIndex: "masa_sewa",
-          key: "masa_sewa",
-        });
-      
+        columnNames.splice(
+          columnNames.findIndex((column) => column.dataIndex === "mulai"),
+          0,
+          {
+            title: "Masa Sewa",
+            dataIndex: "masa_sewa",
+            key: "masa_sewa",
+          }
+        );
+
         columnNames.unshift({
           title: "Nomor",
           dataIndex: "nomor",
           key: "nomor",
         });
-      
+
         const jenis_laporan = "DAFTAR PENYEWA PER-BLOK";
-      
+
         // Handle the case where nama_cabang is "Semua Cabang"
-        if (data.nama_cabang && data.nama_cabang.toLowerCase() === "semua cabang") {
+        if (
+          data.nama_cabang &&
+          data.nama_cabang.toLowerCase() === "semua cabang"
+        ) {
           // Group by cabang and then by aset
           const groupedLaporan = laporan.reduce((result: any, row) => {
             const { nama_cabang, nama_aset } = row;
-      
+
             if (!result[nama_cabang]) {
               result[nama_cabang] = {};
             }
-      
+
             if (!result[nama_cabang][nama_aset]) {
               result[nama_cabang][nama_aset] = {
                 rows: [],
                 total_harga_sewa: 0,
               };
             }
-      
+
             result[nama_cabang][nama_aset].rows.push(row);
-            result[nama_cabang][nama_aset].total_harga_sewa += parseFloat(row.harga_sewa);
+            result[nama_cabang][nama_aset].total_harga_sewa += parseFloat(
+              row.harga_sewa
+            );
             return result;
           }, {});
-      
+
           const response = Object.keys(groupedLaporan).flatMap((cabang) =>
             Object.keys(groupedLaporan[cabang]).map((aset) => ({
-              laporan: groupedLaporan[cabang][aset].rows.map((row: any, idx: number) => ({
-                ...row,
-                harga_sewa: _renderCurrency(row.harga_sewa, true),
-              })), // Array of rows for the specific cabang and aset
+              laporan: groupedLaporan[cabang][aset].rows.map(
+                (row: any, idx: number) => ({
+                  ...row,
+                  harga_sewa: _renderCurrency(row.harga_sewa, true),
+                })
+              ), // Array of rows for the specific cabang and aset
               columnNames,
               aset: [aset], // Always an array
               cabang: [cabang], // Always an array
               no_sertifikat: uniqueValues[aset].no_sertifikat,
               luas_bangunan: uniqueValues[aset].luas_bangunan,
               luas_tanah: uniqueValues[aset].luas_tanah,
-              total_harga_sewa: _renderCurrency(groupedLaporan[cabang][aset].total_harga_sewa, true), // Total harga sewa
+              total_harga_sewa: _renderCurrency(
+                groupedLaporan[cabang][aset].total_harga_sewa,
+                true
+              ), // Total harga sewa
               jenis_laporan,
             }))
           );
-      
+
           return Response.json(response);
         } else {
           // Calculate total harga_sewa for specific cabang/aset
-       
-          const totalHargaSewa = laporan.reduce((acc: number, row: any) => acc + parseFloat(row.harga_sewa), 0);
-      
+
+          const totalHargaSewa = laporan.reduce(
+            (acc: number, row: any) => acc + parseFloat(row.harga_sewa),
+            0
+          );
+
           laporan = laporan.map((row: any, idx: number) => ({
             ...row,
             harga_sewa: _renderCurrency(row.harga_sewa, true),
@@ -627,7 +660,7 @@ let columnNames = laporanFields
           const cabangArray = Array.isArray(data.nama_cabang)
             ? data.nama_cabang.split(", ")
             : [data.nama_cabang]; // Ensure cabang is an array
-      
+
           return Response.json([
             {
               laporan: laporanArray,
@@ -642,12 +675,9 @@ let columnNames = laporanFields
             },
           ]);
         }
-      }
-      
-       else if (
+      } else if (
         data.jenis_laporan.toLowerCase() == "transaksi listrik bulanan"
       ) {
-
         let query = `
           SELECT c.nama_perusahaan AS nama_cabang, a.nama_aset, p.nama AS nama_pelanggan, 
           tl.bln_thn AS Bulan, tl.meteran_awal, tl.meteran_akhir, 
@@ -699,7 +729,9 @@ let columnNames = laporanFields
           .map((val: any) => {
             let title = val
               .split("_")
-              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+              .map(
+                (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
+              )
               .join(" ");
 
             // Special cases for specific fields
@@ -712,8 +744,6 @@ let columnNames = laporanFields
               key: val,
             };
           });
-
-
 
         // If nama_cabang is 'Semua Cabang', group by cabang and aggregate aset names
         if (
@@ -778,11 +808,10 @@ let columnNames = laporanFields
           LEFT JOIN cabang c ON ts.id_cabang = c.id
           LEFT JOIN aset a ON ts.id_aset = a.id
           LEFT JOIN pelanggan p ON ts.id_pelanggan = p.id
-          WHERE RIGHT(ts.end_date_sewa, 4) = ?
+          WHERE YEAR(STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')) = ?
         `;
 
         const queryParams = [data.periode];
-
         // Add conditions only if nama_cabang is provided
         if (
           data.nama_cabang &&
@@ -845,6 +874,25 @@ let columnNames = laporanFields
 
             return result;
           }, {});
+          const asetArray = Array.isArray(data.nama_aset)
+            ? data.nama_aset.split(", ")
+            : [data.nama_aset]; // Ensure aset is an array
+          const cabangArray = Array.isArray(data.nama_cabang)
+            ? data.nama_cabang.split(", ")
+            : [data.nama_cabang];
+          // Handle the case when query returns an empty result
+          if (Object.keys(groupedLaporan).length === 0) {
+            // No data found, but still return other fields with default values
+            return Response.json([
+              {
+                laporan: [], // Empty laporan
+                columnNames, // Column names remain the same
+                aset: asetArray, // Empty aset array
+                cabang: cabangArray, // Empty cabang array
+                jenis_laporan, // jenis_laporan with provided year
+              },
+            ]);
+          }
 
           // Transform grouped data into the required format
           const response = Object.keys(groupedLaporan).map((cabang) => ({
@@ -854,6 +902,7 @@ let columnNames = laporanFields
             cabang: [cabang], // Always an array
             jenis_laporan,
           }));
+
           return Response.json(response);
         } else {
           // For specific cabang, ensure single objects are arrays
@@ -864,6 +913,20 @@ let columnNames = laporanFields
           const cabangArray = Array.isArray(data.nama_cabang)
             ? data.nama_cabang.split(", ")
             : [data.nama_cabang]; // Ensure cabang is an array
+
+          // Handle the case when query returns an empty result for a specific cabang
+          if (laporan.length === 0) {
+            return Response.json([
+              {
+                laporan: [], // Empty laporan
+                columnNames, // Column names remain the same
+                aset: asetArray, // Provided asetArray
+                cabang: cabangArray, // Provided cabangArray
+                jenis_laporan, // jenis_laporan with provided year
+              },
+            ]);
+          }
+
           return Response.json([
             {
               laporan: laporanArray,
@@ -874,31 +937,32 @@ let columnNames = laporanFields
             },
           ]);
         }
-      } else if (data.jenis_laporan.toLowerCase() === "daftar penyewa per tahun") {
+      } else if (
+        data.jenis_laporan.toLowerCase() === "daftar penyewa per tahun"
+      ) {
         let query = `
           SELECT 
             p.nama AS nama_penyewa, 
             a.nama_aset AS nama_aset, 
             ts.start_date_sewa AS mulai, 
             ts.end_date_sewa AS berakhir, 
-            ts.total_biaya_sewa AS harga_sewa, 
+            CONCAT(ts.no_akte, ' - ', ts.notaris) AS nomor_akta_dan_notaris,
             ts.ipl AS IPL, 
-            CONCAT(ts.no_akte, ' - ', ts.notaris) AS nomor_akta_dan_notaris
+            ts.total_biaya_sewa AS harga_sewa
           FROM transaksi_sewa ts 
             LEFT JOIN cabang c ON ts.id_cabang = c.id
             LEFT JOIN pelanggan p ON ts.id_pelanggan = p.id
             LEFT JOIN aset a ON ts.id_aset = a.id
-          WHERE YEAR(STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y')) <= ?
-            AND YEAR(STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')) >= ?
+          WHERE YEAR(STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y')) = ?
         `;
-      
-        const queryParams: any[] = [data.periode, data.periode];
-      
+
+        const queryParams: any[] = [data.periode];
+
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
           queryParams
         );
-      
+
         // Format laporan data and calculate masa
         laporan = laporan.map((row: any, idx: number) => ({
           ...row,
@@ -906,47 +970,64 @@ let columnNames = laporanFields
           mulai: dayjs(row.mulai, "DD-MM-YYYY").format("D MMMM YYYY"), // Format mulai
           berakhir: dayjs(row.berakhir, "DD-MM-YYYY").format("D MMMM YYYY"), // Format berakhir
           masa: calculateMasa(row.mulai, row.berakhir), // Calculate masa using the helper function
-          harga_sewa: _renderCurrency(row.harga_sewa),
-          IPL: _renderCurrency(row.IPL),
+          harga_sewa_unformatted: row.harga_sewa, // Keep original value for calculations
+          IPL_unformatted: row.IPL, // Keep original value for calculations
+          harga_sewa: _renderCurrency(row.harga_sewa, true), // Formatted for display
+          IPL: _renderCurrency(row.IPL, true), // Formatted for display
         }));
-      
+
+        // Calculate the sums of harga_sewa and IPL
+        const totalHargaSewa = laporan.reduce((sum: number, row: any) => {
+          return sum + parseFloat(row.harga_sewa_unformatted);
+        }, 0);
+
+        const totalIPL = laporan.reduce((sum: number, row: any) => {
+          return sum + parseFloat(row.IPL_unformatted);
+        }, 0);
+
+        // Format totals as currency
+        const formattedTotalHargaSewa = _renderCurrency(totalHargaSewa, true);
+        const formattedTotalIPL = _renderCurrency(totalIPL, true);
+
         let columnNames = laporanFields
-        .map((fields: any) => fields.name)
-        .filter((fieldName) => fieldName !== "id");
-      
+          .map((fields: any) => fields.name)
+          .filter((fieldName) => fieldName !== "id");
+
         // Add "Nomor" to the start of the columns
         columnNames.unshift("nomor");
-        
+
         // Convert column names to the required format and place "Masa" before "Mulai"
         columnNames = columnNames.map((val: any) => {
           let title = val
             .split("_")
             .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
             .join(" ");
-        
+
           // Special case for harga_sewa
           if (val === "harga_sewa") {
             title = "Harga Sewa (Rp)";
           }
-        
+
           return {
             title: title,
             dataIndex: val,
             key: val,
           };
         });
-      
+
         // Find index of "mulai" and insert "Masa" before it
         columnNames.splice(
-          columnNames.findIndex((column) => column.dataIndex === "mulai"), 0, {
+          columnNames.findIndex((column) => column.dataIndex === "mulai"),
+          0,
+          {
             title: "Masa",
             dataIndex: "masa",
             key: "masa",
           }
         );
-      
+
         const jenis_laporan = "DAFTAR PENYEWA PER-TAHUN";
-      
+
         // Structure the response
         const response = {
           laporan,
@@ -954,12 +1035,14 @@ let columnNames = laporanFields
           aset: data.nama_aset,
           cabang: data.nama_cabang,
           jenis_laporan,
+          periode: data.periode, // Include data.periode in the response
+          totalHargaSewa: formattedTotalHargaSewa,
+          totalIPL: formattedTotalIPL,
         };
-      
+
         // Send the response
         return Response.json([response]);
       }
-      
     } else if (value.requestType == "delete_laporan") {
       await conn.query(`delete from laporan where id  = ?`, data.id);
     } else {

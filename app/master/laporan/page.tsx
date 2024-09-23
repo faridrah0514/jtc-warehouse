@@ -158,41 +158,54 @@ export default function Page() {
                 )
               }
             ]} dataSource={allData.laporanData?.map((item: any, index: number) => ({ ...item, key: index + 1 }))}></Table>
-          <div ref={componentRef} className='print-only'>
+          <div ref={componentRef} className="print-only">
             {respData?.map((item: any, idx: number) => {
+              // Create dataSource with key for each row
               let dataSourceWithTotal = item.laporan.map((laporanItem: any, index: number) => ({
                 ...laporanItem,
                 key: index,
               }));
 
-              // Append the total row if jenis_laporan is "DAFTAR PENYEWA PER-BLOK"
+              // Append total row conditionally for both "DAFTAR PENYEWA PER-BLOK" and "DAFTAR PENYEWA PER-TAHUN"
               if (item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK") {
                 dataSourceWithTotal = [
                   ...dataSourceWithTotal,
                   {
-                    key: 'total',
-                    rowHead: 'Total Tagihan',
-                    nama_cabang: 'Total Harga Sewa (Rp)', // Merged title for the total row
-                    harga_sewa: item.total_harga_sewa, // Use total_harga_sewa from backend
-                  }
+                    key: "total",
+                    nama_cabang: "", // Empty for column merging
+                    nama_penyewa: "Total Harga Sewa", // Label for total row
+                    harga_sewa: item.total_harga_sewa, // Display total_harga_sewa from response
+                  },
+                ];
+              } else if (item.jenis_laporan === "DAFTAR PENYEWA PER-TAHUN") {
+                dataSourceWithTotal = [
+                  ...dataSourceWithTotal,
+                  {
+                    key: "total",
+                    nama_penyewa: "Total", // Label for total row
+                    harga_sewa: item.totalHargaSewa, // Use totalHargaSewa from backend
+                    IPL: item.totalIPL, // Use totalIPL from backend if applicable
+                  },
                 ];
               }
 
-              // Adjust column rendering for merging all except 'harga_sewa'
+              // Adjust column rendering for merging all except 'harga_sewa' and 'IPL' for the total row
               const columnsWithMerge = item.columnNames.map((col: any) => {
-                if (col.dataIndex === 'nama_penyewa') {
+                if (col.dataIndex === "nama_penyewa" || col.dataIndex === "nama_cabang") {
                   return {
                     ...col,
                     render: (text: any, record: any) => {
-                      if (record.key === 'total') {
+                      if (record.key === "total") {
                         return {
                           children: (
-                            <div style={{ textAlign: 'right', fontWeight: 'bold' }}>
-                              Total Harga Sewa
+                            <div style={{ textAlign: "right", fontWeight: "bold" }}>
+                              {item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK" ? "Total Harga Sewa" : "Total"}
                             </div>
-                          ), // Merged title for total row, aligned right
+                          ),
                           props: {
-                            colSpan: item.columnNames.length - 1, // Merge all columns except 'harga_sewa'
+                            colSpan: item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK"
+                              ? item.columnNames.length - 1 // Merge all columns except 'harga_sewa' for DAFTAR PENYEWA PER-BLOK
+                              : item.columnNames.length - 2, // Merge all columns except 'harga_sewa' and 'IPL' for DAFTAR PENYEWA PER-TAHUN
                           },
                         };
                       }
@@ -201,12 +214,12 @@ export default function Page() {
                   };
                 }
 
-                // Skip rendering for all columns except 'harga_sewa' in the total row
-                if (col.dataIndex !== 'harga_sewa') {
+                // For columns other than 'harga_sewa' and 'IPL', skip rendering in the total row
+                if (col.dataIndex !== "harga_sewa" && col.dataIndex !== "IPL") {
                   return {
                     ...col,
                     render: (text: any, record: any) => {
-                      if (record.key === 'total') {
+                      if (record.key === "total") {
                         return {
                           props: {
                             colSpan: 0, // Skip merged columns
@@ -218,16 +231,16 @@ export default function Page() {
                   };
                 }
 
-                // Leave 'harga_sewa' column untouched for the total row
-                if (col.dataIndex === 'harga_sewa') {
+                // Keep 'harga_sewa' and 'IPL' columns for the total row
+                if (col.dataIndex === "harga_sewa" || col.dataIndex === "IPL") {
                   return {
                     ...col,
                     render: (text: any, record: any) => {
-                      if (record.key === 'total') {
+                      if (record.key === "total") {
                         return {
-                          children: record.harga_sewa,
+                          children: record[col.dataIndex],
                           props: {
-                            colSpan: 1, // Keep this column
+                            colSpan: 1, // Keep this column for totals
                           },
                         };
                       }
@@ -239,42 +252,58 @@ export default function Page() {
                 return col;
               });
 
+              console.log("columnsWithMerge -> ", columnsWithMerge)
+              // Check if cabang and aset are arrays, if not, convert them to arrays
+              const cabang = Array.isArray(item.cabang) ? item.cabang.join(", ") : item.cabang;
+              const aset = Array.isArray(item.aset) ? item.aset.join(", ") : item.aset;
+
               return (
                 <>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {/* Left Side: Username */}
-                    <div style={{ textAlign: 'left' }}>
-                      <Text type="secondary" style={{ fontSize: '12px' }}>{session?.user?.name}</Text>
+                  {/* Header with username and date */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ textAlign: "left" }}>
+                      <Text type="secondary" style={{ fontSize: "12px" }}>{session?.user?.name}</Text>
                     </div>
-                    {/* Right Side: Date */}
-                    <div style={{ textAlign: 'right' }}>
-                      <Text type="secondary" style={{ fontSize: '12px' }}>{dayjs().format('DD-MM-YYYY HH:mm')}</Text>
+                    <div style={{ textAlign: "right" }}>
+                      <Text type="secondary" style={{ fontSize: "12px" }}>{dayjs().format("DD-MM-YYYY HH:mm")}</Text>
                     </div>
                   </div>
+
+                  {/* Title */}
                   <div>
                     <Title level={3} style={{ margin: 0 }}>CV. JAMBI TRADE CENTER</Title>
                     <Title level={3} style={{ margin: 0 }}>JAMBI</Title>
                     <br />
                     <Title level={4} style={{ margin: 0 }}>{item.jenis_laporan}</Title>
+                    {/* Conditionally render Tahun: xxxx for DAFTAR PENYEWA PER-TAHUN */}
+                    {item.jenis_laporan === "DAFTAR PENYEWA PER-TAHUN" && (
+                      <Title level={5} style={{ margin: 0 }}>Tahun: {item.periode}</Title>
+                    )}
                   </div>
+
+                  {/* Asset and Branch info */}
                   <div>
-                    <Flex justify='space-between' className='mb-0'>
-                      <Title level={5} style={{ margin: '5px 0', textAlign: 'left' }}>A/N: {item.cabang}</Title>
-                      <Title level={5} style={{ margin: '5px 0', textAlign: 'right' }}>{item.aset}</Title>
+                    <Flex justify="space-between" className="mb-0">
+                      <Title level={5} style={{ margin: "5px 0", textAlign: "left" }}>A/N: {cabang}</Title>
+                      <Title level={5} style={{ margin: "5px 0", textAlign: "right" }}>{aset}</Title>
                     </Flex>
                   </div>
+
+                  {/* Table */}
                   <div>
-                    <Divider className='mb-1 pb-0'></Divider>
+                    <Divider className="mb-1 pb-0"></Divider>
                   </div>
                   <Table
-                    size='small'
+                    size="small"
                     bordered
                     columns={columnsWithMerge}
                     dataSource={dataSourceWithTotal}
                     rowKey="key"
-                    rowClassName={(record) => record.key === 'total' ? 'font-bold' : ''}
+                    rowClassName={(record) => (record.key === "total" ? "font-bold" : "")}
                     pagination={false} // Disable pagination for printing purposes
                   />
+
+                  {/* Page break for printing */}
                   <div className="page-break" />
                 </>
               );
