@@ -150,8 +150,8 @@ export async function POST(request: Request, response: Response) {
             return {
               ...item,
               Nomor: idx + 1,
-              harga_sewa: _renderCurrency(item.harga_sewa, true),
-              total_harga_sewa: _renderCurrency(item.total_harga_sewa, true),
+              harga_sewa: _renderCurrency(item.harga_sewa, false, false),
+              total_harga_sewa: _renderCurrency(item.total_harga_sewa, false,false),
             };
           });
         return Response.json({ laporan, columnNames });
@@ -198,22 +198,32 @@ export async function POST(request: Request, response: Response) {
         const columnNames = laporanFields
           .map((fields: any) => fields.name)
           .filter((fieldName) => fieldName != "id")
-          .map((val: any) => ({
-            title: val
+          .map((val: any) => {
+            let title = val
               .split("_")
-              .map(
-                (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
-              )
-              .join(" "),
-            dataIndex: val,
-            key: val,
-          }));
+              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ");
+  
+            // Special case for harga_sewa
+            if (val === "harga_sewa") {
+              title = "Harga Sewa (Rp)";
+            } else if (val === "IPL") {
+              title = "IPL (Rp)";
+            }
+  
+            return {
+              title: title,
+              dataIndex: val,
+              key: val,
+            };
+          });
+
 
         laporan = laporan
           .map((item, idx) => ({
             ...item,
             Nomor: idx + 1,
-            IPL: _renderCurrency(item.IPL),
+            IPL: _renderCurrency(item.IPL, false, false),
           }))
           .map((item: any) => ({
             ...item,
@@ -334,8 +344,8 @@ export async function POST(request: Request, response: Response) {
           ...item,
           Bulan: dayjs(item.Bulan, "MM-YYYY").format("MMMM"),
           Nomor: idx + 1,
-          kwh_rp: _renderCurrency(item.kwh_rp),
-          total_tagihan: _renderCurrency(item.pemakaian * item.kwh_rp, true),
+          kwh_rp: _renderCurrency(item.kwh_rp, false, false),
+          total_tagihan: _renderCurrency(item.pemakaian * item.kwh_rp, false, false),
         }));
 
         const transformedData = [
@@ -376,7 +386,7 @@ export async function POST(request: Request, response: Response) {
             ),
           },
           {
-            rowHead: "Kwh Rp",
+            rowHead: "Kwh (Rp)",
             ...months.reduce(
               (acc, month) => ({
                 ...acc,
@@ -622,7 +632,7 @@ export async function POST(request: Request, response: Response) {
               laporan: groupedLaporan[cabang][aset].rows.map(
                 (row: any, idx: number) => ({
                   ...row,
-                  harga_sewa: _renderCurrency(row.harga_sewa, true),
+                  harga_sewa: _renderCurrency(row.harga_sewa, false, false),
                 })
               ), // Array of rows for the specific cabang and aset
               columnNames,
@@ -633,7 +643,7 @@ export async function POST(request: Request, response: Response) {
               luas_tanah: uniqueValues[aset].luas_tanah,
               total_harga_sewa: _renderCurrency(
                 groupedLaporan[cabang][aset].total_harga_sewa,
-                true
+                false, false
               ), // Total harga sewa
               jenis_laporan,
             }))
@@ -650,7 +660,7 @@ export async function POST(request: Request, response: Response) {
 
           laporan = laporan.map((row: any, idx: number) => ({
             ...row,
-            harga_sewa: _renderCurrency(row.harga_sewa, true),
+            harga_sewa: _renderCurrency(row.harga_sewa, false, false),
           }));
           // For specific cabang, ensure single objects are arrays
           const laporanArray = Array.isArray(laporan) ? laporan : [laporan]; // Ensure laporan is always an array
@@ -670,7 +680,7 @@ export async function POST(request: Request, response: Response) {
               no_sertifikat: uniqueValues[asetArray[0]]?.no_sertifikat,
               luas_bangunan: uniqueValues[asetArray[0]]?.luas_bangunan,
               luas_tanah: uniqueValues[asetArray[0]]?.luas_tanah,
-              total_harga_sewa: _renderCurrency(totalHargaSewa, true), // Total for specific cabang/aset
+              total_harga_sewa: _renderCurrency(totalHargaSewa, false, false), // Total for specific cabang/aset
               jenis_laporan,
             },
           ]);
@@ -718,8 +728,8 @@ export async function POST(request: Request, response: Response) {
         // Apply currency formatting
         laporan = laporan.map((row) => ({
           ...row,
-          kwh_rp: _renderCurrency(row.kwh_rp),
-          total_biaya: _renderCurrency(row.total_biaya, true),
+          kwh_rp: _renderCurrency(row.kwh_rp, false, false),
+          total_biaya: _renderCurrency(row.total_biaya, false,false),
         }));
 
         // Extract column names and customize the title for specific fields
@@ -737,6 +747,9 @@ export async function POST(request: Request, response: Response) {
             // Special cases for specific fields
             if (val === "total_biaya") {
               title = "Total Biaya (Rp)";
+            }  else           // Special cases for specific fields
+            if (val === "kwh_rp") {
+              title = "Kwh (Rp)";
             }
             return {
               title: title,
@@ -972,8 +985,8 @@ export async function POST(request: Request, response: Response) {
           masa: calculateMasa(row.mulai, row.berakhir), // Calculate masa using the helper function
           harga_sewa_unformatted: row.harga_sewa, // Keep original value for calculations
           IPL_unformatted: row.IPL, // Keep original value for calculations
-          harga_sewa: _renderCurrency(row.harga_sewa, true), // Formatted for display
-          IPL: _renderCurrency(row.IPL, true), // Formatted for display
+          harga_sewa: _renderCurrency(row.harga_sewa, false, false), // Formatted for display
+          IPL: _renderCurrency(row.IPL, false, false), // Formatted for display
         }));
 
         // Calculate the sums of harga_sewa and IPL
@@ -986,8 +999,8 @@ export async function POST(request: Request, response: Response) {
         }, 0);
 
         // Format totals as currency
-        const formattedTotalHargaSewa = _renderCurrency(totalHargaSewa, true);
-        const formattedTotalIPL = _renderCurrency(totalIPL, true);
+        const formattedTotalHargaSewa = _renderCurrency(totalHargaSewa, false,false);
+        const formattedTotalIPL = _renderCurrency(totalIPL, false,false);
 
         let columnNames = laporanFields
           .map((fields: any) => fields.name)
@@ -1006,6 +1019,8 @@ export async function POST(request: Request, response: Response) {
           // Special case for harga_sewa
           if (val === "harga_sewa") {
             title = "Harga Sewa (Rp)";
+          } else if (val === "IPL") {
+            title = "IPL (Rp)";
           }
 
           return {

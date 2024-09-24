@@ -214,7 +214,6 @@ export default function Page() {
                   };
                 }
 
-                // For columns other than 'harga_sewa' and 'IPL', skip rendering in the total row
                 if (col.dataIndex !== "harga_sewa" && col.dataIndex !== "IPL") {
                   return {
                     ...col,
@@ -231,7 +230,6 @@ export default function Page() {
                   };
                 }
 
-                // Keep 'harga_sewa' and 'IPL' columns for the total row
                 if (col.dataIndex === "harga_sewa" || col.dataIndex === "IPL") {
                   return {
                     ...col,
@@ -252,8 +250,6 @@ export default function Page() {
                 return col;
               });
 
-              console.log("columnsWithMerge -> ", columnsWithMerge)
-              // Check if cabang and aset are arrays, if not, convert them to arrays
               const cabang = Array.isArray(item.cabang) ? item.cabang.join(", ") : item.cabang;
               const aset = Array.isArray(item.aset) ? item.aset.join(", ") : item.aset;
 
@@ -262,30 +258,29 @@ export default function Page() {
                   {/* Header with username and date */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div style={{ textAlign: "left" }}>
-                      <Text type="secondary" style={{ fontSize: "12px" }}>{session?.user?.name}</Text>
+                      <Text type="secondary" style={{ fontSize: "10px" }}>{session?.user?.name}</Text>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <Text type="secondary" style={{ fontSize: "12px" }}>{dayjs().format("DD-MM-YYYY HH:mm")}</Text>
+                      <Text type="secondary" style={{ fontSize: "10px" }}>{dayjs().format("DD-MM-YYYY HH:mm")}</Text>
                     </div>
                   </div>
 
                   {/* Title */}
                   <div>
-                    <Title level={3} style={{ margin: 0 }}>CV. JAMBI TRADE CENTER</Title>
-                    <Title level={3} style={{ margin: 0 }}>JAMBI</Title>
+                    <Title level={4} style={{ margin: 0, fontSize: '14px' }}>CV. JAMBI TRADE CENTER</Title>
+                    <Title level={4} style={{ margin: 0, fontSize: '14px' }}>JAMBI</Title>
                     <br />
-                    <Title level={4} style={{ margin: 0 }}>{item.jenis_laporan}</Title>
-                    {/* Conditionally render Tahun: xxxx for DAFTAR PENYEWA PER-TAHUN */}
+                    <Title level={5} style={{ margin: 0, fontSize: '12px' }}>{item.jenis_laporan}</Title>
                     {item.jenis_laporan === "DAFTAR PENYEWA PER-TAHUN" && (
-                      <Title level={5} style={{ margin: 0 }}>Tahun: {item.periode}</Title>
+                      <Title level={5} style={{ margin: 0, fontSize: '12px' }}>Tahun: {item.periode}</Title>
                     )}
                   </div>
 
                   {/* Asset and Branch info */}
                   <div>
                     <Flex justify="space-between" className="mb-0">
-                      <Title level={5} style={{ margin: "5px 0", textAlign: "left" }}>A/N: {cabang}</Title>
-                      <Title level={5} style={{ margin: "5px 0", textAlign: "right" }}>{aset}</Title>
+                      <Title level={5} style={{ margin: "5px 0", textAlign: "left", fontSize: '12px' }}>A/N: {cabang}</Title>
+                      <Title level={5} style={{ margin: "5px 0", textAlign: "right", fontSize: '12px' }}>{aset}</Title>
                     </Flex>
                   </div>
 
@@ -301,6 +296,7 @@ export default function Page() {
                     rowKey="key"
                     rowClassName={(record) => (record.key === "total" ? "font-bold" : "")}
                     pagination={false} // Disable pagination for printing purposes
+                    style={{ fontSize: '10px' }} // Reduce table font size
                   />
 
                   {/* Page break for printing */}
