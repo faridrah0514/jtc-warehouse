@@ -190,7 +190,7 @@ export default function Page() {
               }
 
               // Adjust column rendering for merging all except 'harga_sewa' and 'IPL' for the total row
-              const columnsWithMerge = item.columnNames.map((col: any) => {
+              let columnsWithMerge = item.columnNames.map((col: any) => {
                 if (col.dataIndex === "nama_penyewa" || col.dataIndex === "nama_cabang") {
                   return {
                     ...col,
@@ -248,6 +248,23 @@ export default function Page() {
                 }
 
                 return col;
+              });
+
+              console.log("columnsWithMerge --> ", columnsWithMerge)
+              columnsWithMerge = columnsWithMerge.map((col: any) => {
+                if (col.dataIndex === 'harga_sewa' || col.dataIndex === 'IPL' || col.dataIndex === 'total_biaya' || col.dataIndex === 'kwh_rp') {
+                  return {
+                    ...col,
+                    render: (text: any, record: any) => {
+                      return (
+                        <div style={{ textAlign: "right" }}>
+                          {record.key === "total" ? record[col.dataIndex] : text}
+                        </div>
+                      );
+                    }
+                  };
+                }
+                return col; // Make sure to return the column if it's not 'harga_sewa' or 'IPL'
               });
 
               const cabang = Array.isArray(item.cabang) ? item.cabang.join(", ") : item.cabang;
