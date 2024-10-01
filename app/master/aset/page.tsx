@@ -66,7 +66,37 @@ export default function Page() {
       filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
       onFilter: (value, record) => record.tipe_aset.toLowerCase().includes(String(value).toLowerCase()),
     },
-    { title: "Nama Aset", dataIndex: 'nama_aset', key: 'nama_aset', width: 100 },
+    {
+      title: "Nama Aset",
+      dataIndex: 'nama_aset',
+      key: 'nama_aset',
+      width: 100,
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Cari Nama Aset"
+            value={selectedKeys[0]}
+            onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: 'block' }}
+          />
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90, marginRight: 8 }}
+          >
+            Cari
+          </Button>
+          <Button onClick={() => clearFilters && clearFilters()} size="small" style={{ width: 90 }}>
+            Reset
+          </Button>
+        </div>
+      ),
+      filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+      onFilter: (value, record) => record.nama_aset.toLowerCase().includes(String(value).toLowerCase()),
+    },
     {
       title: "Cabang",
       dataIndex: 'cabang',
@@ -138,130 +168,130 @@ export default function Page() {
       width: 350,
       render: (_, record) => (
         <Dropdown.Button
-      placement="bottomLeft"
-      trigger={["click"]}
-      size="small"
-      icon={<DownOutlined />}
-      menu={{
-        items: [
-          {
-            key: 1,
-            label: (
-              <ConfigProvider
-                theme={{
-                  components: {
-                    Button: {
-                      colorPrimary: '#00b96b',
-                      colorPrimaryHover: '#00db7f',
-                    },
-                  },
-                }}
-              >
-                <Link href={`/master/aset/view/${record.id_aset}`}>
-                  View
-                </Link>
-              </ConfigProvider>
-            ),
-          },
-          {
-            key: 2,
-            label: (
-              <RoleProtected allowedRoles={["admin", "supervisor"]} actionType="edit" createdAt={record.created_at}>
-                {({ disabled }) => (
-                  <a
-                    className={`text-blue-500 hover:text-blue-700 ${disabled ? 'pointer-events-none opacity-50' : ''}`}
-                    onClick={() => {
-                      if (!disabled) {
-                        setOpenModal(true);
-                        setIsEdit(true);
-                        setIsAddDocument(false);
-                        form.setFieldsValue(record);
-                      }
+          placement="bottomLeft"
+          trigger={["click"]}
+          size="small"
+          icon={<DownOutlined />}
+          menu={{
+            items: [
+              {
+                key: 1,
+                label: (
+                  <ConfigProvider
+                    theme={{
+                      components: {
+                        Button: {
+                          colorPrimary: '#00b96b',
+                          colorPrimaryHover: '#00db7f',
+                        },
+                      },
                     }}
                   >
-                    Edit
-                  </a>
-                )}
-              </RoleProtected>
-            ),
-          },
-          {
-            key: 3,
-            label: (
-              <RoleProtected allowedRoles={["admin", "supervisor", "reporter"]} actionType="add">
-                {({ disabled }) => (
-                  <a
-                    className="text-blue-500 hover:text-blue-700"
-                    onClick={() => {
-                      if (!disabled) {
-                        setOpenModal(true);
-                        setIsEdit(false);
-                        setIsAddDocument(true);
-                        form.setFieldsValue(record);
-                      }
-                    }}
-                  >
-                    Tambah Dokumen
-                  </a>
-                )}
-              </RoleProtected>
-            ),
-          },
-          {
-            key: 4,
-            label: (
-              <RoleProtected allowedRoles={["admin"]} actionType="delete">
-                {({ disabled }) => (
-                  <a
-                    className={`text-red-500 hover:text-red-700 ${disabled ? 'pointer-events-none opacity-50' : ''}`}
-                    onClick={() => {
-                      if (!disabled) {
-                        confirm({
-                          title: "Are you sure delete this asset?",
-                          icon: <ExclamationCircleFilled />,
-                          content: `Nama Aset: ${record.nama_aset}`,
-                          okText: "Yes",
-                          okType: "danger",
-                          onOk() {
-                            async function deleteAset() {
-                              const result = await fetch("/api/master/aset/delete", {
-                                method: "POST",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify({
-                                  id: record.id,
-                                  id_aset: record.id_aset,
-                                  nama_aset: record.nama_aset,
-                                }),
-                              });
-                              if (result.status === 200) {
-                                message.success("Delete berhasil");
-                              } else {
-                                message.error("Delete gagal");
-                              }
-                              setTriggerRefresh(!triggerRefresh);
-                            }
-                            deleteAset();
-                          },
-                          onCancel() {
-                            console.log("Cancel");
-                          },
-                        });
-                      }
-                    }}
-                  >
-                    Delete
-                  </a>
-                )}
-              </RoleProtected>
-            ),
-          },
-        ],
-      }}
-    >
-      Actions
-    </Dropdown.Button>
+                    <Link href={`/master/aset/view/${record.id_aset}`}>
+                      View
+                    </Link>
+                  </ConfigProvider>
+                ),
+              },
+              {
+                key: 2,
+                label: (
+                  <RoleProtected allowedRoles={["admin", "supervisor"]} actionType="edit" createdAt={record.created_at}>
+                    {({ disabled }) => (
+                      <a
+                        className={`text-blue-500 hover:text-blue-700 ${disabled ? 'pointer-events-none opacity-50' : ''}`}
+                        onClick={() => {
+                          if (!disabled) {
+                            setOpenModal(true);
+                            setIsEdit(true);
+                            setIsAddDocument(false);
+                            form.setFieldsValue(record);
+                          }
+                        }}
+                      >
+                        Edit
+                      </a>
+                    )}
+                  </RoleProtected>
+                ),
+              },
+              {
+                key: 3,
+                label: (
+                  <RoleProtected allowedRoles={["admin", "supervisor", "reporter"]} actionType="add">
+                    {({ disabled }) => (
+                      <a
+                        className="text-blue-500 hover:text-blue-700"
+                        onClick={() => {
+                          if (!disabled) {
+                            setOpenModal(true);
+                            setIsEdit(false);
+                            setIsAddDocument(true);
+                            form.setFieldsValue(record);
+                          }
+                        }}
+                      >
+                        Tambah Dokumen
+                      </a>
+                    )}
+                  </RoleProtected>
+                ),
+              },
+              {
+                key: 4,
+                label: (
+                  <RoleProtected allowedRoles={["admin"]} actionType="delete">
+                    {({ disabled }) => (
+                      <a
+                        className={`text-red-500 hover:text-red-700 ${disabled ? 'pointer-events-none opacity-50' : ''}`}
+                        onClick={() => {
+                          if (!disabled) {
+                            confirm({
+                              title: "Are you sure delete this asset?",
+                              icon: <ExclamationCircleFilled />,
+                              content: `Nama Aset: ${record.nama_aset}`,
+                              okText: "Yes",
+                              okType: "danger",
+                              onOk() {
+                                async function deleteAset() {
+                                  const result = await fetch("/api/master/aset/delete", {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                      id: record.id,
+                                      id_aset: record.id_aset,
+                                      nama_aset: record.nama_aset,
+                                    }),
+                                  });
+                                  if (result.status === 200) {
+                                    message.success("Delete berhasil");
+                                  } else {
+                                    message.error("Delete gagal");
+                                  }
+                                  setTriggerRefresh(!triggerRefresh);
+                                }
+                                deleteAset();
+                              },
+                              onCancel() {
+                                console.log("Cancel");
+                              },
+                            });
+                          }
+                        }}
+                      >
+                        Delete
+                      </a>
+                    )}
+                  </RoleProtected>
+                ),
+              },
+            ],
+          }}
+        >
+          Actions
+        </Dropdown.Button>
       ),
     }
   ]

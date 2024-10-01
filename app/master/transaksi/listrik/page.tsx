@@ -157,33 +157,33 @@ export default function Page() {
                         Edit
                       </Button>
                     </RoleProtected>
-                    <Popconfirm
-                      title="sure to delete?"
-                      onConfirm={
-                        async function deleteCabang() {
-                          const requstType = 'delete'
-                          const result = await fetch('/api/master/transaksi/listrik', {
-                            method: "POST",
-                            headers: {
-                              'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                              requestType: requstType,
-                              data: { id: record.id }
+                    <RoleProtected allowedRoles={['admin']} actionType='delete'>
+                      <Popconfirm
+                        title="sure to delete?"
+                        onConfirm={
+                          async function deleteCabang() {
+                            const requstType = 'delete'
+                            const result = await fetch('/api/master/transaksi/listrik', {
+                              method: "POST",
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                requestType: requstType,
+                                data: { id: record.id }
+                              })
                             })
-                          })
-                          if (result.status == 200) {
-                            setTriggerRefresh(!triggerRefresh)
+                            if (result.status == 200) {
+                              setTriggerRefresh(!triggerRefresh)
+                            }
                           }
                         }
-                      }
-                    >
-                      <RoleProtected allowedRoles={['admin']} actionType='delete'>
+                      >
                         <Button size="small" danger>
                           Delete
                         </Button>
-                      </RoleProtected>
-                    </Popconfirm>
+                      </Popconfirm>
+                    </RoleProtected>
                   </Flex>
                 ),
               }

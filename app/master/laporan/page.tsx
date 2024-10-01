@@ -250,7 +250,6 @@ export default function Page() {
                 return col;
               });
 
-              console.log("columnsWithMerge --> ", columnsWithMerge)
               columnsWithMerge = columnsWithMerge.map((col: any) => {
                 if (col.dataIndex === 'harga_sewa' || col.dataIndex === 'IPL' || col.dataIndex === 'total_biaya' || col.dataIndex === 'kwh_rp') {
                   return {
@@ -265,6 +264,29 @@ export default function Page() {
                   };
                 }
                 return col; // Make sure to return the column if it's not 'harga_sewa' or 'IPL'
+              }).map((col: any) => {
+                if (col.dataIndex === 'nomor' || col.dataIndex === 'no') {
+                  return {
+                    ...col,
+                    render: (text: any, record: any) => {
+                      // Check if the record is not a merged "total" row
+                      if (record.key === "total") {
+                        return {
+                          children: text,
+                          props: {
+                            colSpan: 0, // Skip the merged column
+                          },
+                        };
+                      }
+                      return (
+                        <div style={{ textAlign: "center" }}>
+                          {text}
+                        </div>
+                      );
+                    },
+                  };
+                }
+                return col;
               });
 
               const cabang = Array.isArray(item.cabang) ? item.cabang.join(", ") : item.cabang;

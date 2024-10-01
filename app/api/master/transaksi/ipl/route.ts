@@ -12,23 +12,31 @@ dayjs.extend(customParseFormat);
 export async function GET() {
   const conn = openDB();
   const query = `
-      select ti.*, a.nama_aset, c.nama_perusahaan nama_cabang, p.nama nama_pelanggan, ts.ipl ipl from transaksi_ipl ti
-      left join aset a on a.id = ti.id_aset
-      left join cabang c on c.id = ti.id_cabang
-      left join pelanggan p on p.id = ti.id_pelanggan
-      left join transaksi_sewa ts on ts.id_cabang = ti.id_cabang and ts.id_aset = ti.id_aset and ts.id_pelanggan = ti.id_pelanggan
-      order by ti.periode_pembayaran asc
-      
-    `;
+    SELECT ti.*, a.nama_aset, c.nama_perusahaan AS nama_cabang, p.nama AS nama_pelanggan, ts.ipl AS ipl 
+    FROM transaksi_ipl ti
+    LEFT JOIN aset a ON a.id = ti.id_aset
+    LEFT JOIN cabang c ON c.id = ti.id_cabang
+    LEFT JOIN pelanggan p ON p.id = ti.id_pelanggan
+    LEFT JOIN transaksi_sewa ts ON ts.id_cabang = ti.id_cabang 
+        AND ts.id_aset = ti.id_aset 
+        AND ts.id_pelanggan = ti.id_pelanggan
+    WHERE 
+      STR_TO_DATE(CONCAT(ti.periode_pembayaran, '-01'), '%Y-%m-%d') 
+      BETWEEN STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y') 
+      AND STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
+      AND ts.ipl != 0
+    ORDER BY ti.periode_pembayaran ASC
+  `;
   const [data, _]: [RowDataPacket[], any] = await conn.execute(query);
+
   let obj: { [key: string]: any[] } = {};
   data.forEach((v: any, i: number) => {
-    // Assuming 'periode_pembayaran' is a string property in each object v
     if (!obj[v.periode_pembayaran]) {
-      obj[v.periode_pembayaran] = []; // Initialize array if it doesn't exist
+      obj[v.periode_pembayaran] = [];
     }
-    obj[v.periode_pembayaran].push(v); // Push 'aaaa' or any value you want into the array
+    obj[v.periode_pembayaran].push(v);
   });
+
   conn.end();
   return Response.json({ rawdata: data, dataobj: obj });
 }

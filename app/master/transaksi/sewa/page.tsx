@@ -81,7 +81,34 @@ export default function Page() {
       filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
       onFilter: (value, record) => String(record.nama_aset).toLowerCase().includes(String(value).toLowerCase()),
     },
-    { title: "Pelanggan", dataIndex: 'nama_pelanggan', key: 'nama_pelanggan' },
+    {
+      title: "Pelanggan", dataIndex: 'nama_pelanggan', key: 'nama_pelanggan',
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+        <div style={{ padding: 8 }}>
+          <Input
+            placeholder="Cari Pelanggan"
+            value={selectedKeys[0]}
+            onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+            onPressEnter={() => confirm()}
+            style={{ marginBottom: 8, display: 'block' }}
+          />
+          <Button
+            type="primary"
+            onClick={() => confirm()}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90, marginRight: 8 }}
+          >
+            Cari
+          </Button>
+          <Button onClick={() => clearFilters && clearFilters()} size="small" style={{ width: 90 }}>
+            Reset
+          </Button>
+        </div>
+      ),
+      filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+      onFilter: (value, record) => String(record.nama_pelanggan).toLowerCase().includes(String(value).toLowerCase()),
+    },
     { title: "Tanggal Akte", dataIndex: 'tanggal_akte_1', key: 'tanggal_akte' },
     { title: "Nomor Akte", dataIndex: 'no_akte', key: 'no_akte' },
     { title: "Notaris", dataIndex: 'notaris', key: 'notaris' },
@@ -109,25 +136,25 @@ export default function Page() {
       title: "Status Sewa",
       key: "status_sewa",
       render: (_, record: any) => {
-        const today = dayjs()
+        const today = dayjs();
         if (dayjs(record.start_date_sewa, "DD-MM-YYYY") > today)
-          return <Tag color='processing'>Akan Datang</Tag>
+          return <Tag color='processing'>Akan Datang</Tag>;
         else if (dayjs(record.start_date_sewa, "DD-MM-YYYY") <= today && today <= dayjs(record.end_date_sewa, "DD-MM-YYYY"))
-          return <Tag color='success'>Aktif</Tag>
+          return <Tag color='success'>Aktif</Tag>;
         else
-          return <Tag color='default'>Non-Aktif</Tag>
+          return <Tag color='default'>Non-Aktif</Tag>;
       },
       filters: [{ text: 'Akan Datang', value: 'Akan Datang' }, { text: 'Aktif', value: 'Aktif' }, { text: 'Non-Aktif', value: 'Non-Aktif' }],
       onFilter: (val, record) => {
-        const today = dayjs()
-        let status = ''
+        const today = dayjs();
+        let status = '';
         if (dayjs(record.start_date_sewa, "DD-MM-YYYY") > today)
-          status = 'Akan Datang'
+          status = 'Akan Datang';
         else if (dayjs(record.start_date_sewa, "DD-MM-YYYY") <= today && today <= dayjs(record.end_date_sewa, "DD-MM-YYYY"))
-          status = 'Aktif'
+          status = 'Aktif';
         else
-          status = 'Non-Aktif'
-        return val === status
+          status = 'Non-Aktif';
+        return val === status;
       }
     },
     getTanggalEntriColumn(),
@@ -138,40 +165,41 @@ export default function Page() {
         <Flex gap="small">
           <RoleProtected allowedRoles={['admin', 'supervisor']} actionType='edit' createdAt={record.created_at}>
             <Button type="primary" ghost size="small" onClick={() => {
-              setOpenModal(true)
-              setIsEdit(true)
-              record.tanggal_akte = dayjs(record.tanggal_akte_1, 'DD-MM-YYYY')
-              record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')]
-              form.setFieldsValue(record)
-              setTriggerRefresh(!triggerRefresh)
+              setOpenModal(true);
+              setIsEdit(true);
+              record.tanggal_akte = dayjs(record.tanggal_akte_1, 'DD-MM-YYYY');
+              record.masa_sewa = [dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY')];
+              form.setFieldsValue(record);
+              setTriggerRefresh(!triggerRefresh);
             }}>
               Edit
             </Button>
           </RoleProtected>
-          <Popconfirm title="sure to delete?" onConfirm={async () => {
-            const requstType = 'delete'
-            await fetch('/api/master/transaksi/sewa', {
-              method: "POST",
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                requestType: requstType,
-                data: { id: record.id, id_transaksi: record.id_transaksi }
-              })
-            }).then((res) => res.json()).then((res) => {
-              if (res.status == 200) {
-                setTriggerRefresh(!triggerRefresh)
-              }
-            })
-          }}>
-            <RoleProtected allowedRoles={['admin']} actionType='delete'>
+          <RoleProtected allowedRoles={['admin']} actionType='delete'>
+            <Popconfirm title="sure to delete?" onConfirm={async () => {
+              const requestType = 'delete';
+              await fetch('/api/master/transaksi/sewa', {
+                method: "POST",
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  requestType,
+                  data: { id: record.id, id_transaksi: record.id_transaksi }
+                })
+              }).then((res) => res.json()).then((res) => {
+                if (res.status == 200) {
+                  setTriggerRefresh(!triggerRefresh);
+                }
+              });
+            }}>
               <Button size="small" danger>Delete</Button>
-            </RoleProtected>
-          </Popconfirm>
+            </Popconfirm>
+          </RoleProtected>
         </Flex>
       ),
       width: 75
     }
-  ]
+  ];
+
 
   const [print, setPrint] = useState<boolean>(false)
   const componentRef = useRef(null)
@@ -222,7 +250,7 @@ export default function Page() {
         </div>
         :
         <>
-          <AddSewaModal sewaData={sewaData} maxId={maxId} form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
+          <AddSewaModal sewaData={sewaData} maxId={maxId} form={form} isEdit={isEdit} setIsEdit={setIsEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
           <div ref={componentRef} className='print-container'>
             <div className='print-only mb-10'>
               <Title level={3} style={{ margin: 0 }}>DATA ASET MILIK PT.JTC WAREHOUSE</Title>

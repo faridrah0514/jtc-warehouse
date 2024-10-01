@@ -74,7 +74,6 @@ export default function Page() {
                     }
                   }
                 },
-
                 { title: "Tanggal Pembayaran", key: "tanggal_pembayaran", dataIndex: "tanggal_pembayaran" },
                 {
                   title: "Action",
@@ -87,7 +86,6 @@ export default function Page() {
                           if (record.tanggal_pembayaran) {
                             record.tanggal_pembayaran = dayjs(record.tanggal_pembayaran, 'DD-MM-YYYY')
                           }
-
                           form.setFieldsValue(record)
                         }
                       }>
@@ -114,6 +112,7 @@ export default function Page() {
 
   async function ubahStatusPembayaran(value: any) {
     value.tanggal_pembayaran = value.tanggal_pembayaran.format("DD-MM-YYYY")
+    console.log("lalalalalala")
     fetch('/api/master/transaksi/ipl', {
       method: 'POST', body:
         JSON.stringify({
@@ -128,6 +127,9 @@ export default function Page() {
       .then(res => {
         setUbahModal(false)
         setTriggerRefresh(!triggerRefresh)
+      })
+      .finally(() => {
+        setUbahModal(false)
       })
 
   }
@@ -151,13 +153,12 @@ export default function Page() {
           </div>
           <Form.Item className={'pt-10'} name='status_pembayaran' label="Status Pembayaran">
             <Select placeholder="Status Pembayaran" allowClear>
-              <Option value='Belum Lunas'>Belum Lunas</Option>
               <Option value='Lunas'>Lunas</Option>
+              <Option value='Belum Lunas'>Belum Lunas</Option>
             </Select>
           </Form.Item>
           <Form.Item name='tanggal_pembayaran' label="Tanggal Pembayaran">
             <DatePicker
-              allowClear={false}
               format={'DD-MM-YYYY'}
             />
           </Form.Item>

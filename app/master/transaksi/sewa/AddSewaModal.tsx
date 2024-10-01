@@ -21,6 +21,7 @@ interface Status {
   triggerRefresh: boolean,
   setTriggerRefresh: React.Dispatch<React.SetStateAction<boolean>>
   form: FormInstance,
+  setIsEdit: React.Dispatch<React.SetStateAction<boolean>>,
   isEdit: boolean,
   maxId: number,
   sewaData: any[],
@@ -133,12 +134,14 @@ export default function AddSewaModal(props: Status) {
         setSelectedAset(undefined)
         setSelectedCabang(undefined)
         setUploading(false)
+        props.setIsEdit(false)
       })
     props.setOpenModal(false)
     props.setTriggerRefresh(!props.triggerRefresh)
     props.form.resetFields()
     setListFiles([])
     setFileList([])
+    props.setIsEdit(false)
   }
 
   async function getAllData() {
@@ -193,25 +196,48 @@ export default function AddSewaModal(props: Status) {
               <Input placeholder='id' autoComplete='off' hidden />
             </Form.Item>
             <Form.Item name='id_cabang' required label="Nama Cabang" rules={[{ required: true }]}>
-              <Select placeholder="Cabang" allowClear onChange={(value) => setSelectedCabang(value) }>
+              <Select
+                placeholder="Cabang"
+                allowClear
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
+                }
+                onChange={(value) => setSelectedCabang(value)}
+              >
                 {allData.cabang.map(
                   (value: any) => <Option key={value.id} value={value.id}>{value.nama_perusahaan}</Option>
                 )}
               </Select>
             </Form.Item>
             <Form.Item name='id_aset' required label="Nama Aset" rules={[{ required: true }]}>
-              <Select placeholder="Aset" allowClear disabled={!selectedCabang} onChange={
-                (value) => {
-                  setSelectedAset(value)
+              <Select
+                placeholder="Aset"
+                allowClear
+                disabled={!selectedCabang}
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
                 }
-              }>
+                onChange={(value) => setSelectedAset(value)}
+              >
                 {allData.aset.filter((item: any) => item.id_cabang == selectedCabang).map(
                   (value: any) => <Option key={value.id} value={value.id}>{value.nama_aset}</Option>
                 )}
               </Select>
             </Form.Item>
             <Form.Item name='id_pelanggan' required label="Nama Pelanggan" rules={[{ required: true }]}>
-              <Select placeholder="Pelanggan" allowClear>
+              <Select
+                placeholder="Pelanggan"
+                allowClear
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
+                }
+              >
                 {allData.pelanggan.map(
                   (value: any) => <Option key={value.id} value={value.id}>{value.nama}</Option>
                 )}
@@ -407,6 +433,7 @@ export default function AddSewaModal(props: Status) {
               setListFiles([])
               setSelectedAset(undefined)
               setSelectedCabang(undefined)
+              props.setIsEdit(false)
             }}>Cancel</Button>
           </Form.Item>
           <Form.Item>

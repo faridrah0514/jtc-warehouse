@@ -217,12 +217,16 @@ export async function POST(request: Request, response: Response) {
               key: val,
             };
           });
-
+        columnNames.unshift({
+          title: "Nomor",
+          dataIndex: "nomor",
+          key: "nomor",
+        });
 
         laporan = laporan
           .map((item, idx) => ({
             ...item,
-            Nomor: idx + 1,
+            nomor: idx + 1,
             IPL: _renderCurrency(item.IPL, false, false),
           }))
           .map((item: any) => ({
@@ -257,7 +261,10 @@ export async function POST(request: Request, response: Response) {
             .map((cabang) => {
               return Object.keys(groupedLaporan[cabang]).map((aset) => {
                 return {
-                  laporan: groupedLaporan[cabang][aset],
+                  laporan: groupedLaporan[cabang][aset].map((item: any, idx: any) => ({
+                    ...item,
+                    nomor: idx + 1,
+                  })),
                   columnNames,
                   aset: [aset], // Always an array
                   cabang: [cabang], // Always an array
