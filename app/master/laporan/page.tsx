@@ -294,49 +294,56 @@ export default function Page() {
 
               return (
                 <>
-                  {/* Header with username and date */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ textAlign: "left" }}>
-                      <Text type="secondary" style={{ fontSize: "10px" }}>{session?.user?.name}</Text>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <Text type="secondary" style={{ fontSize: "10px" }}>{dayjs().format("DD-MM-YYYY HH:mm")}</Text>
-                    </div>
-                  </div>
-
                   {/* Title */}
-                  <div>
-                    <Title level={4} style={{ margin: 0, fontSize: '14px' }}>CV. JAMBI TRADE CENTER</Title>
-                    <Title level={4} style={{ margin: 0, fontSize: '14px' }}>JAMBI</Title>
-                    <br />
-                    <Title level={5} style={{ margin: 0, fontSize: '12px' }}>{item.jenis_laporan}</Title>
-                    {item.jenis_laporan === "DAFTAR PENYEWA PER-TAHUN" && (
-                      <Title level={5} style={{ margin: 0, fontSize: '12px' }}>Tahun: {item.periode}</Title>
-                    )}
-                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', justifyContent: 'space-between' }}>
+                    <div>
+                      <div>
+                        <Title level={4} style={{ textAlign: "left", margin: 0, fontSize: '14px' }}>CV. JAMBI TRADE CENTER</Title>
+                        <Title level={4} style={{ textAlign: "left", margin: 0, fontSize: '14px' }}>JAMBI</Title>
+                        <br />
+                        <Title level={5} style={{ margin: '0 0 -20px 0', fontSize: '16px' }}>{item.jenis_laporan}</Title>
+                        {item.jenis_laporan === "DAFTAR PENYEWA PER-TAHUN" && (
+                          <Title level={5} style={{ margin: '20px 0 -20px 0', fontSize: '16px' }}>Tahun: {item.periode}</Title>
+                        )}
+                        <Title level={5} style={{ margin: "20px 0", fontSize: '12px' }}>{aset}</Title>
+                      </div>
 
-                  {/* Asset and Branch info */}
-                  <div>
-                    <Flex justify="space-between" className="mb-0">
-                      <Title level={5} style={{ margin: "5px 0", textAlign: "left", fontSize: '12px' }}>A/N: {cabang}</Title>
-                      <Title level={5} style={{ margin: "5px 0", textAlign: "right", fontSize: '12px' }}>{aset}</Title>
-                    </Flex>
-                  </div>
+                      {/* Asset and Branch info */}
+                      {/* <div>
+                        <Flex justify="space-between" className="mb-0">
+                          <Title level={5} style={{ margin: "5px 0", textAlign: "left", fontSize: '12px' }}>A/N: {cabang}</Title>
+                        </Flex>
+                      </div> */}
 
-                  {/* Table */}
-                  <div>
-                    <Divider className="mb-1 pb-0"></Divider>
+                      {/* Table */}
+                      <div>
+                        <Divider className="mb-1 pb-0"></Divider>
+                      </div>
+                      <Table
+                        size="small"
+                        bordered
+                        columns={columnsWithMerge}
+                        dataSource={dataSourceWithTotal}
+                        rowKey="key"
+                        rowClassName={(record) => (record.key === "total" ? "font-bold" : "")}
+                        pagination={false} // Disable pagination for printing purposes
+                        style={{ fontSize: '10px' }} // Reduce table font size
+                      />
+
+                      {/* Container for main content and bottom-right aligned session name */}
+
+                      {/* Main content */}
+                      {/* <div> */}
+                      {/* Your main content goes here */}
+                      {/* </div> */}
+                    </div>
+                    {/* Username at the bottom-right */}
+                    <div style={{ textAlign: "right", alignSelf: "flex-end", marginTop: "auto" }}>
+                      <Text type="secondary" style={{ fontSize: "10px" }}>
+                        {session?.user?.name}: {dayjs().format("DD-MM-YYYY HH:mm")}
+                      </Text>
+                    </div>
                   </div>
-                  <Table
-                    size="small"
-                    bordered
-                    columns={columnsWithMerge}
-                    dataSource={dataSourceWithTotal}
-                    rowKey="key"
-                    rowClassName={(record) => (record.key === "total" ? "font-bold" : "")}
-                    pagination={false} // Disable pagination for printing purposes
-                    style={{ fontSize: '10px' }} // Reduce table font size
-                  />
 
                   {/* Page break for printing */}
                   <div className="page-break" />
@@ -344,6 +351,7 @@ export default function Page() {
               );
             })}
           </div>
+
           <style jsx global>{`
             .print-only {
               display: none;
