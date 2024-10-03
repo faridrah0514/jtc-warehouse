@@ -295,7 +295,7 @@ export default function Page() {
               return (
                 <>
                   {/* Title */}
-                  <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', justifyContent: 'space-between' }}>
+                  <div className='print-content print-container' style={{ display: 'flex', flexDirection: 'column', height: '100vh', justifyContent: 'space-between', pageBreakInside: 'avoid' }}>
                     <div>
                       <div>
                         <Title level={4} style={{ textAlign: "left", margin: 0, fontSize: '14px' }}>CV. JAMBI TRADE CENTER</Title>
@@ -319,6 +319,7 @@ export default function Page() {
                       <div>
                         <Divider className="mb-1 pb-0"></Divider>
                       </div>
+                      
                       <Table
                         size="small"
                         bordered
@@ -330,6 +331,7 @@ export default function Page() {
                         style={{ fontSize: '10px' }} // Reduce table font size
                       />
 
+
                       {/* Container for main content and bottom-right aligned session name */}
 
                       {/* Main content */}
@@ -338,15 +340,17 @@ export default function Page() {
                       {/* </div> */}
                     </div>
                     {/* Username at the bottom-right */}
-                    <div style={{ textAlign: "right", alignSelf: "flex-end", marginTop: "auto" }}>
+                    {/* <div style={{ textAlign: "right", alignSelf: "flex-end", marginTop: "auto" }}>
                       <Text type="secondary" style={{ fontSize: "10px" }}>
                         {session?.user?.name}: {dayjs().format("DD-MM-YYYY HH:mm")}
                       </Text>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* Page break for printing */}
-                  <div className="page-break" />
+                  <div className="page-break">
+                    mencrett
+                  </div>
                 </>
               );
             })}
@@ -373,11 +377,15 @@ export default function Page() {
                 margin: 5mm;
               }
 
+
               .print-only {
                 text-align: center;
                 display: block;
               }
 
+              .avoid-page-break {
+                page-break-inside: avoid;
+              }
               .no-print {
                 display: none;
               }

@@ -56,3 +56,19 @@ export interface DataAset {
   list_dir: string[],
   list_dir_files: any[]
 }
+
+// types.ts
+export interface CashFlow {
+  id: number; // or `string` if it's stored as a string in your database
+  category_id: string;
+  description: string;
+  amount: string; // or `number`, ensure it matches your backend type
+  date: string; // Date in string format (e.g., ISO format)
+}
+
+export interface CashFlowCategory {
+  id: string;
+  name: string;
+  type: 'incoming' | 'outgoing';
+  description?: string;
+}
