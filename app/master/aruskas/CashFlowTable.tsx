@@ -2,6 +2,7 @@ import React from 'react';
 import { Table, Button, Popconfirm } from 'antd';
 import { CashFlow, CashFlowCategory } from '../../types/master'; // Import CashFlow and CashFlowCategory types
 import { ColumnsType } from 'antd/es/table';
+import { _renderCurrency } from '@/app/utils/renderCurrency';
 
 interface CashFlowTableProps {
   data: CashFlow[];
@@ -44,6 +45,7 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
       title: 'Amount',
       dataIndex: 'amount',
       key: 'amount',
+      render: (amount: number) => _renderCurrency(amount), 
     },
     {
       title: 'Date',
