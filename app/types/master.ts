@@ -61,9 +61,11 @@ export interface DataAset {
 export interface CashFlow {
   id: number; // or `string` if it's stored as a string in your database
   category_id: string;
+  nama_perusahaan: string;
   description: string;
   amount: string; // or `number`, ensure it matches your backend type
   date: string; // Date in string format (e.g., ISO format)
+  cabang_id: number 
 }
 
 export interface CashFlowCategory {

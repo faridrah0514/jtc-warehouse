@@ -8,6 +8,8 @@ import AddCategoryModal from './AddCategoryModal';
 import { useFetchCashFlow } from './useFetchCashFlow';
 import { useFetchCategories } from './useFetchCategories';
 import { CashFlow, CashFlowCategory } from '../../types/master';
+import { useFetchCabang } from './useFetchCabang';
+// import { Cabang } from '../../types/master'; // Import Cabang type if needed
 
 const Page: React.FC = () => {
   const [isCashFlowModalVisible, setIsCashFlowModalVisible] = useState(false);
@@ -17,7 +19,7 @@ const Page: React.FC = () => {
 
   const { data: incomingData, loading: incomingLoading, fetchCashFlow: fetchIncomingCashFlow, deleteCashFlow: deleteIncomingCashFlow } = useFetchCashFlow('incoming');
   const { data: outgoingData, loading: outgoingLoading, fetchCashFlow: fetchOutgoingCashFlow, deleteCashFlow: deleteOutgoingCashFlow } = useFetchCashFlow('outgoing');
-
+  const { cabang } = useFetchCabang(); // Fetch cabang data
   const { categories, fetchCategories, addCategory } = useFetchCategories();
 
   useEffect(() => {
@@ -36,9 +38,11 @@ const Page: React.FC = () => {
     setEditingData({
       id: record.id, // Include `id`
       category_id: record.category_id,
+      cabang_id: record.cabang_id,
       description: record.description,
       amount: record.amount.toString(), // Convert to string if needed
-      date: record.date, // Proper format for `dayjs`
+      date: record.date,
+      nama_perusahaan: record.nama_perusahaan // Proper format for `dayjs`
     });
     setIsCashFlowModalVisible(true);
   };
@@ -133,6 +137,7 @@ const Page: React.FC = () => {
         onSubmit={handleAddOrEditCashFlow}
         onCancel={handleCancelCashFlowModal}
         initialData={editingData || undefined} // Set initial data for editing
+        cabang={cabang}
       />
       <AddCategoryModal
         visible={isCategoryModalVisible}

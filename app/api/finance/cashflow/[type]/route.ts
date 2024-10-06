@@ -8,7 +8,10 @@ export async function GET(request: Request, { params }: { params: { type: string
     const { type } = params;
 
     const [cashFlows] = await conn.query(
-      'SELECT * FROM cash_flow WHERE category_id IN (SELECT id FROM cash_flow_category WHERE type = ?)',
+      `SELECT cf.*, c.nama_perusahaan as nama_perusahaan
+       FROM cash_flow cf 
+       JOIN cabang c ON cf.cabang_id = c.id 
+       WHERE cf.category_id IN (SELECT id FROM cash_flow_category WHERE type = ?)`,
       [type]
     );
 
@@ -46,8 +49,8 @@ export async function POST(request: Request, { params }: { params: { type: strin
       }
   
       await conn.query(
-        'INSERT INTO cash_flow (category_id, description, amount, date) VALUES (?, ?, ?, ?)',
-        [data.category_id, data.description, data.amount, formattedDate]
+        'INSERT INTO cash_flow (category_id, cabang_id, description, amount, date) VALUES (?, ?, ?, ?, ?)',
+        [data.category_id, data.cabang_id, data.description, data.amount, formattedDate]
       );
   
       conn.end();
@@ -84,15 +87,14 @@ export async function PUT(request: Request, { params }: { params: { type: string
       const conn = await openDB();
       const data = await request.json();
       const { type } = params;
-        console.log("Data ---> ", data)
       // Validate required fields
       if (!data.category_id || !data.description || !data.amount || !data.date || !data.id) {
         return NextResponse.json({ status: 400, error: "Missing required fields" });
       }
   
       await conn.query(
-        'UPDATE cash_flow SET category_id = ?, description = ?, amount = ?, date = ? WHERE id = ?',
-        [data.category_id, data.description, data.amount, data.date, data.id]
+        'UPDATE cash_flow SET category_id = ?, description = ?, amount = ?, date = ?, cabang_id = ? WHERE id = ?',
+        [data.category_id, data.description, data.amount, data.date, data.cabang_id, data.id]
       );
   
       conn.end();

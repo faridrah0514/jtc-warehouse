@@ -32,6 +32,11 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
       render: (_: any, __: any, index: number) => (currentPage - 1) * pageSize + index + 1,
     },
     {
+      title: 'Nama Cabang',
+      dataIndex: 'nama_perusahaan',
+      key: 'nama_perusahaan',
+    },
+    {
       title: 'Category',
       key: 'category',
       render: (text: any, record: CashFlow) => getCategoryDisplayName(record.category_id),
