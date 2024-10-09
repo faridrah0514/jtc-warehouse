@@ -50,7 +50,7 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
       title: 'Amount',
       dataIndex: 'amount',
       key: 'amount',
-      render: (amount: number) => _renderCurrency(amount), 
+      render: (amount: number) => _renderCurrency(amount),
     },
     {
       title: 'Date',

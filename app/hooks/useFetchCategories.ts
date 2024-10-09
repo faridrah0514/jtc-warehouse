@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { message } from "antd";
-import { CashFlowCategory } from "../../types/master";
+import { useEffect, useState } from 'react';
+import { message } from 'antd';
+import { CashFlowCategory } from '../types/master';
 
 export const useFetchCategories = () => {
-  const [categories, setCategories] = useState<CashFlowCategory[]>([]);
+  const [categories, setCategories] = useState<CashFlowCategory[]>([]); // Initialize as empty array
   const [loading, setLoading] = useState(false);
 
   // Fetch categories
@@ -11,14 +11,17 @@ export const useFetchCategories = () => {
     setLoading(true);
     try {
       const response = await fetch(`/api/finance/cashflow/categories`, {
-        method: "GET",
-        cache: "no-store",
+        method: 'GET',
+        cache: 'no-store',
       });
-      if (!response.ok) throw new Error("Failed to fetch categories");
+      if (!response.ok) throw new Error('Failed to fetch categories');
       const result = await response.json();
+
+      // Set categories safely
       setCategories(result.data || []);
     } catch (error: any) {
-      message.error(error.message || "Failed to load categories");
+      console.error("Error fetching categories:", error);
+      message.error(error.message || 'Failed to load categories');
     } finally {
       setLoading(false);
     }
@@ -37,11 +40,17 @@ export const useFetchCategories = () => {
       await fetchCategories(); // Refresh categories after adding
       message.success("Category added successfully");
     } catch (error: any) {
+      console.error("Error adding category:", error);
       message.error(error.message || "Failed to add category");
     } finally {
       setLoading(false);
     }
   };
+
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   return { categories, loading, fetchCategories, addCategory };
 };

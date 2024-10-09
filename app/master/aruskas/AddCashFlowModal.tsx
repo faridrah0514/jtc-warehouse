@@ -80,7 +80,7 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories
           <Select>
             {cabang?.map((company) => (
               <Select.Option key={company.id} value={company.id}>
-          {company.nama_perusahaan}
+                {company.nama_perusahaan}
               </Select.Option>
             ))}
           </Select>

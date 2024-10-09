@@ -184,3 +184,20 @@ CREATE TABLE cash_flow_category (
     type ENUM('incoming', 'outgoing') NOT NULL, -- Type of cash flow
     description VARCHAR(255) DEFAULT NULL     -- Optional description for the category
 );
+
+
+-- jtc_warehouse.report_filters definition
+
+CREATE TABLE `report_filters` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `cabang_id` int DEFAULT NULL,
+  `cash_flow_type` enum('incoming','outgoing','both') DEFAULT NULL,
+  `categories` json DEFAULT NULL,
+  `period_type` enum('monthly','yearly') DEFAULT NULL,
+  `period_date` date DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_cabang_id` (`cabang_id`),
+  CONSTRAINT `fk_cabang_id` FOREIGN KEY (`cabang_id`) REFERENCES `cabang` (`id`)
+) 
