@@ -6,7 +6,6 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const body = await request.json();
     const { cabang_id, categories, period_start, period_end } = body;
-    console.log("body --> ", body);
 
     const conn = await openDB();
 
@@ -77,11 +76,6 @@ export async function POST(request: Request): Promise<Response> {
 
     // Close connection
     conn.end();
-
-    console.log("response", {
-      status: 200,
-      data: JSON.stringify(groupedData, null, 2), // Stringify the groupedData for clear logging
-    });
 
     return NextResponse.json({
       status: 200,

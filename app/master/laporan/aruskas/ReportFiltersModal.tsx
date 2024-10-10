@@ -60,7 +60,6 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
 
   // Function to save the filter configuration to the database
   const saveConfiguration = async (values: any) => {
-    console.log("values -> ", values)
     try {
       const cabangIds = values.cabang.map((nama_perusahaan: string) => {
         const cabang = cabangOptions.find(c => c.nama_perusahaan === nama_perusahaan);

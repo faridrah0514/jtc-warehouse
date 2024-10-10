@@ -112,7 +112,6 @@ export default function Page() {
 
   async function ubahStatusPembayaran(value: any) {
     value.tanggal_pembayaran = value.tanggal_pembayaran.format("DD-MM-YYYY")
-    console.log("lalalalalala")
     fetch('/api/master/transaksi/ipl', {
       method: 'POST', body:
         JSON.stringify({

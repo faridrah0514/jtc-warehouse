@@ -43,7 +43,6 @@ export async function GET(request: Request): Promise<Response> {
       };
     });
 
-    console.log("transformedFilters -> ", transformedFilters);
     return NextResponse.json({ status: 200, data: transformedFilters });
   } catch (e: any) {
     console.error(e.sqlMessage);
@@ -55,7 +54,6 @@ export async function GET(request: Request): Promise<Response> {
     try {
       const conn = await openDB();
       const data = await request.json();
-      console.log("data --> ", data);
   
       // Validate required fields
       if (!data.nama_cabang || !data.cash_flow_type || !data.categories || !data.period_type || !data.period_date) {
