@@ -65,18 +65,18 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories
       <Form form={form} onFinish={handleFormSubmit} layout="vertical">
         <Form.Item
           name="category_id"
-          label="Category"
+          label="Kategori"
           rules={[{ required: true, message: 'Please select a category' }]}
         >
           <Select
-            placeholder="Select Category"
+            placeholder="Pilih Kategori"
             dropdownRender={(menu) => (
               <>
                 {menu}
                 <Divider style={{ margin: '0' }} />
                 {/* <Select.Option key="add_new" value="add_new"> */}
                 <Button type="link" onClick={categoryModalOnClick}>
-                  Add New Category
+                  + Tambah Kategori
                 </Button>
                 {/* </Select.Option> */}
               </>
@@ -94,7 +94,7 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories
           label="Nama Cabang"
           rules={[{ required: true, message: 'Please select a company' }]}
         >
-          <Select placeholder="Select Cabang">
+          <Select placeholder="Pilih Cabang">
             {cabang?.map((company) => (
               <Select.Option key={company.id} value={company.id}>
                 {company.nama_perusahaan}
@@ -104,14 +104,14 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories
         </Form.Item>
         <Form.Item
           name="description"
-          label="Description"
+          label="Deskripsi"
           rules={[{ required: true, message: 'Please input the description' }]}
         >
           <Input placeholder='Enter a Description' />
         </Form.Item>
         <Form.Item
           name="amount"
-          label="Amount"
+          label="Jumlah"
           rules={[{ required: true, message: 'Please input the amount' }]}
         >
           <CurrencyInput
@@ -122,7 +122,7 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories
         </Form.Item>
         <Form.Item
           name="date"
-          label="Date"
+          label="Tanggal"
           rules={[{ required: true, message: 'Please select the date' }]}
         >
           <DatePicker style={{ width: '100%' }} />

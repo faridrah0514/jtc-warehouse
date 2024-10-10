@@ -167,6 +167,13 @@ CREATE TABLE `users` (
   UNIQUE KEY `username` (`username`)
 ) 
 
+CREATE TABLE cash_flow_category (
+    id VARCHAR(50) PRIMARY KEY,               -- Category ID (e.g., 'CFI-001', 'CFO-001')
+    name VARCHAR(100) NOT NULL,               -- Name of the category
+    type ENUM('incoming', 'outgoing') NOT NULL, -- Type of cash flow
+    description VARCHAR(255) DEFAULT NULL     -- Optional description for the category
+);
+
 CREATE TABLE cash_flow (
     id INT AUTO_INCREMENT PRIMARY KEY,               -- Auto-incrementing unique identifier for each cash flow record
     category_id VARCHAR(50) NOT NULL,                -- Foreign key to cash_flow_category table
@@ -177,16 +184,6 @@ CREATE TABLE cash_flow (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Auto-updated timestamp on modification
     FOREIGN KEY (category_id) REFERENCES cash_flow_category(id)  -- Foreign key constraint to ensure valid category
 );
-
-CREATE TABLE cash_flow_category (
-    id VARCHAR(50) PRIMARY KEY,               -- Category ID (e.g., 'CFI-001', 'CFO-001')
-    name VARCHAR(100) NOT NULL,               -- Name of the category
-    type ENUM('incoming', 'outgoing') NOT NULL, -- Type of cash flow
-    description VARCHAR(255) DEFAULT NULL     -- Optional description for the category
-);
-
-
--- jtc_warehouse.report_filters definition
 
 -- jtc_warehouse.report_filters definition
 

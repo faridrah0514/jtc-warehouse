@@ -113,7 +113,7 @@ const Page: React.FC = () => {
             onDelete={deleteIncomingCashFlow}
             onEdit={showEditCashFlowModal} // Pass edit handler
             onAdd={() => showAddCashFlowModal('incoming')}
-            title="Incoming Cash Flow"
+            title="Kas Masuk"
           />
         </Col>
         <Col xs={24} md={12}>
@@ -126,7 +126,7 @@ const Page: React.FC = () => {
             onDelete={deleteOutgoingCashFlow}
             onEdit={showEditCashFlowModal} // Pass edit handler
             onAdd={() => showAddCashFlowModal('outgoing')}
-            title="Outgoing Cash Flow"
+            title="Kas Keluar"
           />
         </Col>
       </Row>

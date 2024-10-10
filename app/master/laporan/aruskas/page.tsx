@@ -150,16 +150,16 @@ export default function Page() {
       width: '20%',
     },
     {
-      title: 'Cash Flow Type',
+      title: 'Tipe Kas',
       dataIndex: 'cash_flow_type',
       key: 'cash_flow_type',
       render: (type: string) => (
-        <Text>{type === 'both' ? 'Incoming and Outgoing' : type.charAt(0).toUpperCase() + type.slice(1)}</Text>
+        <Text>{type === 'both' ? 'Kas Masuk dan Keluar' : type.charAt(0).toUpperCase() + type.slice(1)}</Text>
       ),
       width: '15%',
     },
     {
-      title: 'Categories',
+      title: 'Kategori',
       dataIndex: 'categories',
       key: 'categories',
       render: (categories: string[]) => (
@@ -170,13 +170,13 @@ export default function Page() {
       ),
     },
     {
-      title: 'Period Type',
+      title: 'Periode',
       dataIndex: 'period_type',
       key: 'period_type',
       width: '10%',
     },
     {
-      title: 'Period Date',
+      title: 'Tanggal/Tahun Periode',
       dataIndex: 'period_date',
       key: 'period_date',
       width: '10%',
@@ -206,7 +206,7 @@ export default function Page() {
 
   return (
     <>
-      <Title level={3}>Cash Flow Report</Title>
+      <Title level={3}>Laporan Kas</Title>
 
       {/* Loading State */}
       {loading ? (

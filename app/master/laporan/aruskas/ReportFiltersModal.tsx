@@ -119,7 +119,7 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
 
       {/* Modal */}
       <Modal
-        title="Cash Flow Report Filters"
+        title="Form Laporan Kas"
         visible={isModalVisible}
         onCancel={hideModal}
         onOk={handleFormSubmit}
@@ -127,8 +127,8 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
       >
         <Form form={form} layout="vertical">
           {/* Cabang Selection */}
-          <Form.Item name="cabang" label="Select Cabang" initialValue={selectedCabang}>
-            <Select mode="multiple" placeholder="Select Cabang">
+          <Form.Item name="cabang" label="Pilih Cabang" initialValue={selectedCabang}>
+            <Select mode="multiple" placeholder="Pilih Nama Cabang">
               {cabangOptions.map((cabang) => (
                 <Select.Option key={cabang.id} value={cabang.nama_perusahaan}>
                   {cabang.nama_perusahaan}
@@ -138,12 +138,12 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
           </Form.Item>
 
           {/* Cash Flow Type Selection */}
-          <Form.Item name="cashFlowType" label="Cash Flow Type" initialValue={cashFlowType}>
+          <Form.Item name="cashFlowType" label="Tipe Kas" initialValue={cashFlowType}>
             <Radio.Group
               options={[
-                { label: 'Incoming', value: 'incoming' },
-                { label: 'Outgoing', value: 'outgoing' },
-                { label: 'Both', value: 'both' },
+                { label: 'Kas Masuk', value: 'incoming' },
+                { label: 'Kas Keluar', value: 'outgoing' },
+                { label: 'Kas Masuk & Keluar', value: 'both' },
               ]}
               onChange={e => setCashFlowType(e.target.value)}
               value={cashFlowType}
@@ -151,8 +151,8 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
           </Form.Item>
 
           {/* Category Selection */}
-          <Form.Item name="categories" label="Select Categories" initialValue={selectedCategories}>
-            <Select mode="multiple" placeholder="Select Category" loading={categoriesLoading}>
+          <Form.Item name="categories" label="Pilih Kategori" initialValue={selectedCategories}>
+            <Select mode="multiple" placeholder="Pilih Kategori" loading={categoriesLoading}>
               {filteredCategories.map((category: CashFlowCategory) => (
                 <Select.Option key={category.id} value={category.id}>
                   {category.id} - {category.name}
@@ -162,11 +162,11 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
           </Form.Item>
 
           {/* Period Type Selection */}
-          <Form.Item name="periodType" label="Period Type" initialValue={periodType}>
+          <Form.Item name="periodType" label="Tipe Period" initialValue={periodType}>
             <Radio.Group
               options={[
-                { label: 'Monthly', value: 'monthly' },
-                { label: 'Yearly', value: 'yearly' },
+                { label: 'Bulanan', value: 'monthly' },
+                { label: 'Tahunan', value: 'yearly' },
               ]}
               onChange={e => setPeriodType(e.target.value)}
               value={periodType}
@@ -174,7 +174,7 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
           </Form.Item>
 
           {/* Date Picker */}
-          <Form.Item name="period" label="Select Period" initialValue={selectedPeriod}>
+          <Form.Item name="period" label="Pilih Period" initialValue={selectedPeriod}>
             {periodType === 'monthly' ? (
               <DatePicker picker="month" />
             ) : (

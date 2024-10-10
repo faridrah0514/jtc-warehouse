@@ -103,21 +103,29 @@ const CategoryTable: React.FC = () => {
             render: (_: any, __: any, index: number) => index + 1,
         },
         {
-            title: 'Name',
+            title: 'Nama',
             dataIndex: 'name',
             key: 'name',
             render: (text: any, record: CashFlowCategory) => `${record.id} - ${record.name}`
-
         },
         {
-            title: 'Description',
-            dataIndex: 'description',
-            key: 'description',
-        },
-        {
-            title: 'Type',
+            title: 'Kategori',
             dataIndex: 'type',
             key: 'type',
+            render: (text: any) => {
+                if (text === 'incoming') {
+                    return 'Kas Masuk';
+                } else if (text === 'outgoing') {
+                    return 'Kas Keluar';
+                } else {
+                    return 'Other';
+                }
+            }
+        },
+        {
+            title: 'Deskripsi',
+            dataIndex: 'description',
+            key: 'description',
         },
         {
             title: 'Actions',

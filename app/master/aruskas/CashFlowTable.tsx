@@ -37,26 +37,29 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
       key: 'nama_perusahaan',
     },
     {
-      title: 'Category',
+      title: 'Kategori',
       key: 'category',
       render: (text: any, record: CashFlow) => getCategoryDisplayName(record.category_id),
     },
     {
-      title: 'Description',
+      title: 'Deskripsi',
       dataIndex: 'description',
       key: 'description',
     },
     {
-      title: 'Amount',
+      title: 'Jumlah',
       dataIndex: 'amount',
       key: 'amount',
       render: (amount: number) => _renderCurrency(amount),
     },
     {
-      title: 'Date',
+      title: 'Tanggal',
       dataIndex: 'date',
       key: 'date',
-      render: (date: string) => new Date(date).toLocaleDateString(), // Format date
+      render: (date: string) => {
+        const formattedDate = new Date(date).toLocaleDateString('en-GB'); // Format date to DD-MM-YYYY
+        return formattedDate;
+      },
     },
     {
       title: 'Actions',
@@ -86,7 +89,7 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
       <div className="flex justify-between mb-4">
         <h1 className="text-2xl font-semibold">{title}</h1>
         <Button type="primary" onClick={onAdd}>
-          Add Cash Flow
+          + Tambah Data
         </Button>
       </div>
       <Table

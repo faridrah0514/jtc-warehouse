@@ -21,27 +21,27 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ visible, onSubmit, 
   };
 
   return (
-    <Modal title="Add Cash Flow Category" visible={visible} onCancel={onCancel} onOk={handleOk} okText="Submit">
+    <Modal title="Tambah Kategori" visible={visible} onCancel={onCancel} onOk={handleOk} okText="Submit">
       <Form form={form} onFinish={handleFormSubmit} layout="vertical">
         <Form.Item
           name="name"
-          label="Category Name"
+          label="Nama Kategori"
           rules={[{ required: true, message: 'Please input the category name' }]}
         >
-          <Input placeholder="Enter category name" />
+          <Input placeholder="Masukkan kategori" />
         </Form.Item>
         <Form.Item
           name="type"
           label="Type"
           rules={[{ required: true, message: 'Please select the type' }]}
         >
-          <Select placeholder="Select type">
-            <Select.Option value="incoming">Incoming</Select.Option>
-            <Select.Option value="outgoing">Outgoing</Select.Option>
+          <Select placeholder="Pilih Kategori">
+            <Select.Option value="incoming">Kas Masuk</Select.Option>
+            <Select.Option value="outgoing">Kas Keluar</Select.Option>
           </Select>
         </Form.Item>
-        <Form.Item name="description" label="Description">
-          <Input.TextArea placeholder="Enter description"/>
+        <Form.Item name="description" label="Deskripsi">
+          <Input.TextArea placeholder="Masukkan Deskripsi"/>
         </Form.Item>
       </Form>
     </Modal>
