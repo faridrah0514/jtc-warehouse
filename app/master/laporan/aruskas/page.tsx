@@ -1,11 +1,12 @@
 'use client'
 import React, { useEffect, useState, useRef } from 'react'
-import { Button, Table, message, Popconfirm, Spin, Typography } from 'antd'
+import { Button, Table, message, Popconfirm, Spin, Typography, List } from 'antd'
 import Title from 'antd/es/typography/Title'
 import { useReactToPrint } from 'react-to-print'
 import { ReportFiltersModal } from './ReportFiltersModal'
 import PrintableReport from './PrintableReport'
 import dayjs from 'dayjs'
+import { Tooltip } from 'antd';
 
 const { Text } = Typography
 
@@ -86,81 +87,99 @@ export default function Page() {
 
   // Handle print action
   const fetchCashFlowDataForPrint = async (record: any) => {
-    console.log("biji")
     try {
-      let periodStart = '', periodEnd = ''
-      const year = dayjs(record.period_date).year()
-      const month = dayjs(record.period_date).month() + 1
+      let periodStart = '', periodEnd = '';
+      const year = dayjs(record.period_date).year();
+      const month = dayjs(record.period_date).month() + 1;
 
       if (record.period_type === 'yearly') {
-        periodStart = `${year}-01-01`
-        periodEnd = `${year}-12-31`
+        periodStart = `${year}-01-01`;
+        periodEnd = `${year}-12-31`;
       } else if (record.period_type === 'monthly') {
-        const lastDayOfMonth = dayjs(`${year}-${month}`).daysInMonth()
-        periodStart = `${year}-${month.toString().padStart(2, '0')}-01`
-        periodEnd = `${year}-${month.toString().padStart(2, '0')}-${lastDayOfMonth}`
+        const lastDayOfMonth = dayjs(`${year}-${month}`).daysInMonth();
+        periodStart = `${year}-${month.toString().padStart(2, '0')}-01`;
+        periodEnd = `${year}-${month.toString().padStart(2, '0')}-${lastDayOfMonth}`;
       }
 
       const payload = {
         cabang_id: record.cabang_id,
-        categories: record.categories,
+        nama_cabang: record.nama_cabang,
+        categories: record.categories.map((item: any) => item.split(' - ')[0]),
         period_type: record.period_type,
         period_start: periodStart,
         period_end: periodEnd,
-      }
+      };
 
       const response = await fetch('/api/report-filters/fetch-cashflow', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      })
+      });
 
-      if (!response.ok) throw new Error('Failed to fetch cash flow data')
+      if (!response.ok) throw new Error('Failed to fetch cash flow data');
 
-      const result = await response.json()
-      console.log("result -> ", result)
-      printRecordRef.current = {
-        data: result.data,
-        total_incoming: result.total_incoming,
-        total_outgoing: result.total_outgoing,
-        total_amount: result.total_amount,
-      }
+      const result = await response.json();
+      // Parse data if needed
+      const parsedData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
 
-      // Set printed data directly before triggering print
-      setPrintedData(printRecordRef.current)
-      setPrint(true) // Trigger print
+      // Prepare data for PrintableReport
+      const printData = Object.entries(parsedData).map(([cabang, details]: [string, any]) => ({
+        cabang,
+        records: details.records,
+        total_incoming: details.total_incoming,
+        total_outgoing: details.total_outgoing,
+        total_amount: details.total_amount,
+      }));
+
+      setPrintedData(printData);
+      setPrint(true); // Trigger print
     } catch (error: any) {
-      message.error(error.message || 'Error fetching cash flow data.')
+      message.error(error.message || 'Error fetching cash flow data.');
     }
-  }
+  };
+
 
   const columns = [
     {
       title: 'Cabang',
-      dataIndex: 'nama_perusahaan',
-      key: 'nama_perusahaan',
+      dataIndex: 'nama_cabang',
+      key: 'nama_cabang',
+      render: (nama_cabang: string[]) => (
+        <Text strong>{nama_cabang.join(', ')}</Text>
+      ),
+      width: '20%',
     },
     {
       title: 'Cash Flow Type',
       dataIndex: 'cash_flow_type',
       key: 'cash_flow_type',
-      render: (type: string) => type === 'both' ? 'Incoming and Outgoing' : type.charAt(0).toUpperCase() + type.slice(1),
+      render: (type: string) => (
+        <Text>{type === 'both' ? 'Incoming and Outgoing' : type.charAt(0).toUpperCase() + type.slice(1)}</Text>
+      ),
+      width: '15%',
     },
     {
       title: 'Categories',
       dataIndex: 'categories',
       key: 'categories',
-      render: (categories: string[]) => categories.join(', '),
+      render: (categories: string[]) => (
+        <Tooltip title={categories.join(', ')}>
+          {categories.slice(0, 3).join(', ')}
+          {categories.length > 3 ? ', ...' : ''}
+        </Tooltip>
+      ),
     },
     {
       title: 'Period Type',
       dataIndex: 'period_type',
       key: 'period_type',
+      width: '10%',
     },
     {
       title: 'Period Date',
       dataIndex: 'period_date',
       key: 'period_date',
+      width: '10%',
       render: (date: string, record: any) => {
         if (record.period_type === 'monthly') return dayjs(date).format('MMMM YYYY')
         if (record.period_type === 'yearly') return dayjs(date).format('YYYY')
@@ -171,7 +190,7 @@ export default function Page() {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: any) => (
-        <>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <Button type="link" onClick={() => fetchCashFlowDataForPrint(record)}>Print</Button>
           <Popconfirm
             title="Sure to delete?"
@@ -179,8 +198,9 @@ export default function Page() {
           >
             <Button type="link" danger>Delete</Button>
           </Popconfirm>
-        </>
-      )
+        </div>
+      ),
+      width: '15%',
     }
   ]
 
@@ -212,7 +232,8 @@ export default function Page() {
 
           {/* Configurations Table */}
           <Table
-            pagination={{ pageSize: 100 }}
+            bordered
+            pagination={{ pageSize: 10 }}
             size="small"
             columns={columns}
             dataSource={allData?.data.map((item: any, index: number) => ({ ...item, key: index + 1 }))}
@@ -224,10 +245,7 @@ export default function Page() {
             {printedData && (
               <PrintableReport
                 ref={printRef}
-                configurations={printedData.data}
-                // totalIncoming={printedData.total_incoming}
-                // totalOutgoing={printedData.total_outgoing}
-                // totalAmount={printedData.total_amount}
+                printedData={printedData}
               />
             )}
           </div>

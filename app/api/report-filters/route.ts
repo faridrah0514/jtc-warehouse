@@ -3,52 +3,75 @@ import { NextResponse } from "next/server";
 
 // Retrieve all configurations or add a new one
 export async function GET(request: Request): Promise<Response> {
-    try {
-      const conn = await openDB();
-      // Perform a join to retrieve the `nama_perusahaan` from `cabang`
-      const [filters] = await conn.query(`
-        SELECT 
-          rf.id, 
-          rf.cabang_id, 
-          c.nama_perusahaan, 
-          rf.cash_flow_type, 
-          rf.categories, 
-          rf.period_type, 
-          rf.period_date, 
-          rf.created_at, 
-          rf.updated_at
-        FROM report_filters rf
-        JOIN cabang c ON rf.cabang_id = c.id
-      `);
-      conn.end();
-  
-      return NextResponse.json({ status: 200, data: filters });
-    } catch (e: any) {
-      console.error(e.sqlMessage);
-      return NextResponse.json({ status: 500, error: e.sqlMessage });
-    }
-  }
-
-export async function POST(request: Request): Promise<Response> {
   try {
     const conn = await openDB();
-    const data = await request.json();
 
-    // Validate required fields
-    if (!data.cabang_id || !data.cash_flow_type || !data.categories || !data.period_type || !data.period_date) {
-      return NextResponse.json({ status: 400, error: "All fields are required" });
-    }
-
-    // Insert the new filter configuration
-    await conn.query(
-      "INSERT INTO report_filters (cabang_id, cash_flow_type, categories, period_type, period_date) VALUES (?, ?, ?, ?, ?)",
-      [data.cabang_id, data.cash_flow_type, JSON.stringify(data.categories), data.period_type, data.period_date]
-    );
+    // Query to join `report_filters` with `cash_flow_category` and format the categories
+    const [filters]: any[] = await conn.query(`
+      SELECT 
+        rf.id, 
+        rf.cabang_id, 
+        rf.nama_cabang,
+        rf.cash_flow_type, 
+        rf.period_type, 
+        rf.period_date, 
+        rf.created_at, 
+        rf.updated_at,
+        GROUP_CONCAT(CONCAT(cfc.id, ' - ', cfc.name) ORDER BY cfc.id SEPARATOR ', ') AS categories
+      FROM report_filters rf
+      LEFT JOIN JSON_TABLE(
+        rf.categories,
+        '$[*]' COLUMNS (category_id VARCHAR(50) PATH '$')
+      ) AS parsed_categories ON parsed_categories.category_id IS NOT NULL
+      LEFT JOIN cash_flow_category cfc 
+        ON cfc.id COLLATE utf8mb4_unicode_ci = parsed_categories.category_id COLLATE utf8mb4_unicode_ci
+      GROUP BY rf.id
+    `) as any[];
 
     conn.end();
-    return NextResponse.json({ status: 200, message: "Configuration saved successfully" });
+
+    // Transform the `categories` field into an array of strings for each filter
+    const transformedFilters = filters.map((filter: any) => {
+      // Convert the `categories` string to an array of strings, if it exists
+      const categoriesArray = filter.categories
+        ? filter.categories.split(', ').map((category: string) => category.trim())
+        : [];
+
+      return {
+        ...filter,
+        categories: categoriesArray,
+      };
+    });
+
+    console.log("transformedFilters -> ", transformedFilters);
+    return NextResponse.json({ status: 200, data: transformedFilters });
   } catch (e: any) {
     console.error(e.sqlMessage);
     return NextResponse.json({ status: 500, error: e.sqlMessage });
   }
 }
+
+  export async function POST(request: Request): Promise<Response> {
+    try {
+      const conn = await openDB();
+      const data = await request.json();
+      console.log("data --> ", data);
+  
+      // Validate required fields
+      if (!data.nama_cabang || !data.cash_flow_type || !data.categories || !data.period_type || !data.period_date) {
+        return NextResponse.json({ status: 400, error: "All fields are required" });
+      }
+  
+      // Insert the new filter configuration
+      await conn.query(
+        "INSERT INTO report_filters (nama_cabang, cash_flow_type, categories, period_type, period_date, cabang_id) VALUES (?, ?, ?, ?, ?, ?)",
+        [JSON.stringify(data.nama_cabang), data.cash_flow_type, JSON.stringify(data.categories), data.period_type, data.period_date, JSON.stringify(data.cabang_id)]
+      );
+  
+      conn.end();
+      return NextResponse.json({ status: 200, message: "Configuration saved successfully" });
+    } catch (e: any) {
+      console.error(e.sqlMessage);
+      return NextResponse.json({ status: 500, error: e.sqlMessage });
+    }
+  }

@@ -40,7 +40,17 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
 
   // Handle modal visibility
   const showModal = () => setIsModalVisible(true);
-  const hideModal = () => setIsModalVisible(false);
+  const hideModal = () => {
+    setIsModalVisible(false);
+    form.resetFields(); // Reset form fields when the modal is hidden
+  
+    // Reset state values to their initial state on modal close
+    setSelectedCabang(null);
+    setCashFlowType('both');
+    setSelectedCategories([]);
+    setPeriodType('monthly');
+    setSelectedPeriod(null);
+  };
 
   // Filter categories based on the cashFlowType selection
   const filteredCategories = useMemo(() => {
@@ -50,12 +60,19 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
 
   // Function to save the filter configuration to the database
   const saveConfiguration = async (values: any) => {
+    console.log("values -> ", values)
     try {
+      const cabangIds = values.cabang.map((nama_perusahaan: string) => {
+        const cabang = cabangOptions.find(c => c.nama_perusahaan === nama_perusahaan);
+        return cabang ? cabang.id : null;
+      }).filter((id: number) => id !== null);
+
       const response = await fetch('/api/report-filters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          cabang_id: values.cabang,
+          cabang_id: cabangIds,
+          nama_cabang: values.cabang,
           cash_flow_type: values.cashFlowType,
           categories: values.categories,
           period_type: values.periodType,
@@ -73,6 +90,7 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
     } catch (error: any) {
       message.error(error.message || 'Failed to save filter configuration.');
     }
+    form.resetFields();
   };
 
   // Handle form submission
@@ -90,13 +108,14 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
 
       hideModal();
     });
+    // form.resetFields();
   };
 
   return (
     <>
       {/* Button to open modal */}
       <Button type="primary" onClick={showModal}>
-        Set Filters
+        + Buat Laporan
       </Button>
 
       {/* Modal */}
@@ -110,9 +129,9 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
         <Form form={form} layout="vertical">
           {/* Cabang Selection */}
           <Form.Item name="cabang" label="Select Cabang" initialValue={selectedCabang}>
-            <Select placeholder="Select Cabang">
+            <Select mode="multiple" placeholder="Select Cabang">
               {cabangOptions.map((cabang) => (
-                <Select.Option key={cabang.id} value={cabang.id}>
+                <Select.Option key={cabang.id} value={cabang.nama_perusahaan}>
                   {cabang.nama_perusahaan}
                 </Select.Option>
               ))}

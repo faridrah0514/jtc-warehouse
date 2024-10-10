@@ -1,10 +1,12 @@
 import { openDB } from "@/helper/db";
 import { NextResponse } from "next/server";
+import dayjs from "dayjs";
 
 export async function POST(request: Request): Promise<Response> {
   try {
     const body = await request.json();
     const { cabang_id, categories, period_start, period_end } = body;
+    console.log("body --> ", body);
 
     const conn = await openDB();
 
@@ -25,7 +27,7 @@ export async function POST(request: Request): Promise<Response> {
       FROM cash_flow cf
       JOIN cash_flow_category cfc ON cf.category_id = cfc.id
       JOIN cabang ON cf.cabang_id = cabang.id -- Join 'cabang' table to get 'nama_perusahaan'
-      WHERE cf.cabang_id = ?
+      WHERE cf.cabang_id IN (?)
       AND cf.category_id IN (?)
       AND cf.date >= ? 
       AND cf.date <= ?
@@ -44,6 +46,9 @@ export async function POST(request: Request): Promise<Response> {
     // Group the records by 'nama_perusahaan'
     const groupedData = cashFlowRecords.reduce((acc: any, record: any) => {
       const cabang = record.nama_perusahaan;
+
+      // Format the date field to 'DD-MM-YYYY'
+      record.date = dayjs(record.date).format('DD-MM-YYYY');
 
       if (!acc[cabang]) {
         acc[cabang] = {

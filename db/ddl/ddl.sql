@@ -188,6 +188,8 @@ CREATE TABLE cash_flow_category (
 
 -- jtc_warehouse.report_filters definition
 
+-- jtc_warehouse.report_filters definition
+
 CREATE TABLE `report_filters` (
   `id` int NOT NULL AUTO_INCREMENT,
   `cabang_id` int DEFAULT NULL,
@@ -197,7 +199,8 @@ CREATE TABLE `report_filters` (
   `period_date` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `nama_cabang` json DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_cabang_id` (`cabang_id`),
   CONSTRAINT `fk_cabang_id` FOREIGN KEY (`cabang_id`) REFERENCES `cabang` (`id`)
-) 
+)
