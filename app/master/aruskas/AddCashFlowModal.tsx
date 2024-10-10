@@ -1,25 +1,35 @@
-import React, { useEffect } from 'react';
-import { Modal, Form, Input, DatePicker, Select, Button, Divider } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Modal, Form, Input, DatePicker, Select, Button, Divider, Upload, UploadFile, message, Image } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { CashFlowCategory, CashFlow } from '../../types/master';
-import { CurrencyInput } from '../../components/currencyInput/currencyInput'; // Adjust the path to where CurrencyInput is located
-import dayjs from 'dayjs'; // Import Day.js for date handling
+import { CurrencyInput } from '../../components/currencyInput/currencyInput';
+import dayjs from 'dayjs';
 
 interface AddCashFlowModalProps {
   visible: boolean;
   categories: CashFlowCategory[];
-  cashFlowType: 'incoming' | 'outgoing'; // New prop for filtering categories
-  onSubmit: (values: Omit<CashFlow, 'id'>) => void;
+  cashFlowType: 'incoming' | 'outgoing';
+  onSubmit: (values: Omit<CashFlow, 'id'>, files: UploadFile[]) => void;
   onCancel: () => void;
-  initialData?: CashFlow | null; // Allow `null` to be passed
-  cabang: { id: string; nama_perusahaan: string }[]; // Add this line to define the cabang property
-  // categoryModalVisible: boolean;
-  // categoryModalOnSubmit: (values: Omit<CashFlowCategory, 'id'>) => void;
-  // categoryModalOnCancel: () => void;
+  initialData?: CashFlow | null;
+  cabang: { id: string; nama_perusahaan: string }[];
   categoryModalOnClick: () => void;
 }
 
-const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories, cashFlowType, onSubmit, onCancel, initialData, cabang, categoryModalOnClick }) => {
+const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({
+  visible,
+  categories,
+  cashFlowType,
+  onSubmit,
+  onCancel,
+  initialData,
+  cabang,
+  categoryModalOnClick
+}) => {
   const [form] = Form.useForm();
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
 
   const handleOk = () => {
     form.submit();
@@ -28,31 +38,46 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories
   const handleFormSubmit = (values: any) => {
     const formattedValues = {
       ...values,
-      amount: parseFloat(values.amount), // Ensure amount is stored as a number
-      date: values.date.format('YYYY-MM-DD'), // Format the date to match your DB format
+      amount: parseFloat(values.amount),
+      date: values.date.format('YYYY-MM-DD'),
     };
-    onSubmit(formattedValues);
+    onSubmit(formattedValues, fileList);
     form.resetFields();
+    setFileList([]); // Reset file list after submission
   };
 
-  // Filter categories based on the cashFlowType
-  const filteredCategories = categories.filter(category => {
-    // Assuming `category.type` field contains 'incoming' or 'outgoing'
-    return category.type === cashFlowType;
-  });
+  const handlePreview = async (file: UploadFile) => {
+    if (!file.url && !file.preview) {
+      file.preview = await getBase64(file.originFileObj as File);
+    }
+
+    setPreviewImage(file.url || (file.preview as string));
+    setPreviewOpen(true);
+  };
+
+  const getBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
 
   // Set initial values when editing
   useEffect(() => {
     if (initialData) {
       form.setFieldsValue({
         ...initialData,
-        date: initialData.date ? dayjs(initialData.date) : null, // Use Day.js to handle the date
-        amount: parseFloat(initialData.amount), // Ensure amount is a number
+        date: initialData.date ? dayjs(initialData.date) : null,
+        amount: parseFloat(initialData.amount),
       });
     } else {
-      form.resetFields(); // Reset fields when there's no initial data
+      form.resetFields();
     }
   }, [initialData, form]);
+
+  // Filter categories based on the cashFlowType
+  const filteredCategories = categories.filter(category => category.type === cashFlowType);
 
   return (
     <Modal
@@ -74,17 +99,15 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories
               <>
                 {menu}
                 <Divider style={{ margin: '0' }} />
-                {/* <Select.Option key="add_new" value="add_new"> */}
                 <Button type="link" onClick={categoryModalOnClick}>
                   + Tambah Kategori
                 </Button>
-                {/* </Select.Option> */}
               </>
             )}
           >
             {filteredCategories.map(category => (
               <Select.Option key={category.id} value={category.id}>
-                {`${category.id} - ${category.name}`} {/* Show both ID and name */}
+                {`${category.id} - ${category.name}`}
               </Select.Option>
             ))}
           </Select>
@@ -125,8 +148,45 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories
           label="Tanggal"
           rules={[{ required: true, message: 'Please select the date' }]}
         >
-          <DatePicker style={{ width: '100%' }} />
+          <DatePicker format='' style={{ width: '100%' }} />
         </Form.Item>
+
+        {/* Upload Files */}
+        <Form.Item name="file" label="Upload Dokumen" rules={[{ required: true, message: 'Please upload a document' }]}>
+          <Upload
+            multiple
+            onPreview={handlePreview}
+            listType='picture-card'
+            beforeUpload={(file) => {
+              setFileList([...fileList, file])
+            }}
+            onRemove={(file) => {
+              setFileList(
+                fileList.filter(v => file.uid != v.uid)
+              )
+            }}
+          >
+            {fileList.length >= 5 ? null : (
+              <div>
+                <PlusOutlined />
+                <div style={{ marginTop: 8 }}>Upload</div>
+              </div>
+            )}
+          </Upload>
+        </Form.Item>
+
+        {/* Image Preview */}
+        {previewImage && (
+          <Image
+            wrapperStyle={{ display: 'none' }}
+            preview={{
+              visible: previewOpen,
+              onVisibleChange: (visible) => setPreviewOpen(visible),
+              afterOpenChange: (visible) => !visible && setPreviewImage(''),
+            }}
+            src={previewImage}
+          />
+        )}
       </Form>
     </Modal>
   );

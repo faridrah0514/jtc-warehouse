@@ -48,13 +48,15 @@ export async function POST(request: Request, { params }: { params: { type: strin
         return NextResponse.json({ status: 400, error: "Invalid category ID for the specified type" });
       }
   
-      await conn.query(
+      const result: any = await conn.query(
         'INSERT INTO cash_flow (category_id, cabang_id, description, amount, date) VALUES (?, ?, ?, ?, ?)',
         [data.category_id, data.cabang_id, data.description, data.amount, formattedDate]
       );
-  
+      
+      const insertedId = result[0].insertId; // Retrieve the inserted record's ID
+
       conn.end();
-      return NextResponse.json({ status: 200, message: "Cash flow record added successfully" });
+      return NextResponse.json({ status: 200, message: "Cash flow record added successfully", data: { id: insertedId } });
     } catch (e: any) {
       console.error(e.sqlMessage);
       return NextResponse.json({ status: 500, error: e.sqlMessage });
@@ -98,7 +100,7 @@ export async function PUT(request: Request, { params }: { params: { type: string
       );
   
       conn.end();
-      return NextResponse.json({ status: 200, message: "Cash flow record updated successfully" });
+      return NextResponse.json({ status: 200, message: "Cash flow record updated successfully", data: { id: data.id } });
     } catch (e: any) {
       console.error(e.sqlMessage);
       return NextResponse.json({ status: 500, error: e.sqlMessage });

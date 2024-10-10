@@ -62,6 +62,11 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
       },
     },
     {
+      title: 'Dokumen',
+      dataIndex: 'document',
+      key: 'document',
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: CashFlow) => (
