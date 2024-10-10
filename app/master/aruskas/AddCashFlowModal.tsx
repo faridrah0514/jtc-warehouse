@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, DatePicker, Select } from 'antd';
+import { Modal, Form, Input, DatePicker, Select, Button, Divider } from 'antd';
 import { CashFlowCategory, CashFlow } from '../../types/master';
 import { CurrencyInput } from '../../components/currencyInput/currencyInput'; // Adjust the path to where CurrencyInput is located
 import dayjs from 'dayjs'; // Import Day.js for date handling
@@ -12,9 +12,13 @@ interface AddCashFlowModalProps {
   onCancel: () => void;
   initialData?: CashFlow | null; // Allow `null` to be passed
   cabang: { id: string; nama_perusahaan: string }[]; // Add this line to define the cabang property
+  // categoryModalVisible: boolean;
+  // categoryModalOnSubmit: (values: Omit<CashFlowCategory, 'id'>) => void;
+  // categoryModalOnCancel: () => void;
+  categoryModalOnClick: () => void;
 }
 
-const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories, cashFlowType, onSubmit, onCancel, initialData, cabang }) => {
+const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories, cashFlowType, onSubmit, onCancel, initialData, cabang, categoryModalOnClick }) => {
   const [form] = Form.useForm();
 
   const handleOk = () => {
@@ -64,7 +68,20 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories
           label="Category"
           rules={[{ required: true, message: 'Please select a category' }]}
         >
-          <Select>
+          <Select
+            placeholder="Select Category"
+            dropdownRender={(menu) => (
+              <>
+                {menu}
+                <Divider style={{ margin: '0' }} />
+                {/* <Select.Option key="add_new" value="add_new"> */}
+                <Button type="link" onClick={categoryModalOnClick}>
+                  Add New Category
+                </Button>
+                {/* </Select.Option> */}
+              </>
+            )}
+          >
             {filteredCategories.map(category => (
               <Select.Option key={category.id} value={category.id}>
                 {`${category.id} - ${category.name}`} {/* Show both ID and name */}
@@ -77,7 +94,7 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories
           label="Nama Cabang"
           rules={[{ required: true, message: 'Please select a company' }]}
         >
-          <Select>
+          <Select placeholder="Select Cabang">
             {cabang?.map((company) => (
               <Select.Option key={company.id} value={company.id}>
                 {company.nama_perusahaan}
@@ -90,7 +107,7 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({ visible, categories
           label="Description"
           rules={[{ required: true, message: 'Please input the description' }]}
         >
-          <Input />
+          <Input placeholder='Enter a Description' />
         </Form.Item>
         <Form.Item
           name="amount"

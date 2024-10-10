@@ -41,35 +41,46 @@ export async function POST(request: Request): Promise<Response> {
 
     const cashFlowRecords = Array.isArray(rows) ? rows : [];
 
-    // Calculate the totals for incoming and outgoing separately
-    const totalIncoming = cashFlowRecords
-      .filter((record: any) => record.category_type === "incoming")
-      .reduce((acc: number, record: any) => acc + parseFloat(record.amount), 0);
+    // Group the records by 'nama_perusahaan'
+    const groupedData = cashFlowRecords.reduce((acc: any, record: any) => {
+      const cabang = record.nama_perusahaan;
 
-    const totalOutgoing = cashFlowRecords
-      .filter((record: any) => record.category_type === "outgoing")
-      .reduce((acc: number, record: any) => acc + parseFloat(record.amount), 0);
+      if (!acc[cabang]) {
+        acc[cabang] = {
+          records: [],
+          total_incoming: 0,
+          total_outgoing: 0,
+          total_amount: 0,
+        };
+      }
 
-    // Calculate the final total: incoming - outgoing
-    const totalAmount = totalIncoming - totalOutgoing;
+      // Add the record to the cabang's list
+      acc[cabang].records.push(record);
+
+      // Calculate totals for incoming and outgoing
+      if (record.category_type === "incoming") {
+        acc[cabang].total_incoming += parseFloat(record.amount);
+      } else if (record.category_type === "outgoing") {
+        acc[cabang].total_outgoing += parseFloat(record.amount);
+      }
+
+      // Update the total amount: incoming - outgoing
+      acc[cabang].total_amount = acc[cabang].total_incoming - acc[cabang].total_outgoing;
+
+      return acc;
+    }, {});
 
     // Close connection
     conn.end();
 
     console.log("response", {
       status: 200,
-      data: cashFlowRecords,
-      total_incoming: totalIncoming,
-      total_outgoing: totalOutgoing,
-      total_amount: totalAmount,
+      data: JSON.stringify(groupedData, null, 2), // Stringify the groupedData for clear logging
     });
 
     return NextResponse.json({
       status: 200,
-      data: cashFlowRecords,
-      total_incoming: totalIncoming,
-      total_outgoing: totalOutgoing,
-      total_amount: totalAmount,
+      data: groupedData,
     });
   } catch (e: any) {
     console.error(e.sqlMessage);

@@ -28,20 +28,20 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ visible, onSubmit, 
           label="Category Name"
           rules={[{ required: true, message: 'Please input the category name' }]}
         >
-          <Input />
+          <Input placeholder="Enter category name" />
         </Form.Item>
         <Form.Item
           name="type"
           label="Type"
           rules={[{ required: true, message: 'Please select the type' }]}
         >
-          <Select>
+          <Select placeholder="Select type">
             <Select.Option value="incoming">Incoming</Select.Option>
             <Select.Option value="outgoing">Outgoing</Select.Option>
           </Select>
         </Form.Item>
         <Form.Item name="description" label="Description">
-          <Input.TextArea />
+          <Input.TextArea placeholder="Enter description"/>
         </Form.Item>
       </Form>
     </Modal>

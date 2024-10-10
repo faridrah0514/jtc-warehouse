@@ -147,9 +147,9 @@ const CategoryTable: React.FC = () => {
             <div className="bg-white p-6 rounded-lg shadow-md mt-6">
                 <div className="flex justify-between mb-4">
                     <h1 className="text-2xl font-semibold">Cash Flow Categories</h1>
-                    <Button type="primary" onClick={handleAddCategory}>
+                    {/* <Button type="primary" onClick={handleAddCategory}>
                         Add Category
-                    </Button>
+                    </Button> */}
                 </div>
                 <Table
                     columns={categoryColumns}

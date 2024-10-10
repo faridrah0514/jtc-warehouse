@@ -138,15 +138,16 @@ const Page: React.FC = () => {
         onCancel={handleCancelCashFlowModal}
         initialData={editingData || undefined} // Set initial data for editing
         cabang={cabang}
+        categoryModalOnClick={showAddCategoryModal}
       />
       <AddCategoryModal
         visible={isCategoryModalVisible}
         onSubmit={handleAddCategory}
         onCancel={handleCancelCategoryModal}
       />
-      <Button type="primary" onClick={showAddCategoryModal} style={{ marginTop: '20px' }}>
+      {/* <Button type="primary" onClick={showAddCategoryModal} style={{ marginTop: '20px' }}>
         Add New Category
-      </Button>
+      </Button> */}
     </div>
   );
 };

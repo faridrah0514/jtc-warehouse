@@ -40,7 +40,10 @@ export const items: MenuItem[] = [
         getItem(<Link href='/master/transaksi/listrik'>Listrik</Link>, 'Listrik', <ThunderboltOutlined/>),
         getItem(<Link href='/master/transaksi/ipl'>IPL</Link>, 'IPL', <HomeOutlined/>),
     ]),
-    getItem(<Link href='/master/laporan'>Laporan</Link>, 'Laporan', <InsertRowLeftOutlined/>),
+    getItem(<Link href='/master/laporan'>Laporan</Link>, 'Laporan', <InsertRowLeftOutlined/>, [
+        getItem(<Link href='/master/laporan/transaksi'>Transaksi</Link>, 'Laporan Transaksi', <SolutionOutlined />),
+        getItem(<Link href='/master/laporan/aruskas'>Arus Kas</Link>, 'Laporan Arus Kas', <SolutionOutlined />),
+    ]),
     getItem(<Link href='/master/aruskas'>Arus Kas</Link>, 'Arus Kas', <TransactionOutlined/>),
     getItem(<Link href='/master/other'>Lain-Lain</Link>, 'Tipe Aset & Sertifikat', <BuildOutlined />),
 ];
