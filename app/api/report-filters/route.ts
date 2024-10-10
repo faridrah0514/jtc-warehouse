@@ -6,8 +6,20 @@ export async function GET(request: Request): Promise<Response> {
   try {
     const conn = await openDB();
 
+    // Retrieve the character set and collation from the database
+    const [charsetResult]: any[] = await conn.query(
+      `SHOW VARIABLES LIKE 'character_set_database';`
+    );
+    const [collationResult]: any[] = await conn.query(
+      `SHOW VARIABLES LIKE 'collation_database';`
+    );
+
+    const charset = charsetResult?.[0]?.Value || "utf8mb4";
+    const collation = collationResult?.[0]?.Value || "utf8mb4_unicode_ci";
+
     // Query to join `report_filters` with `cash_flow_category` and format the categories
-    const [filters]: any[] = await conn.query(`
+    const [filters]: any[] = (await conn.query(
+      `
       SELECT 
         rf.id, 
         rf.cabang_id, 
@@ -24,9 +36,11 @@ export async function GET(request: Request): Promise<Response> {
         '$[*]' COLUMNS (category_id VARCHAR(50) PATH '$')
       ) AS parsed_categories ON parsed_categories.category_id IS NOT NULL
       LEFT JOIN cash_flow_category cfc 
-        ON cfc.id COLLATE utf8mb4_unicode_ci = parsed_categories.category_id COLLATE utf8mb4_unicode_ci
+        ON CONVERT(cfc.id USING ${charset}) COLLATE ${collation} = 
+           CONVERT(parsed_categories.category_id USING ${charset}) COLLATE ${collation}
       GROUP BY rf.id
-    `) as any[];
+      `
+    )) as any[];
 
     conn.end();
 
@@ -34,7 +48,9 @@ export async function GET(request: Request): Promise<Response> {
     const transformedFilters = filters.map((filter: any) => {
       // Convert the `categories` string to an array of strings, if it exists
       const categoriesArray = filter.categories
-        ? filter.categories.split(', ').map((category: string) => category.trim())
+        ? filter.categories
+            .split(", ")
+            .map((category: string) => category.trim())
         : [];
 
       return {
@@ -50,26 +66,45 @@ export async function GET(request: Request): Promise<Response> {
   }
 }
 
-  export async function POST(request: Request): Promise<Response> {
-    try {
-      const conn = await openDB();
-      const data = await request.json();
-  
-      // Validate required fields
-      if (!data.nama_cabang || !data.cash_flow_type || !data.categories || !data.period_type || !data.period_date) {
-        return NextResponse.json({ status: 400, error: "All fields are required" });
-      }
-  
-      // Insert the new filter configuration
-      await conn.query(
-        "INSERT INTO report_filters (nama_cabang, cash_flow_type, categories, period_type, period_date, cabang_id) VALUES (?, ?, ?, ?, ?, ?)",
-        [JSON.stringify(data.nama_cabang), data.cash_flow_type, JSON.stringify(data.categories), data.period_type, data.period_date, JSON.stringify(data.cabang_id)]
-      );
-  
-      conn.end();
-      return NextResponse.json({ status: 200, message: "Configuration saved successfully" });
-    } catch (e: any) {
-      console.error(e.sqlMessage);
-      return NextResponse.json({ status: 500, error: e.sqlMessage });
+export async function POST(request: Request): Promise<Response> {
+  try {
+    const conn = await openDB();
+    const data = await request.json();
+
+    // Validate required fields
+    if (
+      !data.nama_cabang ||
+      !data.cash_flow_type ||
+      !data.categories ||
+      !data.period_type ||
+      !data.period_date
+    ) {
+      return NextResponse.json({
+        status: 400,
+        error: "All fields are required",
+      });
     }
+
+    // Insert the new filter configuration
+    await conn.query(
+      "INSERT INTO report_filters (nama_cabang, cash_flow_type, categories, period_type, period_date, cabang_id) VALUES (?, ?, ?, ?, ?, ?)",
+      [
+        JSON.stringify(data.nama_cabang),
+        data.cash_flow_type,
+        JSON.stringify(data.categories),
+        data.period_type,
+        data.period_date,
+        JSON.stringify(data.cabang_id),
+      ]
+    );
+
+    conn.end();
+    return NextResponse.json({
+      status: 200,
+      message: "Configuration saved successfully",
+    });
+  } catch (e: any) {
+    console.error(e.sqlMessage);
+    return NextResponse.json({ status: 500, error: e.sqlMessage });
   }
+}

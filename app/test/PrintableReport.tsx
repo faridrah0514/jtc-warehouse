@@ -14,7 +14,7 @@ interface PrintableReportProps {
 }
 
 const PrintableReport = forwardRef<HTMLDivElement, PrintableReportProps>(
-  ({ configurations, totalIncoming, totalOutgoing, totalAmount }, ref) => {
+  ({ configurations, totalAmount }, ref) => {
     // Define columns for the table based on the backend response
     const columns = [
       {
@@ -136,4 +136,5 @@ const PrintableReport = forwardRef<HTMLDivElement, PrintableReportProps>(
   }
 );
 
+PrintableReport.displayName = 'PrintableReport';
 export default PrintableReport;

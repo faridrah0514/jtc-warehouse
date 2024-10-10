@@ -19,7 +19,6 @@ interface PrintableReportProps {
 const PrintableReport = forwardRef<HTMLDivElement, PrintableReportProps>(
   ({ printedData }, ref) => {
     // Define columns for the table based on the backend response
-    // Define columns for the table based on the backend response
     const columns = [
       {
         title: 'No.',
@@ -51,7 +50,6 @@ const PrintableReport = forwardRef<HTMLDivElement, PrintableReportProps>(
         render: (amount: number) => _renderCurrency(amount, false, false),
       },
     ];
-
 
     return (
       <div ref={ref} style={{ padding: '20px', fontSize: '14px', fontFamily: 'Arial, sans-serif' }}>
@@ -157,5 +155,7 @@ const PrintableReport = forwardRef<HTMLDivElement, PrintableReportProps>(
     );
   }
 );
+
+PrintableReport.displayName = 'PrintableReport';
 
 export default PrintableReport;
