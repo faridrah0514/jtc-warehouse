@@ -63,8 +63,6 @@ const Page: React.FC = () => {
     try {
       const method = editingData ? 'PUT' : 'POST'; // Use PUT for editing, POST for adding
       const endpoint = `/api/finance/cashflow/${cashFlowType}`;
-
-      console.log("method --> ", method)
   
       // Include the `id` when editing
       const dataToSend = editingData ? { ...values, id: editingData.id } : values;
@@ -81,7 +79,6 @@ const Page: React.FC = () => {
         message.success(result.message);
   
         // Upload files if any exist
-        console.log("bijiiii --> ", result)
         if (fileList.length > 0 && result.data?.id) {
           await uploadFiles(result.data.id, fileList);
         } else if (!result.data?.id) {
@@ -108,7 +105,6 @@ const Page: React.FC = () => {
   // Function to upload files
   const uploadFiles = async (cashFlowId: string, fileList: UploadFile[]) => {
     try {
-      console.log("fileList --> ", fileList)
       const formData = new FormData();
       fileList.forEach((file) => {
         formData.append('files[]', file as FileType);
@@ -119,7 +115,6 @@ const Page: React.FC = () => {
         method: 'POST',
         body: formData,
       });
-      console.log("formData --> ", formData)
   
       const result = await response.json();
       if (response.ok && result.status === 200) {

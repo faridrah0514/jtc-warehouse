@@ -7,18 +7,14 @@ export async function GET(request: Request): Promise<Response> {
     const conn = await openDB();
 
     // Retrieve the character set and collation from the database
-    const [charsetResult]: any[] = await conn.query(
-      `SHOW VARIABLES LIKE 'character_set_database';`
-    );
-    const [collationResult]: any[] = await conn.query(
-      `SHOW VARIABLES LIKE 'collation_database';`
-    );
+    const [charsetResult]: any[] = await conn.query(`SHOW VARIABLES LIKE 'character_set_database';`);
+    const [collationResult]: any[] = await conn.query(`SHOW VARIABLES LIKE 'collation_database';`);
 
-    const charset = charsetResult?.[0]?.Value || "utf8mb4";
-    const collation = collationResult?.[0]?.Value || "utf8mb4_unicode_ci";
+    const charset = charsetResult?.[0]?.Value || 'utf8mb4';
+    const collation = collationResult?.[0]?.Value || 'utf8mb4_unicode_ci';
 
     // Query to join `report_filters` with `cash_flow_category` and format the categories
-    const [filters]: any[] = (await conn.query(
+    const [filters]: any[] = await conn.query(
       `
       SELECT 
         rf.id, 
@@ -31,16 +27,11 @@ export async function GET(request: Request): Promise<Response> {
         rf.updated_at,
         GROUP_CONCAT(CONCAT(cfc.id, ' - ', cfc.name) ORDER BY cfc.id SEPARATOR ', ') AS categories
       FROM report_filters rf
-      LEFT JOIN JSON_TABLE(
-        rf.categories,
-        '$[*]' COLUMNS (category_id VARCHAR(50) PATH '$')
-      ) AS parsed_categories ON parsed_categories.category_id IS NOT NULL
       LEFT JOIN cash_flow_category cfc 
-        ON CONVERT(cfc.id USING ${charset}) COLLATE ${collation} = 
-           CONVERT(parsed_categories.category_id USING ${charset}) COLLATE ${collation}
+        ON JSON_CONTAINS(rf.categories, JSON_QUOTE(cfc.id), '$')
       GROUP BY rf.id
       `
-    )) as any[];
+    ) as any[];
 
     conn.end();
 
@@ -48,23 +39,32 @@ export async function GET(request: Request): Promise<Response> {
     const transformedFilters = filters.map((filter: any) => {
       // Convert the `categories` string to an array of strings, if it exists
       const categoriesArray = filter.categories
-        ? filter.categories
-            .split(", ")
-            .map((category: string) => category.trim())
+        ? filter.categories.split(', ').map((category: string) => category.trim())
+        : [];
+
+      const cabangIds = filter.cabang_id
+        ? filter.cabang_id.split(',').map((id: string) => id.trim())
+        : [];
+
+      const namaCabangs = filter.nama_cabang
+        ? filter.nama_cabang.split(',').map((name: string) => name.trim())
         : [];
 
       return {
         ...filter,
+        cabang_id: cabangIds,
+        nama_cabang: namaCabangs,
         categories: categoriesArray,
       };
     });
-
     return NextResponse.json({ status: 200, data: transformedFilters });
   } catch (e: any) {
     console.error(e.sqlMessage);
     return NextResponse.json({ status: 500, error: e.sqlMessage });
   }
 }
+
+
 
 export async function POST(request: Request): Promise<Response> {
   try {
@@ -89,12 +89,12 @@ export async function POST(request: Request): Promise<Response> {
     await conn.query(
       "INSERT INTO report_filters (nama_cabang, cash_flow_type, categories, period_type, period_date, cabang_id) VALUES (?, ?, ?, ?, ?, ?)",
       [
-        JSON.stringify(data.nama_cabang),
+        data.nama_cabang,
         data.cash_flow_type,
         JSON.stringify(data.categories),
         data.period_type,
         data.period_date,
-        JSON.stringify(data.cabang_id),
+        data.cabang_id
       ]
     );
 
@@ -108,3 +108,4 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ status: 500, error: e.sqlMessage });
   }
 }
+

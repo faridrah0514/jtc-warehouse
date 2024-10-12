@@ -174,30 +174,33 @@ CREATE TABLE cash_flow_category (
     description VARCHAR(255) DEFAULT NULL     -- Optional description for the category
 );
 
-CREATE TABLE cash_flow (
-    id INT AUTO_INCREMENT PRIMARY KEY,               -- Auto-incrementing unique identifier for each cash flow record
-    category_id VARCHAR(50) NOT NULL,                -- Foreign key to cash_flow_category table
-    description VARCHAR(255) NOT NULL,               -- Description of the cash flow (e.g., 'Payment received')
-    amount DECIMAL(10, 2) NOT NULL,                  -- Amount of the cash flow
-    date DATE NOT NULL,                              -- Date of the cash flow
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Record creation timestamp
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Auto-updated timestamp on modification
-    FOREIGN KEY (category_id) REFERENCES cash_flow_category(id)  -- Foreign key constraint to ensure valid category
-);
+CREATE TABLE `cash_flow` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `category_id` varchar(50) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `date` date NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `cabang_id` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `category_id` (`category_id`),
+  KEY `fk_cabang` (`cabang_id`),
+  CONSTRAINT `cash_flow_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `cash_flow_category` (`id`),
+  CONSTRAINT `fk_cabang` FOREIGN KEY (`cabang_id`) REFERENCES `cabang` (`id`)
+)
 
 -- jtc_warehouse.report_filters definition
 
 CREATE TABLE `report_filters` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `cabang_id` int DEFAULT NULL,
+  `cabang_id` varchar(250) DEFAULT NULL,
   `cash_flow_type` enum('incoming','outgoing','both') DEFAULT NULL,
   `categories` json DEFAULT NULL,
   `period_type` enum('monthly','yearly') DEFAULT NULL,
   `period_date` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `nama_cabang` json DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk_cabang_id` (`cabang_id`),
-  CONSTRAINT `fk_cabang_id` FOREIGN KEY (`cabang_id`) REFERENCES `cabang` (`id`)
+  `nama_cabang` varchar(250) DEFAULT NULL,
+  PRIMARY KEY (`id`)
 )

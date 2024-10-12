@@ -70,8 +70,9 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          cabang_id: cabangIds,
-          nama_cabang: values.cabang,
+          // cabang_id: cabangIds,
+            cabang_id: cabangIds.join(', '),
+          nama_cabang: values.cabang.join(', '),
           cash_flow_type: values.cashFlowType,
           categories: values.categories,
           period_type: values.periodType,

@@ -44,8 +44,10 @@ public/txs/*/*
 # upload docs
 upload/docs/*
 upload/txs/*
+upload/cashflow/*
 !upload/docs/.gitkeep
 !upload/txs/.gitkeep
+!upload/cashflow/.gitkeep
 
 # db/
 notes/
