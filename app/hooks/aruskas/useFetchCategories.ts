@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { message } from "antd";
-import { CashFlowCategory } from "../../types/master";
+import { CashFlowCategory } from "@/app/types/master";
 
 export const useFetchCategories = () => {
   const [categories, setCategories] = useState<CashFlowCategory[]>([]);

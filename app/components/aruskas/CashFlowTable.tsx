@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, Button, Popconfirm } from 'antd';
-import { CashFlow, CashFlowCategory } from '../../types/master'; // Import CashFlow and CashFlowCategory types
+import { CashFlow, CashFlowCategory } from '@/app/types/master'; // Import CashFlow and CashFlowCategory types
 import { ColumnsType } from 'antd/es/table';
 import { _renderCurrency } from '@/app/utils/renderCurrency';
 
@@ -42,7 +42,7 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
       render: (text: any, record: CashFlow) => getCategoryDisplayName(record.category_id),
     },
     {
-      title: 'Deskripsi',
+      title: 'Keterangan',
       dataIndex: 'description',
       key: 'description',
     },

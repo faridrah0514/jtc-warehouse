@@ -3,7 +3,7 @@ import React from 'react';
 import { Row, Col } from 'antd';
 import TipeAsetTable from './TipeAsetTable';
 import TipeSertifikatTable from './TipeSertifikatTable';
-import CategoryTable from './CategoryTable';
+import CategoryTable from '@/app/components/aruskas/kategori/CategoryTable';
 
 const Page: React.FC = () => {
   return (

@@ -86,7 +86,7 @@ const Page: React.FC = () => {
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading} className="w-full">
-              Change Password
+              Ubah Password
             </Button>
           </Form.Item>
         </Form>

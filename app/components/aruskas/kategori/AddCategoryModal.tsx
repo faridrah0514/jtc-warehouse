@@ -1,34 +1,47 @@
 import React from 'react';
-import { Modal, Form, Input, Select } from 'antd';
-import { CashFlowCategory } from '../../types/master';
+import { Modal, Form, Input, Select, FormInstance } from 'antd';
+import { CashFlowCategory } from '@/app/types/master';
 
 interface AddCategoryModalProps {
   visible: boolean;
-  onSubmit: (values: Omit<CashFlowCategory, 'id'>) => void;
   onCancel: () => void;
+  onSubmit: (values: Omit<CashFlowCategory, 'id'> & { id?: string | null }) => void;
+  form: FormInstance | undefined; // Form instance passed from parent
+  loading?: boolean;
 }
 
-const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ visible, onSubmit, onCancel }) => {
-  const [form] = Form.useForm();
+const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ visible, onSubmit, onCancel, form }) => {
+  // const [form] = Form.useForm();
 
   const handleOk = () => {
-    form.submit();
+    form?.submit();
   };
 
   const handleFormSubmit = (values: any) => {
     onSubmit(values);
-    form.resetFields();
   };
 
   return (
     <Modal title="Tambah Kategori" visible={visible} onCancel={onCancel} onOk={handleOk} okText="Submit">
       <Form form={form} onFinish={handleFormSubmit} layout="vertical">
+        <Form.Item name="id" hidden>
+          <Input type="hidden" />
+        </Form.Item>
+        <Form.Item
+          name="category_id"
+          label="Nomor Kategori"
+          rules={[{ required: true, message: 'Please input the category name' }]}
+        >
+          <Input placeholder="Masukkan nomor kategori" disabled={form && form?.getFieldValue('category_id') !== null} />
+          {/* > */}
+          {/* <Input placeholder="Masukkan nomor kategori" /> */}
+        </Form.Item>
         <Form.Item
           name="name"
           label="Nama Kategori"
           rules={[{ required: true, message: 'Please input the category name' }]}
         >
-          <Input placeholder="Masukkan kategori" />
+          <Input placeholder="Masukkan nama kategori" />
         </Form.Item>
         <Form.Item
           name="type"
@@ -40,9 +53,9 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ visible, onSubmit, 
             <Select.Option value="outgoing">Kas Keluar</Select.Option>
           </Select>
         </Form.Item>
-        <Form.Item name="description" label="Deskripsi">
+        {/* <Form.Item name="description" label="Deskripsi">
           <Input.TextArea placeholder="Masukkan Deskripsi"/>
-        </Form.Item>
+        </Form.Item> */}
       </Form>
     </Modal>
   );

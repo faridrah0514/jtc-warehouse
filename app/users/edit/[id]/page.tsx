@@ -137,6 +137,7 @@ const EditUserPage: React.FC = () => {
               <Option value="admin">Admin</Option>
               <Option value="supervisor">Supervisor</Option>
               <Option value="reporter">Reporter</Option>
+              <Option value="finance">Finance</Option>
             </Select>
           </Form.Item>
 

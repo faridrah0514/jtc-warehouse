@@ -41,7 +41,7 @@ export async function POST(request: Request): Promise<Response> {
     // Insert the new category into the database
     await conn.query(
       'INSERT INTO cash_flow_category (id, name, type, description) VALUES (?, ?, ?, ?)',
-      [newId, data.name, data.type, data.description || null]
+      [data.category_id, data.name, data.type, data.description || null]
     );
 
     conn.end();

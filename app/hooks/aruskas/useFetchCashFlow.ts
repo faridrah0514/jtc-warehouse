@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { message } from "antd";
-import { CashFlow } from "../../types/master";
+import { CashFlow } from "@/app/types/master";
 export const useFetchCashFlow = (type: "incoming" | "outgoing") => {
   const [data, setData] = useState<CashFlow[]>([]);
   const [loading, setLoading] = useState(false);

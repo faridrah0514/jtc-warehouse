@@ -161,7 +161,7 @@ CREATE TABLE `users` (
   `password_hash` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `role` enum('admin','supervisor','reporter') NOT NULL DEFAULT 'reporter',
+  `role` enum('admin','supervisor','reporter', 'finance') NOT NULL DEFAULT 'reporter',
   `editable_until` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)

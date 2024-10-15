@@ -7,7 +7,9 @@ import { signOut, useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation'; // Import usePathname
 import Link from 'next/link'; // Use Next.js' built-in Link
 import type { MenuProps } from 'antd';
-import * as SidebarMenu from './sidebarMenu'; // Import the whole module
+// import * as SidebarMenu from './sidebarMenu'; // Import the whole module
+import MenuItems from './sidebarMenu';
+
 
 const { Header, Content, Sider } = Layout;
 
@@ -30,6 +32,7 @@ export default function DefaultLayout({
     const router = useRouter();
     const pathname = usePathname(); // Get the current pathname
 
+    
     const capitalizedUsername = session?.user?.name
         ? session.user.name.charAt(0).toUpperCase() + session.user.name.slice(1)
         : '';
@@ -85,7 +88,7 @@ export default function DefaultLayout({
             : []),
         {
             key: '1',
-            label: 'Change Password',
+            label: 'Ubah Pasword',
             onClick: () => {
                 router.push('/profile');
             },
@@ -106,12 +109,13 @@ export default function DefaultLayout({
         return null;
     }
 
+    const menuItems = MenuItems({ userRole: userRole || 'supervisor' });
     return (
         <Layout style={{ minHeight: '100vh' }}>
             {/* Sidebar with padding to move it down */}
             <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-                <div className="py-6"> {/* Adds padding from the top */}
-                    <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={SidebarMenu.items} />
+                <div className="py-14"> {/* Adds padding from the top */}
+                    <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={menuItems} />
                 </div>
             </Sider>
 

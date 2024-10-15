@@ -73,4 +73,5 @@ export interface CashFlowCategory {
   name: string;
   type: 'incoming' | 'outgoing';
   description?: string;
+  category_id?: string;
 }

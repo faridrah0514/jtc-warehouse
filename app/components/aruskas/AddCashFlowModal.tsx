@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, DatePicker, Select, Button, Divider, Upload, UploadFile, message, Image } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { CashFlowCategory, CashFlow } from '../../types/master';
-import { CurrencyInput } from '../../components/currencyInput/currencyInput';
+import { CashFlowCategory, CashFlow } from '@/app/types/master';
+import { CurrencyInput } from '@/app/components/currencyInput/currencyInput';
 import dayjs from 'dayjs';
 
 interface AddCashFlowModalProps {
@@ -81,13 +81,33 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({
 
   return (
     <Modal
-      title={initialData ? 'Edit Cash Flow' : 'Add Cash Flow'}
+      title={initialData ? 'Edit Arus Kas' : 'Tambah Arus Kas'}
       visible={visible}
       onCancel={onCancel}
       onOk={handleOk}
       okText="Submit"
     >
       <Form form={form} onFinish={handleFormSubmit} layout="vertical">
+      <Form.Item
+          name="date"
+          label="Tanggal"
+          rules={[{ required: true, message: 'Please select the date' }]}
+        >
+          <DatePicker format='' style={{ width: '100%' }} />
+        </Form.Item>
+        <Form.Item
+          name="cabang_id"
+          label="Nama Cabang"
+          rules={[{ required: true, message: 'Please select a company' }]}
+        >
+          <Select placeholder="Pilih Cabang">
+            {cabang?.map((company) => (
+              <Select.Option key={company.id} value={company.id}>
+                {company.nama_perusahaan}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
         <Form.Item
           name="category_id"
           label="Kategori"
@@ -112,22 +132,10 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({
             ))}
           </Select>
         </Form.Item>
-        <Form.Item
-          name="cabang_id"
-          label="Nama Cabang"
-          rules={[{ required: true, message: 'Please select a company' }]}
-        >
-          <Select placeholder="Pilih Cabang">
-            {cabang?.map((company) => (
-              <Select.Option key={company.id} value={company.id}>
-                {company.nama_perusahaan}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+
         <Form.Item
           name="description"
-          label="Deskripsi"
+          label="Keterangan"
           rules={[{ required: true, message: 'Please input the description' }]}
         >
           <Input placeholder='Enter a Description' />
@@ -143,13 +151,7 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({
             style={{ width: '100%' }}
           />
         </Form.Item>
-        <Form.Item
-          name="date"
-          label="Tanggal"
-          rules={[{ required: true, message: 'Please select the date' }]}
-        >
-          <DatePicker format='' style={{ width: '100%' }} />
-        </Form.Item>
+
 
         {/* Upload Files */}
         <Form.Item name="file" label="Upload Dokumen" rules={[{ required: true, message: 'Please upload a document' }]}>

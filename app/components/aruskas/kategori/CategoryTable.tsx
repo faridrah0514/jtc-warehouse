@@ -1,8 +1,8 @@
 'use client'
 import React, { useEffect, useState } from 'react';
 import { Table, Button, message, Popconfirm, Form } from 'antd';
-import { CashFlowCategory } from './types';
-import { useFetchCategories } from './hooks/useFetchCategories';
+import { CashFlowCategory } from '@/app/types/master';
+import { useFetchCategories } from '../../../hooks/aruskas/other/useFetchCategories';
 import AddCategoryModal from './AddCategoryModal';
 
 const CategoryTable: React.FC = () => {
@@ -32,7 +32,7 @@ const CategoryTable: React.FC = () => {
     // Open modal for adding a new category
     const handleAddCategory = () => {
         form.resetFields(); // Reset form fields for adding
-        form.setFieldsValue({ id: null }); // Ensure id is set to null for adding
+        form.setFieldsValue({ id: null, category_id: null }); // Ensure id is set to null for adding
         setCategoryModalVisible(true);
     };
 
@@ -41,7 +41,7 @@ const CategoryTable: React.FC = () => {
         form.setFieldsValue({
             id: category.id, // Pass the id to differentiate between add and update
             name: category.name,
-            description: category.description,
+            category_id: category.id,
             type: category.type,
         });
         setCategoryModalVisible(true);
@@ -80,11 +80,11 @@ const CategoryTable: React.FC = () => {
         try {
             if (values.id) {
                 // Update existing category
-                await updateCategory(values.id, { name: values.name, description: values.description, type: values.type });
+                await updateCategory(values.id, { name: values.name, category_id: values.category_id, type: values.type });
                 message.success('Category updated successfully');
             } else {
                 // Add new category
-                await addCategory({ name: values.name, description: values.description, type: values.type });
+                await addCategory({ name: values.name, category_id: values.category_id, type: values.type });
                 message.success('Category added successfully');
             }
             fetchCategoriesData();
@@ -93,6 +93,7 @@ const CategoryTable: React.FC = () => {
             message.error('Failed to save category');
         } finally {
             setLoading(false);
+            form.resetFields();
         }
     };
 
@@ -122,11 +123,11 @@ const CategoryTable: React.FC = () => {
                 }
             }
         },
-        {
-            title: 'Deskripsi',
-            dataIndex: 'description',
-            key: 'description',
-        },
+        // {
+        //     title: 'Deskripsi',
+        //     dataIndex: 'description',
+        //     key: 'description',
+        // },
         {
             title: 'Actions',
             key: 'actions',
@@ -154,10 +155,10 @@ const CategoryTable: React.FC = () => {
         <>
             <div className="bg-white p-6 rounded-lg shadow-md mt-6">
                 <div className="flex justify-between mb-4">
-                    <h1 className="text-2xl font-semibold">Cash Flow Categories</h1>
-                    {/* <Button type="primary" onClick={handleAddCategory}>
-                        Add Category
-                    </Button> */}
+                    <h1 className="text-2xl font-semibold">Kategori Arus Kas</h1>
+                    <Button type="primary" onClick={handleAddCategory}>
+                        + Tambah Kategori
+                    </Button>
                 </div>
                 <Table
                     columns={categoryColumns}
