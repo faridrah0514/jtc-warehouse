@@ -63,10 +63,10 @@ const Page: React.FC = () => {
     try {
       const method = editingData ? 'PUT' : 'POST'; // Use PUT for editing, POST for adding
       const endpoint = `/api/finance/cashflow/${cashFlowType}`;
-  
+
       // Include the `id` when editing
       const dataToSend = editingData ? { ...values, id: editingData.id } : values;
-  
+
       // Send the cash flow data first
       const response = await fetch(endpoint, {
         method: method,
@@ -74,24 +74,24 @@ const Page: React.FC = () => {
         body: JSON.stringify(dataToSend),
       });
       const result = await response.json();
-  
+
       if (response.ok && result.status === 200) {
         message.success(result.message);
-  
+
         // Upload files if any exist
         if (fileList.length > 0 && result.data?.id) {
           await uploadFiles(result.data.id, fileList);
         } else if (!result.data?.id) {
           message.error('Failed to get the cash flow ID for file upload');
         }
-  
+
         // Refresh data based on type
         if (cashFlowType === 'incoming') {
           fetchIncomingCashFlow();
         } else {
           fetchOutgoingCashFlow();
         }
-  
+
         setIsCashFlowModalVisible(false);
       } else {
         throw new Error(result.message || 'Failed to save cash flow record');
@@ -101,7 +101,7 @@ const Page: React.FC = () => {
     }
     setIsCashFlowModalVisible(false);
   };
-  
+
   // Function to upload files
   const uploadFiles = async (cashFlowId: string, fileList: UploadFile[]) => {
     try {
@@ -110,12 +110,12 @@ const Page: React.FC = () => {
         formData.append('files[]', file as FileType);
       });
       formData.append('cashFlowId', cashFlowId);
-      
+
       const response = await fetch(`/api/finance/cashflow/upload`, {
         method: 'POST',
         body: formData,
       });
-  
+
       const result = await response.json();
       if (response.ok && result.status === 200) {
         message.success('Files uploaded successfully');
@@ -127,7 +127,7 @@ const Page: React.FC = () => {
       console.error('Upload error:', error);
     }
   };
-  
+
 
   const handleAddCategory = async (category: Omit<CashFlowCategory, 'id'>) => {
     try {
@@ -180,7 +180,7 @@ const Page: React.FC = () => {
         categoryModalOnClick={showAddCategoryModal}
       />
       <AddCategoryModal
-      form={undefined}
+        form={undefined}
         visible={isCategoryModalVisible}
         onSubmit={handleAddCategory}
         onCancel={handleCancelCategoryModal}
