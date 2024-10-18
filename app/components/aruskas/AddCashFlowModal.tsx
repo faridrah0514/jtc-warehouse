@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, DatePicker, Select, Button, Divider, Upload, UploadFile, message, Image } from 'antd';
+import { Modal, Form, Input, DatePicker, Select, Button, Divider, Upload, UploadFile, message, Image, Table, Popconfirm } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { CashFlowCategory, CashFlow } from '@/app/types/master';
 import { CurrencyInput } from '@/app/components/currencyInput/currencyInput';
@@ -11,7 +11,7 @@ interface AddCashFlowModalProps {
   cashFlowType: 'incoming' | 'outgoing';
   onSubmit: (values: Omit<CashFlow, 'id'>, files: UploadFile[]) => void;
   onCancel: () => void;
-  initialData?: CashFlow | null;
+  initialData?: CashFlow | null;  // Indicates if we're in edit mode
   cabang: { id: string; nama_perusahaan: string }[];
   categoryModalOnClick: () => void;
 }
@@ -30,10 +30,18 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
+  const [editFileList, setEditFileList] = useState<UploadFile[]>([])
+
+
 
   const handleOk = () => {
     form.submit();
   };
+
+  const handleCancel = () => {
+    form.resetFields();
+    onCancel();
+  }
 
   const handleFormSubmit = (values: any) => {
     const formattedValues = {
@@ -63,18 +71,78 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({
       reader.onerror = (error) => reject(error);
     });
 
-  // Set initial values when editing
+
+  // Populate fileList when in edit mode (initialData)
   useEffect(() => {
-    if (initialData) {
+    if (initialData && initialData.files) {
       form.setFieldsValue({
         ...initialData,
         date: initialData.date ? dayjs(initialData.date) : null,
         amount: parseFloat(initialData.amount),
-      });
+      })
+      const filesFromData = initialData.files.map((fileName, index) => ({
+        uid: `${index}`,
+        name: fileName,
+        status: 'done' as 'done',
+        url: `${initialData.folder_path}/${fileName}`,
+      }));
+      setEditFileList(filesFromData);
     } else {
-      form.resetFields();
+      setEditFileList([]);
     }
-  }, [initialData, form]);
+  }, [initialData]);
+
+  const handleDelete = (file: UploadFile) => {
+    const fileUrl = file.url as string;
+    fetch(`/api/finance/cashflow/files`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ fileUrl }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        message.success('File deleted successfully');
+        setEditFileList(editFileList.filter(f => f.uid !== file.uid));
+      })
+      .catch((error) => {
+        console.error('Error deleting file:', error);
+        message.error('Failed to delete file');
+      });
+  };
+
+  // Table columns for the file list
+  const columns = [
+    {
+      title: 'Dokumen',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text: string, file: UploadFile) => (
+        <a href={file.url || '#'} target="_blank" rel="noopener noreferrer">
+          {text}
+        </a>
+      ),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_: any, file: UploadFile) => (
+        <Popconfirm
+          title="Are you sure to delete this file?"
+          onConfirm={() => handleDelete(file)}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button type="link" danger>
+            Delete
+          </Button>
+        </Popconfirm>
+      ),
+    },
+  ];
 
   // Filter categories based on the cashFlowType
   const filteredCategories = categories.filter(category => category.type === cashFlowType);
@@ -82,18 +150,18 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({
   return (
     <Modal
       title={initialData ? 'Edit Arus Kas' : 'Tambah Arus Kas'}
-      visible={visible}
-      onCancel={onCancel}
+      open={visible}
+      onCancel={handleCancel}
       onOk={handleOk}
       okText="Submit"
     >
       <Form form={form} onFinish={handleFormSubmit} layout="vertical">
-      <Form.Item
+        <Form.Item
           name="date"
           label="Tanggal"
           rules={[{ required: true, message: 'Please select the date' }]}
         >
-          <DatePicker format='' style={{ width: '100%' }} />
+          <DatePicker format='DD-MM-YYYY' style={{ width: '100%' }} />
         </Form.Item>
         <Form.Item
           name="cabang_id"
@@ -152,20 +220,18 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({
           />
         </Form.Item>
 
-
         {/* Upload Files */}
-        <Form.Item name="file" label="Upload Dokumen" rules={[{ required: true, message: 'Please upload a document' }]}>
+        <Form.Item name="file" label="Upload Dokumen">
           <Upload
             multiple
             onPreview={handlePreview}
             listType='picture-card'
             beforeUpload={(file) => {
-              setFileList([...fileList, file])
+              setFileList([...fileList, file]);
+              return false; // Prevent the file from uploading automatically
             }}
             onRemove={(file) => {
-              setFileList(
-                fileList.filter(v => file.uid != v.uid)
-              )
+              setFileList(fileList.filter(v => file.uid !== v.uid));
             }}
           >
             {fileList.length >= 5 ? null : (
@@ -176,6 +242,17 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({
             )}
           </Upload>
         </Form.Item>
+
+        {/* Display Uploaded Files in Table when in edit mode */}
+        {initialData && (
+          <Table
+            columns={columns}
+            dataSource={editFileList}
+            pagination={false}
+            rowKey="uid"
+            size='small'
+          />
+        )}
 
         {/* Image Preview */}
         {previewImage && (

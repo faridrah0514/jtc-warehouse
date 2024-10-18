@@ -194,6 +194,7 @@ CREATE TABLE `cash_flow` (
 
 CREATE TABLE `report_filters` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `report_type` enum('period','category') DEFAULT 'period',
   `cabang_id` varchar(250) DEFAULT NULL,
   `cash_flow_type` enum('incoming','outgoing','both') DEFAULT NULL,
   `categories` json DEFAULT NULL,

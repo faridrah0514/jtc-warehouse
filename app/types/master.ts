@@ -66,6 +66,8 @@ export interface CashFlow {
   amount: string; // or `number`, ensure it matches your backend type
   date: string; // Date in string format (e.g., ISO format)
   cabang_id: number 
+  folder_path?: string
+  files?: string[]; // List of file names 
 }
 
 export interface CashFlowCategory {

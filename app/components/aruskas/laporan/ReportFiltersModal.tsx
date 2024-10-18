@@ -32,6 +32,7 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
   refreshConfigurations, // Callback to refresh data
 }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [reportType, setReportType] = useState<any>('period'); // Default to 'period' (Arus Kas)
   const [form] = Form.useForm();
 
   // Fetch real data for cabang and categories
@@ -71,7 +72,8 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           // cabang_id: cabangIds,
-            cabang_id: cabangIds.join(', '),
+          report_type: values.reportType,
+          cabang_id: cabangIds.join(', '),
           nama_cabang: values.cabang.join(', '),
           cash_flow_type: values.cashFlowType,
           categories: values.categories,
@@ -121,12 +123,21 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
       {/* Modal */}
       <Modal
         title="Form Laporan Kas"
-        visible={isModalVisible}
+        open={isModalVisible}
         onCancel={hideModal}
         onOk={handleFormSubmit}
         okText="Apply"
       >
         <Form form={form} layout="vertical">
+          <Form.Item label="Tipe Laporan" name="reportType">
+            <Radio.Group
+              value={reportType}
+              onChange={(e: any) => setReportType(e.target.value)}
+            >
+              <Radio value="period">Arus Kas (By Period)</Radio>
+              <Radio value="category">Berdasarkan Kategori (By Category)</Radio>
+            </Radio.Group>
+          </Form.Item>
           {/* Cabang Selection */}
           <Form.Item name="cabang" label="Pilih Cabang" initialValue={selectedCabang}>
             <Select mode="multiple" placeholder="Pilih Nama Cabang">

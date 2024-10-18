@@ -7,19 +7,24 @@ export async function GET(request: Request): Promise<Response> {
     const conn = await openDB();
 
     // Retrieve the character set and collation from the database
-    const [charsetResult]: any[] = await conn.query(`SHOW VARIABLES LIKE 'character_set_database';`);
-    const [collationResult]: any[] = await conn.query(`SHOW VARIABLES LIKE 'collation_database';`);
+    const [charsetResult]: any[] = await conn.query(
+      `SHOW VARIABLES LIKE 'character_set_database';`
+    );
+    const [collationResult]: any[] = await conn.query(
+      `SHOW VARIABLES LIKE 'collation_database';`
+    );
 
-    const charset = charsetResult?.[0]?.Value || 'utf8mb4';
-    const collation = collationResult?.[0]?.Value || 'utf8mb4_unicode_ci';
+    const charset = charsetResult?.[0]?.Value || "utf8mb4";
+    const collation = collationResult?.[0]?.Value || "utf8mb4_unicode_ci";
 
     // Query to join `report_filters` with `cash_flow_category` and format the categories
-    const [filters]: any[] = await conn.query(
+    const [filters]: any[] = (await conn.query(
       `
       SELECT 
         rf.id, 
         rf.cabang_id, 
         rf.nama_cabang,
+        rf.report_type,
         rf.cash_flow_type, 
         rf.period_type, 
         rf.period_date, 
@@ -31,7 +36,7 @@ export async function GET(request: Request): Promise<Response> {
         ON JSON_CONTAINS(rf.categories, JSON_QUOTE(cfc.id), '$')
       GROUP BY rf.id
       `
-    ) as any[];
+    )) as any[];
 
     conn.end();
 
@@ -39,15 +44,17 @@ export async function GET(request: Request): Promise<Response> {
     const transformedFilters = filters.map((filter: any) => {
       // Convert the `categories` string to an array of strings, if it exists
       const categoriesArray = filter.categories
-        ? filter.categories.split(', ').map((category: string) => category.trim())
+        ? filter.categories
+            .split(", ")
+            .map((category: string) => category.trim())
         : [];
 
       const cabangIds = filter.cabang_id
-        ? filter.cabang_id.split(',').map((id: string) => id.trim())
+        ? filter.cabang_id.split(",").map((id: string) => id.trim())
         : [];
 
       const namaCabangs = filter.nama_cabang
-        ? filter.nama_cabang.split(',').map((name: string) => name.trim())
+        ? filter.nama_cabang.split(",").map((name: string) => name.trim())
         : [];
 
       return {
@@ -64,8 +71,6 @@ export async function GET(request: Request): Promise<Response> {
   }
 }
 
-
-
 export async function POST(request: Request): Promise<Response> {
   try {
     const conn = await openDB();
@@ -74,6 +79,7 @@ export async function POST(request: Request): Promise<Response> {
     // Validate required fields
     if (
       !data.nama_cabang ||
+      !data.report_type ||
       !data.cash_flow_type ||
       !data.categories ||
       !data.period_type ||
@@ -87,14 +93,15 @@ export async function POST(request: Request): Promise<Response> {
 
     // Insert the new filter configuration
     await conn.query(
-      "INSERT INTO report_filters (nama_cabang, cash_flow_type, categories, period_type, period_date, cabang_id) VALUES (?, ?, ?, ?, ?, ?)",
+      "INSERT INTO report_filters (nama_cabang, report_type, cash_flow_type, categories, period_type, period_date, cabang_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
         data.nama_cabang,
+        data.report_type,
         data.cash_flow_type,
         JSON.stringify(data.categories),
         data.period_type,
         data.period_date,
-        data.cabang_id
+        data.cabang_id,
       ]
     );
 
@@ -108,4 +115,3 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ status: 500, error: e.sqlMessage });
   }
 }
-

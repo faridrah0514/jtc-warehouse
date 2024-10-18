@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Button, message, UploadFile, UploadProps, GetProp } from 'antd';
+import { Row, Col, Button, message, UploadFile, UploadProps, GetProp, Form } from 'antd';
 import CashFlowTable from '@/app/components/aruskas/CashFlowTable';
 import AddCashFlowModal from '@/app/components/aruskas/AddCashFlowModal';
 import AddCategoryModal from '@/app/components/aruskas/kategori/AddCategoryModal';
@@ -21,12 +21,14 @@ const Page: React.FC = () => {
   const { data: outgoingData, loading: outgoingLoading, fetchCashFlow: fetchOutgoingCashFlow, deleteCashFlow: deleteOutgoingCashFlow } = useFetchCashFlow('outgoing');
   const { cabang } = useFetchCabang(); // Fetch cabang data
   const { categories, fetchCategories, addCategory } = useFetchCategories();
+  const [form] = Form.useForm(); // Create a form instance for the category modal
   type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
+
   useEffect(() => {
     fetchIncomingCashFlow();
     fetchOutgoingCashFlow();
     fetchCategories();
-  }, []);
+  }, [isCashFlowModalVisible]);
 
   const showAddCashFlowModal = (type: 'incoming' | 'outgoing') => {
     setCashFlowType(type);
@@ -42,17 +44,24 @@ const Page: React.FC = () => {
       description: record.description,
       amount: record.amount.toString(), // Convert to string if needed
       date: record.date,
-      nama_perusahaan: record.nama_perusahaan // Proper format for `dayjs`
+      nama_perusahaan: record.nama_perusahaan, // Proper format for `dayjs`
+      folder_path: record.folder_path,
+      files: record.files
     });
     setIsCashFlowModalVisible(true);
   };
 
   const showAddCategoryModal = () => {
+    form.resetFields(); // Reset form fields for adding
+    form.setFieldsValue({ id: null, category_id: null }); // Ensure id is set to null for adding
     setIsCategoryModalVisible(true);
   };
 
   const handleCancelCashFlowModal = () => {
+    form.resetFields();
     setIsCashFlowModalVisible(false);
+    fetchIncomingCashFlow();
+    fetchOutgoingCashFlow();
   };
 
   const handleCancelCategoryModal = () => {
@@ -105,6 +114,7 @@ const Page: React.FC = () => {
   // Function to upload files
   const uploadFiles = async (cashFlowId: string, fileList: UploadFile[]) => {
     try {
+
       const formData = new FormData();
       fileList.forEach((file) => {
         formData.append('files[]', file as FileType);
@@ -180,7 +190,7 @@ const Page: React.FC = () => {
         categoryModalOnClick={showAddCategoryModal}
       />
       <AddCategoryModal
-      form={undefined}
+      form={form}
         visible={isCategoryModalVisible}
         onSubmit={handleAddCategory}
         onCancel={handleCancelCategoryModal}

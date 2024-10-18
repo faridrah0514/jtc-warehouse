@@ -22,7 +22,7 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ visible, onSubmit, 
   };
 
   return (
-    <Modal title="Tambah Kategori" visible={visible} onCancel={onCancel} onOk={handleOk} okText="Submit">
+    <Modal title="Tambah Kategori" open={visible} onCancel={onCancel} onOk={handleOk} okText="Submit">
       <Form form={form} onFinish={handleFormSubmit} layout="vertical">
         <Form.Item name="id" hidden>
           <Input type="hidden" />

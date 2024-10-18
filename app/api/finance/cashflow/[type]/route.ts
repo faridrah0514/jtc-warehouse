@@ -1,5 +1,11 @@
 import { openDB } from "@/helper/db";
 import { NextResponse } from "next/server";
+import { projectRoot } from "@/app/projectRoot";
+import { readdir } from "fs/promises";
+import path from "path";
+import { CashFlow } from "@/app/types/master";
+import { RowDataPacket } from "mysql2/promise";
+import { rmdir } from "fs/promises";
 
 // Fetch cash flows based on type (incoming or outgoing)
 export async function GET(request: Request, { params }: { params: { type: string } }): Promise<Response> {
@@ -7,7 +13,8 @@ export async function GET(request: Request, { params }: { params: { type: string
     const conn = await openDB();
     const { type } = params;
 
-    const [cashFlows] = await conn.query(
+    // Destructure query result to get both the rows (cashFlows) and metadata (fields)
+    const [cashFlows]: [CashFlow[] & RowDataPacket[], any] = await conn.query(
       `SELECT cf.*, c.nama_perusahaan as nama_perusahaan
        FROM cash_flow cf 
        JOIN cabang c ON cf.cabang_id = c.id 
@@ -15,7 +22,29 @@ export async function GET(request: Request, { params }: { params: { type: string
       [type]
     );
 
+    // Close the database connection
     conn.end();
+
+    // Loop through each cashFlow and get the list of files in the folder_path
+    for (const cashFlow of cashFlows) {
+      if (cashFlow.folder_path) {
+        const directoryPath = path.join(projectRoot, cashFlow.folder_path);
+
+        try {
+          // Read the list of files in the folder
+          const files = await readdir(directoryPath);
+          cashFlow.files = files; // Add the list of files to the cashFlow object
+        } catch (e) {
+          // Handle errors such as the folder not existing or permission issues
+          console.error(`Error reading directory: ${directoryPath}`, e);
+          cashFlow.files = []; // If there's an error, return an empty array for files
+        }
+      } else {
+        cashFlow.files = []; // If no folder_path, return an empty array
+      }
+    }
+
+    // Return the response with cashFlows and their respective files
     return NextResponse.json({ status: 200, data: cashFlows });
   } catch (e: any) {
     console.error(e.sqlMessage);
@@ -75,9 +104,21 @@ export async function DELETE(request: Request): Promise<Response> {
       return NextResponse.json({ status: 400, error: "ID is required" });
     }
 
+    // Delete the cash flow record from the database
     await conn.query('DELETE FROM cash_flow WHERE id = ?', [data.id]);
+
+    // Define the directory path to be deleted
+    const directoryPath = path.join(projectRoot, 'upload', 'cashflow', String(data.id));
+
+    try {
+      // Remove the directory and its contents
+      await rmdir(directoryPath, { recursive: true });
+    } catch (e) {
+      console.error(`Error deleting directory: ${directoryPath}`, e);
+    }
+
     conn.end();
-    return NextResponse.json({ status: 200, message: "Cash flow record deleted successfully" });
+    return NextResponse.json({ status: 200, message: "Cash flow record and associated folder deleted successfully" });
   } catch (e: any) {
     console.error(e.sqlMessage);
     return NextResponse.json({ status: 500, error: e.sqlMessage });

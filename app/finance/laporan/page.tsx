@@ -7,6 +7,9 @@ import { ReportFiltersModal } from '@/app/components/aruskas/laporan/ReportFilte
 import PrintableReport from '@/app/components/aruskas/laporan/PrintableReport'
 import dayjs from 'dayjs'
 import { Tooltip } from 'antd';
+import CategoryReport from './CategoryReport'
+import PeriodReport from './PeriodReport'
+import { useSession } from 'next-auth/react';
 
 const { Text } = Typography
 
@@ -23,6 +26,7 @@ export default function Page() {
   const [printedData, setPrintedData] = useState<any>(null)
   const printRef = useRef(null)
   const printRecordRef = useRef<any>(null)
+  const { data: session } = useSession()
 
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
@@ -103,6 +107,7 @@ export default function Page() {
 
       const payload = {
         cabang_id: record.cabang_id,
+        report_type: record.report_type,
         nama_cabang: record.nama_cabang,
         categories: record.categories.map((item: any) => item.split(' - ')[0]),
         period_type: record.period_type,
@@ -110,7 +115,7 @@ export default function Page() {
         period_end: periodEnd,
       };
 
-      const response = await fetch('/api/report-filters/fetch-cashflow', {
+      const response = await fetch('/api/report-filters/fetch-cashflow-v2', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -118,20 +123,12 @@ export default function Page() {
 
       if (!response.ok) throw new Error('Failed to fetch cash flow data');
 
-      const result = await response.json();
-      // Parse data if needed
-      const parsedData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data;
+      let result = await response.json();
+      
+      result.report_type = record.report_type;
+      result.period_date = record.period_date
 
-      // Prepare data for PrintableReport
-      const printData = Object.entries(parsedData).map(([cabang, details]: [string, any]) => ({
-        cabang,
-        records: details.records,
-        total_incoming: details.total_incoming,
-        total_outgoing: details.total_outgoing,
-        total_amount: details.total_amount,
-      }));
-
-      setPrintedData(printData);
+      setPrintedData(result);
       setPrint(true); // Trigger print
     } catch (error: any) {
       message.error(error.message || 'Error fetching cash flow data.');
@@ -148,6 +145,15 @@ export default function Page() {
         <Text strong>{nama_cabang.join(', ')}</Text>
       ),
       width: '20%',
+    },
+    {
+      title: 'Tipe Laporan',
+      dataIndex: 'report_type',
+      key: 'report_type',
+      render: (type: string) => (
+        <Text>{type === 'category' ? 'Kategori' : 'Periode'}</Text>
+      ),
+      width: '15%',
     },
     {
       title: 'Tipe Kas',
@@ -243,10 +249,13 @@ export default function Page() {
           {/* Printable Component */}
           <div style={{ display: 'none' }}>
             {printedData && (
-              <PrintableReport
-                ref={printRef}
-                printedData={printedData}
-              />
+                <>
+                {printedData?.report_type === 'category' ? (
+                  <CategoryReport ref={printRef} user={session?.user?.name || 'Unknown'} printedData={printedData} />              
+                ) : (
+                  <PeriodReport ref={printRef} user={session?.user?.name || 'Unknown'} printedData={printedData} />
+                )}
+                </>
             )}
           </div>
         </>

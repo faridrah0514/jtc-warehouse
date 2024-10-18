@@ -2,6 +2,8 @@ import path from "path";
 import { writeFile } from "fs/promises";
 import { projectRoot } from "@/app/projectRoot";
 import fs from "fs";
+import { openDB } from '@/helper/db'; // Assuming you have a DB connection setup here
+import { ResultSetHeader } from 'mysql2/promise'; // Import ResultSetHeader from your MySQL library
 
 export async function POST(request: Request): Promise<Response> {
   try {
@@ -32,7 +34,6 @@ export async function POST(request: Request): Promise<Response> {
         const buffer = Buffer.from(await file.arrayBuffer());
         const filename = file.name.replaceAll(" ", "_");
         const filepath = path.join(directoryPath, filename);
-        console.log("Write file to:", filepath);
 
         try {
           await writeFile(filepath, buffer);
@@ -45,8 +46,31 @@ export async function POST(request: Request): Promise<Response> {
         }
       }
 
+      // Now, store the folder path in the database
+      const db = await openDB();
+      const folderPath = path.join(cashFlowPath, cashFlowId);
+      try {
+        const [result]: [ResultSetHeader, any] = await db.query<ResultSetHeader>(
+          "UPDATE cash_flow SET folder_path = ? WHERE id = ?",
+          [folderPath, cashFlowId]
+        );
+
+        if (result.affectedRows === 0) {
+          return new Response(
+            JSON.stringify({ status: 400, message: "Invalid cashFlowId" }),
+            { status: 400 }
+          );
+        }
+      } catch (e) {
+        console.error("Database error:", e);
+        return new Response(
+          JSON.stringify({ status: 500, message: "Database error" }),
+          { status: 500 }
+        );
+      }
+
       return new Response(
-        JSON.stringify({ status: 200, message: "Files uploaded successfully" }),
+        JSON.stringify({ status: 200, message: "Files uploaded and path stored successfully" }),
         { status: 200 }
       );
     }

@@ -63,8 +63,30 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
     },
     {
       title: 'Dokumen',
-      dataIndex: 'document',
-      key: 'document',
+      dataIndex: 'files',
+      key: 'files',
+      render: (files: string[] | undefined, record: CashFlow) => {
+        if (!files || files.length === 0) {
+          return <span>No documents</span>;
+        }
+  
+        // Return the list of files as clickable links
+        return (
+          <div>
+            {files.map((file, index) => (
+              <a
+                key={index}
+                href={`${record.folder_path}/${file}`} // Assuming folder_path contains the path to the file
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'block', marginBottom: '5px' }}
+              >
+                {file}
+              </a>
+            ))}
+          </div>
+        );
+      },
     },
     {
       title: 'Actions',
@@ -88,6 +110,7 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
       ),
     },
   ];
+  
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
