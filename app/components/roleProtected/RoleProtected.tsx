@@ -41,6 +41,7 @@ const RoleProtected = ({ allowedRoles, actionType, createdAt, children }: RolePr
   const editableUntil = session?.user?.editable_until ?? 0; // Get editable_until from session (in days)
   const isSupervisor = userRole === "supervisor";
   const isReporter = userRole === "reporter";
+  const isFinance = userRole === "finance";
   let disabled = false;
 
   // Default: disable if user doesn't have the correct role
@@ -51,7 +52,7 @@ const RoleProtected = ({ allowedRoles, actionType, createdAt, children }: RolePr
   // Handle specific actions based on role and createdAt for supervisors
   switch (actionType) {
     case "edit":
-      if (isSupervisor && createdAt) {
+      if ((isSupervisor || isFinance) && createdAt) {
         const createdAtDate = dayjs(createdAt);
         const editDeadline = createdAtDate.add(editableUntil, "day");
         const now = dayjs();
@@ -60,8 +61,8 @@ const RoleProtected = ({ allowedRoles, actionType, createdAt, children }: RolePr
           disabled = true; // Disable edit button after the editable_until days have passed
         }
       }
-      if (isReporter) {
-        disabled = true; // Reporters cannot edit
+      if (isReporter || isFinance) {
+        disabled = true; // Reporters or Finance cannot edit
       }
       break;
     case "delete":

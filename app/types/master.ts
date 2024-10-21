@@ -67,7 +67,9 @@ export interface CashFlow {
   date: string; // Date in string format (e.g., ISO format)
   cabang_id: number 
   folder_path?: string
+  nama_toko?: string
   files?: string[]; // List of file names 
+  created_at?: string
 }
 
 export interface CashFlowCategory {

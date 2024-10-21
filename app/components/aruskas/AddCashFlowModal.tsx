@@ -200,13 +200,18 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({
             ))}
           </Select>
         </Form.Item>
+        <Form.Item
+          name="nama_toko"
+          label="Nama Toko">
+          <Input placeholder='Masukkan Nama Toko' />
+        </Form.Item>
 
         <Form.Item
           name="description"
           label="Keterangan"
           rules={[{ required: true, message: 'Please input the description' }]}
         >
-          <Input placeholder='Enter a Description' />
+          <Input placeholder='Masukkan keterangan' />
         </Form.Item>
         <Form.Item
           name="amount"

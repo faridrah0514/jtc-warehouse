@@ -128,6 +128,7 @@ export default function Page() {
       result.report_type = record.report_type;
       result.period_date = record.period_date
 
+      console.log("result --> ", result)
       setPrintedData(result);
       setPrint(true); // Trigger print
     } catch (error: any) {

@@ -78,8 +78,8 @@ export async function POST(request: Request, { params }: { params: { type: strin
       }
   
       const result: any = await conn.query(
-        'INSERT INTO cash_flow (category_id, cabang_id, description, amount, date) VALUES (?, ?, ?, ?, ?)',
-        [data.category_id, data.cabang_id, data.description, data.amount, formattedDate]
+        'INSERT INTO cash_flow (category_id, cabang_id, description, amount, nama_toko, date) VALUES (?, ?, ?, ?, ?, ?)',
+        [data.category_id, data.cabang_id, data.description, data.amount, data.nama_toko, formattedDate]
       );
       
       const insertedId = result[0].insertId; // Retrieve the inserted record's ID
@@ -136,8 +136,8 @@ export async function PUT(request: Request, { params }: { params: { type: string
       }
   
       await conn.query(
-        'UPDATE cash_flow SET category_id = ?, description = ?, amount = ?, date = ?, cabang_id = ? WHERE id = ?',
-        [data.category_id, data.description, data.amount, data.date, data.cabang_id, data.id]
+        'UPDATE cash_flow SET category_id = ?, description = ?, amount = ?, date = ?, cabang_id = ?, nama_toko = ? WHERE id = ?',
+        [data.category_id, data.description, data.amount, data.date, data.cabang_id, data.nama_toko, data.id]
       );
   
       conn.end();

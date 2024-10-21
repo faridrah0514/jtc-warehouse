@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       // Arus Kas (By Period) Report
       results = await db.query(
         `SELECT c.id as cabang_id, c.nama_perusahaan, c.kota, 
-                        cf.description, cf.amount, cf.date, cf_category.type as category_type, cf.category_id, cf_category.name as category_name
+                        cf.description, cf.amount, cf.date, cf_category.type as category_type, cf.category_id, cf_category.name as category_name, cf.nama_toko
                  FROM cash_flow cf
                  INNER JOIN cabang c ON cf.cabang_id = c.id
                  INNER JOIN cash_flow_category cf_category ON cf.category_id = cf_category.id
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       // Laporan Berdasarkan Kategori (By Category)
       results = await db.query(
         `SELECT c.id as cabang_id, c.nama_perusahaan, c.kota, 
-                        cf.description, cf.amount, cf.date, cf_category.id as category_id, cf_category.name as category_name, cf_category.type as category_type
+                        cf.description, cf.amount, cf.date, cf_category.id as category_id, cf_category.name as category_name, cf_category.type as category_type, cf.nama_toko
                  FROM cash_flow cf
                  INNER JOIN cabang c ON cf.cabang_id = c.id
                  INNER JOIN cash_flow_category cf_category ON cf.category_id = cf_category.id
@@ -117,6 +117,7 @@ export async function POST(req: Request) {
 
       // Add transaction details to each cabang, including category information and remaining balance
       acc[record.cabang_id].transactions.push({
+        nama_toko: record.nama_toko,
         description: record.description,
         amount: record.amount,
         date: record.date,
@@ -130,10 +131,19 @@ export async function POST(req: Request) {
       acc[record.cabang_id].remaining_balance = newRemaining;
 
       // Update total amount (saldo_awal + total_incoming - total_outgoing)
-      acc[record.cabang_id].total_amount =
-        (report_type === "period" ? acc[record.cabang_id].saldo_awal : 0) +
-        (acc[record.cabang_id].total_incoming -
-          acc[record.cabang_id].total_outgoing);
+      if (report_type === "period") {
+        acc[record.cabang_id].total_amount =
+          acc[record.cabang_id].saldo_awal +
+          (acc[record.cabang_id].total_incoming -
+        acc[record.cabang_id].total_outgoing);
+      } else if (report_type === "category") {
+        // If the report type is 'category' and the category type is 'outgoing', the total amount should be positive
+        const totalAmount =
+          acc[record.cabang_id].total_incoming -
+          acc[record.cabang_id].total_outgoing;
+        acc[record.cabang_id].total_amount =
+          record.category_type === "outgoing" ? Math.abs(totalAmount) : totalAmount;
+      }
 
       return acc;
     }, {});

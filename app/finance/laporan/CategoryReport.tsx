@@ -25,9 +25,18 @@ const CategoryReport = React.forwardRef<HTMLDivElement, CategoryReportProps>(({ 
             title: 'Tanggal',
             dataIndex: 'date',
             key: 'date',
-            width: '25%',
+            width: '20%',
             render: (text: string) => (
                 <Text>{new Date(text).toLocaleDateString('id-ID')}</Text>
+            ),
+        },
+        {
+            title: 'Nama Toko',
+            dataIndex: 'nama_toko',
+            key: 'nama_toko',
+            width: '20%',
+            render: (text: string) => (
+                <Text>{text}</Text>
             ),
         },
         {
@@ -35,16 +44,16 @@ const CategoryReport = React.forwardRef<HTMLDivElement, CategoryReportProps>(({ 
             dataIndex: 'description',
             key: 'description',
             render: (_: any, record: any) => (
-                <Text>{record.category_name} - {record.description}</Text>
+                <Text>{record.description}</Text>
             ),
-            width: '50%',
+            width: '40%',
         },
         {
             title: 'Jumlah (Rp)',
             dataIndex: 'amount',
             key: 'amount',
             align: 'right',
-            width: '25%',
+            width: '20%',
             render: (amount: number) => <Text>{formatCurrency(amount)}</Text>,
         },
     ];
@@ -99,7 +108,7 @@ const CategoryReport = React.forwardRef<HTMLDivElement, CategoryReportProps>(({ 
                             size='small'
                             summary={() => (
                                 <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
-                                    <Table.Summary.Cell index={0} align='right' colSpan={2}><Text strong>Total:</Text></Table.Summary.Cell>
+                                    <Table.Summary.Cell index={0} align='right' colSpan={3}><Text strong>Total:</Text></Table.Summary.Cell>
                                     <Table.Summary.Cell index={2} align="right">
                                         <Text strong>{cabangDetails.total_amount?.toLocaleString('id-ID')}</Text>
                                     </Table.Summary.Cell>

@@ -46,7 +46,8 @@ const Page: React.FC = () => {
       date: record.date,
       nama_perusahaan: record.nama_perusahaan, // Proper format for `dayjs`
       folder_path: record.folder_path,
-      files: record.files
+      files: record.files,
+      nama_toko: record.nama_toko
     });
     setIsCashFlowModalVisible(true);
   };

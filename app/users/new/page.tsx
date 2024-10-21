@@ -104,7 +104,7 @@ const Page: React.FC = () => {
             </Select>
           </Form.Item>
 
-          {role === 'supervisor' && (
+          {role === 'supervisor' || role === 'finance' && (
             <Form.Item
               name="editable_until"
               label="Days Editable"

@@ -144,9 +144,9 @@ CREATE TABLE `transaksi_ipl` (
 -- jtc_warehouse.laporan definition
 CREATE TABLE `laporan` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `nama_cabang` json DEFAULT NULL,
-  `nama_aset` json DEFAULT NULL,
-  `periode` json DEFAULT NULL,
+  `nama_cabang` VARCHAR(255) DEFAULT NULL,
+  `nama_aset` VARCHAR(255) DEFAULT NULL,
+  `periode` VARCHAR(255) DEFAULT NULL,
   `jenis_laporan` varchar(255) DEFAULT NULL,
   `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -178,6 +178,8 @@ CREATE TABLE `cash_flow` (
   `id` int NOT NULL AUTO_INCREMENT,
   `category_id` varchar(50) NOT NULL,
   `description` varchar(255) NOT NULL,
+  `folder_path` varchar(255) DEFAULT NULL,
+  `nama_toko` varchar(255) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL,
   `date` date NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,

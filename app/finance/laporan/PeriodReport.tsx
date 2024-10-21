@@ -33,6 +33,11 @@ const PeriodReport = React.forwardRef<HTMLDivElement, PeriodReportProps>(({ prin
       key: 'category_id',
     },
     {
+      title: 'Nama Toko',
+      dataIndex: 'nama_toko',
+      key: 'nama_toko',
+    },
+    {
       title: 'Keterangan',
       dataIndex: 'description',
       key: 'description',
@@ -92,7 +97,10 @@ const PeriodReport = React.forwardRef<HTMLDivElement, PeriodReportProps>(({ prin
             </div>
 
             {/* Period Section */}
-            <Title level={4} style={{ textAlign: 'center', marginBottom: '10px' }}>
+            <Title level={3} style={{ textAlign: 'center', marginBottom: '-10px', paddingBottom: '2px' }}>
+              Arus Kas
+            </Title>
+            <Title level={4} style={{ textAlign: 'center', marginBottom: '10px', marginTop: '0px' }}>
               {dayjs(cabangDetails.period_start).format('MMMM YYYY')}
             </Title>
 
@@ -123,8 +131,8 @@ const PeriodReport = React.forwardRef<HTMLDivElement, PeriodReportProps>(({ prin
 
                 return (
                   <>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell index={0} colSpan={3}><Text strong>Total:</Text></Table.Summary.Cell>
+                    <Table.Summary.Row style={{ backgroundColor: '#fafafa' }}>
+                      <Table.Summary.Cell index={0} colSpan={4}><Text strong>Total:</Text></Table.Summary.Cell>
                       <Table.Summary.Cell index={3} align="right">
                         <Text strong>{formatCurrency(totalIncoming)}</Text>
                       </Table.Summary.Cell>

@@ -123,11 +123,6 @@ const CategoryTable: React.FC = () => {
                 }
             }
         },
-        // {
-        //     title: 'Deskripsi',
-        //     dataIndex: 'description',
-        //     key: 'description',
-        // },
         {
             title: 'Actions',
             key: 'actions',

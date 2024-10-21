@@ -1,8 +1,10 @@
 import React from 'react';
 import { Table, Button, Popconfirm } from 'antd';
 import { CashFlow, CashFlowCategory } from '@/app/types/master'; // Import CashFlow and CashFlowCategory types
+import dayjs from 'dayjs'; // Import dayjs for date formatting
 import { ColumnsType } from 'antd/es/table';
 import { _renderCurrency } from '@/app/utils/renderCurrency';
+import RoleProtected from '../roleProtected/RoleProtected';
 
 interface CashFlowTableProps {
   data: CashFlow[];
@@ -40,6 +42,11 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
       title: 'Kategori',
       key: 'category',
       render: (text: any, record: CashFlow) => getCategoryDisplayName(record.category_id),
+    },
+    {
+      title: 'Nama Toko',
+      dataIndex: 'nama_toko',
+      key: 'nama_toko',
     },
     {
       title: 'Keterangan',
@@ -89,13 +96,21 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
       },
     },
     {
+      title: 'Tanggal Entri',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (created_at: string) => dayjs(created_at).format('DD-MM-YYYY')
+    },
+    {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: CashFlow) => (
         <>
+        <RoleProtected allowedRoles={['finance', 'admin']} actionType='edit' createdAt={record.created_at}>
           <Button type="link" onClick={() => onEdit(record)}>
             Edit
           </Button>
+          </RoleProtected>
           <Popconfirm
             title="Are you sure to delete this record?"
             onConfirm={() => onDelete(record.id)}
