@@ -9,7 +9,7 @@ import generatePDF, { Resolution, Margin } from 'react-to-pdf';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
-
+import 'dayjs/locale/id';
 const getTargetElement = () => document.getElementById('content-id');
 export default function Page({ params }: { params: { id: string } }) {
   const [tagihanListrikData, setTagihanListrikData] = useState<any>();
@@ -51,29 +51,20 @@ export default function Page({ params }: { params: { id: string } }) {
     },
   };
   
-  // const handleDownloadPDF = () => {
-  //   const input = document.getElementById('content-id'); 
-  //   // Specify the id of the element you want to convert to PDF
-  //   html2canvas(input).then((canvas) => {
-  //     const imgData = canvas.toDataURL('image/png');
-  //     const pdf = new jsPDF();
-  //     pdf.addImage(imgData, 'PNG', 0, 0);
-  //     pdf.save('downloaded-file.pdf'); 
-  //     // Specify the name of the downloaded PDF file
-  //   });
-  // };
   useEffect(
     () => {
       async function getData() {
         const response = await fetch(`/api/master/transaksi/listrik`, { method: 'GET', cache: 'no-store' })
         const data = await response.json()
 
+        console.log("data ---> ", data)
         if (data) {
           setTagihanListrikData(data.data.filter(
             (value: any) => value.id == params.id
           ).map(
             (v: any) => {
-              v.thn_bln_dayjs = dayjs(v.thn_bln, "MM-YYYY").format("MMMM YYYY")
+              // console.log("dayjs(v.thn_bln) -> ", dayjs("01-"+v.thn_bln, "DD-MM-YYYY"))
+              v.thn_bln_dayjs = dayjs(v.bln_thn, "MM-YYYY").locale('id').format("MMMM YYYY")
               v.jumlah_pemakaian = v.meteran_akhir - v.meteran_awal
               v.total_tagihan_listrik = v.jumlah_pemakaian * v.kwh_rp
               return v

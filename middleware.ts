@@ -8,7 +8,7 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Ignore static file requests like images, CSS, JS, etc.
-  const isStaticAsset = pathname.match(/\.(png|jpg|jpeg|gif|webp|svg|css|js)$/) || pathname.startsWith('/_next') || pathname.startsWith('/favicon.ico');
+  const isStaticAsset = pathname.match(/\.(png|jpg|jpeg|gif|webp|svg|css|js)$/) || pathname.startsWith('/_next') || pathname.startsWith('/favicon.ico') || pathname.startsWith('/profile');
 
   if (isStaticAsset) {
     return NextResponse.next(); // Allow static assets to load without redirection

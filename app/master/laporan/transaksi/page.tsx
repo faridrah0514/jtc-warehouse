@@ -305,7 +305,9 @@ export default function Page() {
                         {item.jenis_laporan === "DAFTAR PENYEWA PER-TAHUN" && (
                           <Title level={5} style={{ margin: '20px 0 -20px 0', fontSize: '16px' }}>Tahun: {item.periode}</Title>
                         )}
-                        <Title level={5} style={{ margin: "20px 0", fontSize: '12px' }}>{aset}</Title>
+                        {!item.jenis_laporan.startsWith("DAFTAR JATUH TEMPO") && (
+                          <Title level={5} style={{ margin: "20px 0", fontSize: '12px' }}>{aset}</Title>
+                        )}
                       </div>
 
                       {/* Asset and Branch info */}
@@ -347,6 +349,12 @@ export default function Page() {
                     </div> */}
                   </div>
 
+            {/* Footer with User and Date */}
+            <div className="print-footer">
+                <Text style={{ fontSize: '10px', color: 'grey' }}>{session?.user?.name} - {dayjs().format('DD MMMM YYYY, HH:mm')}</Text>
+                {/* <br /> */}
+                {/* <Text style={{ fontSize: '10px', color: 'grey' }}>{dayjs().format('DD MMMM YYYY')}</Text> */}
+            </div>
                   {/* Page break for printing */}
                   <div className="page-break">
         
@@ -356,7 +364,7 @@ export default function Page() {
             })}
           </div>
 
-          <style jsx global>{`
+          <style jsx>{`
             .print-only {
               display: none;
             }
@@ -376,7 +384,15 @@ export default function Page() {
                 size: landscape;
                 margin: 5mm;
               }
-
+              .print-footer {
+                  position: fixed;
+                  bottom: 0;
+                  left: 0;
+                  right: 0;
+                  padding: 1px 1px;
+                  text-align: right;
+                  font-size: 5px;
+              }
 
               .print-only {
                 text-align: center;

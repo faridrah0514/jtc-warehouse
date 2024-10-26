@@ -131,6 +131,7 @@ export async function POST(request: Request, response: Response) {
           LEFT JOIN aset a ON ts.id_aset = a.id
           LEFT JOIN pelanggan p ON ts.id_pelanggan = p.id
           where a.nama_aset in (?) and c.nama_perusahaan in (?)
+          ORDER BY STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y') ASC
           `,
           [
             data.periode,
@@ -176,7 +177,7 @@ export async function POST(request: Request, response: Response) {
           data.nama_cabang &&
           data.nama_cabang.toLowerCase() !== "semua cabang"
         ) {
-          if (data.nama_aset) {
+          if (data.nama_aset && data.nama_aset.toLowerCase() !== "semua aset") {
             query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
             queryParams.push(
               data.nama_cabang.split(", "),
@@ -189,7 +190,7 @@ export async function POST(request: Request, response: Response) {
         }
 
         // Add ORDER BY clause here to make it apply regardless of conditions
-        query += " ORDER BY ti.periode_pembayaran ASC";
+        query += " ORDER BY STR_TO_DATE(ti.periode_pembayaran, '%m-%Y') ASC";
 
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
@@ -314,7 +315,7 @@ export async function POST(request: Request, response: Response) {
           data.nama_cabang &&
           data.nama_cabang.toLowerCase() !== "semua cabang"
         ) {
-          if (data.nama_aset) {
+          if (data.nama_aset && data.nama_aset.toLowerCase() !== "semua aset") {
             query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
             queryParams.push(
               data.nama_cabang.split(", "),
@@ -326,6 +327,7 @@ export async function POST(request: Request, response: Response) {
           }
         }
 
+        query += " ORDER BY STR_TO_DATE(ti.bln_thn, '%m-%Y') ASC";
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
           queryParams
@@ -515,7 +517,7 @@ export async function POST(request: Request, response: Response) {
           data.nama_cabang &&
           data.nama_cabang.toLowerCase() !== "semua cabang"
         ) {
-          if (data.nama_aset) {
+          if (data.nama_aset && data.nama_aset.toLowerCase() !== "semua aset") {
             query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
             queryParams.push(
               data.nama_cabang.split(", "),
@@ -527,6 +529,7 @@ export async function POST(request: Request, response: Response) {
           }
         }
 
+        query += " ORDER BY STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y') ASC";
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
           queryParams
@@ -715,7 +718,7 @@ export async function POST(request: Request, response: Response) {
           data.nama_cabang &&
           data.nama_cabang.toLowerCase() !== "semua cabang"
         ) {
-          if (data.nama_aset) {
+          if (data.nama_aset && data.nama_aset.toLowerCase() !== "semua aset") {
             query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
             queryParams.push(
               data.nama_cabang.split(", "),
@@ -726,6 +729,8 @@ export async function POST(request: Request, response: Response) {
             queryParams.push(data.nama_cabang.split(", "));
           }
         }
+
+        query += " ORDER BY STR_TO_DATE(tl.bln_thn, '%m-%Y') ASC";
 
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
@@ -840,6 +845,8 @@ export async function POST(request: Request, response: Response) {
           query += " AND c.nama_perusahaan IN (?)";
           queryParams.push(data.nama_cabang.split(", "));
         }
+
+        query += " ORDER BY STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y') ASC";
 
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
@@ -978,6 +985,8 @@ export async function POST(request: Request, response: Response) {
 
         const queryParams: any[] = [data.periode];
 
+        query += " ORDER BY STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y') ASC";
+        
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
           queryParams
