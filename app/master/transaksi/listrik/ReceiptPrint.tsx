@@ -56,12 +56,16 @@ const ReceiptPrint = forwardRef<ReceiptPrintHandle>((_, ref) => {
           }
         `}
       </style>
+
+      {/* Header Section */}
       <div style={{ textAlign: 'left', paddingBottom: '10px' }}>
         <Text style={{ fontWeight: 'bold' }}>Pengelola</Text><br />
         <Text style={{ fontWeight: 'bold' }}>Jambi Trade Center</Text><br />
         <Text style={{ fontWeight: 'bold' }}>Jambi</Text>
       </div>
+      <hr style={{ margin: '8px 0', borderTop: '1px solid #0044cc' }} />
 
+      {/* Title Section */}
       <div style={{
         textAlign: 'center',
         border: '1px solid #0044cc',
@@ -71,15 +75,40 @@ const ReceiptPrint = forwardRef<ReceiptPrintHandle>((_, ref) => {
         <Text style={{ fontSize: '16px', fontWeight: 'bold', color: '#0044cc' }}>Tagihan Listrik</Text>
       </div>
 
-      <div style={{ paddingLeft: '5px' }}>
-        <Text>ID Pelanggan</Text>: <Text strong>{data.id_pelanggan}</Text><br />
-        <Text>Periode</Text>: <Text strong>{data.periode}</Text><br />
-        <Text>Nama Pelanggan</Text>: <Text strong>{data.nama_pelanggan}</Text><br />
-        <Text>Alamat</Text>: <Text strong>{data.alamat}</Text><br />
-        <Text>Tagihan</Text>: <Text strong>Rp. {data.tagihan?.toLocaleString('id-ID')}</Text><br />
-        <Text>Terbilang</Text>: <Text strong>{data.terbilang}</Text><br />
+      {/* Details Section */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '3.5cm 0.3cm auto',
+        rowGap: '5px',
+        paddingLeft: '5px',
+        alignItems: 'start'
+      }}>
+        <Text>ID Pelanggan</Text>
+        <Text>:</Text>
+        <Text strong>{data.id_pelanggan}</Text>
+
+        <Text>Periode</Text>
+        <Text>:</Text>
+        <Text strong>{dayjs(data.periode, 'YYYY-MM').locale('id').format('MMMM YYYY')}</Text>
+
+        <Text>Nama Pelanggan</Text>
+        <Text>:</Text>
+        <Text strong>{data.nama_pelanggan}</Text>
+
+        <Text>Alamat</Text>
+        <Text>:</Text>
+        <Text strong>{data.alamat}</Text>
+
+        <Text>Tagihan</Text>
+        <Text>:</Text>
+        <Text strong>Rp. {data.tagihan?.toLocaleString('id-ID')}</Text>
+
+        <Text>Terbilang</Text>
+        <Text>:</Text>
+        <Text strong>{data.terbilang}</Text>
       </div>
 
+      {/* Footer Section */}
       <div style={{ textAlign: 'right', marginTop: '20px', paddingRight: '5px' }}>
         <Text>Jambi, {dayjs().format('DD-MM-YYYY')}</Text><br /><br />
         <Text>( Admin )</Text>

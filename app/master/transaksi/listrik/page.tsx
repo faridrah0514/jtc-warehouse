@@ -80,7 +80,6 @@ export default function Page() {
   }
 
   const printReceipt = useCallback((transactionRecord: any) => {
-    console.log("transactionRecord -> ", transactionRecord);
     const record = {
       id_pelanggan: `PL-${transactionRecord.id_pelanggan.toString().padStart(4, '0')}`,
       periode: dayjs(transactionRecord.bln_thn, 'MM-YYYY').locale('id').format('MMMM YYYY'),
@@ -91,7 +90,6 @@ export default function Page() {
 
     }
     // Set the data on printRef
-    console.log("record --> ", record)
     printRef.current?.setData(record);
 
     // Delay the print to ensure data has been updated

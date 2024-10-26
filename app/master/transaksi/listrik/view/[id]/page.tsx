@@ -57,13 +57,11 @@ export default function Page({ params }: { params: { id: string } }) {
         const response = await fetch(`/api/master/transaksi/listrik`, { method: 'GET', cache: 'no-store' })
         const data = await response.json()
 
-        console.log("data ---> ", data)
         if (data) {
           setTagihanListrikData(data.data.filter(
             (value: any) => value.id == params.id
           ).map(
             (v: any) => {
-              // console.log("dayjs(v.thn_bln) -> ", dayjs("01-"+v.thn_bln, "DD-MM-YYYY"))
               v.thn_bln_dayjs = dayjs(v.bln_thn, "MM-YYYY").locale('id').format("MMMM YYYY")
               v.jumlah_pemakaian = v.meteran_akhir - v.meteran_awal
               v.total_tagihan_listrik = v.jumlah_pemakaian * v.kwh_rp

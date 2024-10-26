@@ -3,8 +3,9 @@ import React from 'react';
 import { Card, Col, Row, Typography } from 'antd';
 import { useRouter } from 'next/navigation';
 import { DollarOutlined, LineChartOutlined } from '@ant-design/icons';
+import CashFlowSummary from '../components/aruskas/summary/CashFlowSummary';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 export default function FinanceDashboard() {
   const router = useRouter();
@@ -15,25 +16,25 @@ export default function FinanceDashboard() {
   };
 
   return (
-    <div>
-      <Title level={2} style={{ marginBottom: '24px' }}>Dashboard Keuangan</Title>
-      <div style={{ backgroundColor: '#f0f2f5', padding: '24px', borderRadius: '8px' }}>
-        <Row gutter={[24, 24]}>
+    <div style={{ padding: '24px' }}>
+      <Title level={2} style={{ marginBottom: '32px'}}>Dashboard Keuangan</Title>
+      <div style={{ backgroundColor: '#f7f9fc', padding: '24px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
+        <Row gutter={[24, 24]} style={{ marginBottom: '32px' }}>
           {/* Card for Laporan Transaksi */}
           <Col xs={24} md={12}>
             <Card
               title={
-                <span style={{ fontWeight: 'bold' }}>
-                  <DollarOutlined style={{ marginRight: '8px' }} />
+                <Text strong style={{ fontSize: '16px' }}>
+                  <DollarOutlined style={{ marginRight: '8px', color: '#52c41a' }} />
                   Laporan Transaksi
-                </span>
+                </Text>
               }
               bordered={false}
               hoverable
               className="finance-card"
               onClick={() => handleNavigation('/finance/aruskas')}
             >
-              <p>Lihat data rinci dari kas masuk dan keluar</p>
+              <Text type="secondary">Lihat data rinci dari kas masuk dan keluar</Text>
             </Card>
           </Col>
 
@@ -41,34 +42,49 @@ export default function FinanceDashboard() {
           <Col xs={24} md={12}>
             <Card
               title={
-                <span style={{ fontWeight: 'bold' }}>
-                  <LineChartOutlined style={{ marginRight: '8px' }} />
+                <Text strong style={{ fontSize: '16px' }}>
+                  <LineChartOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
                   Laporan Arus Kas
-                </span>
+                </Text>
               }
               bordered={false}
               hoverable
               className="finance-card"
               onClick={() => handleNavigation('/finance/laporan')}
             >
-              <p>Laporan kas masuk dan keluar</p>
+              <Text type="secondary">Laporan kas masuk dan keluar</Text>
             </Card>
           </Col>
         </Row>
-
+        <Row>
+          <Col span={24}>
+            <CashFlowSummary />
+          </Col>
+        </Row>
         <style jsx>{`
           .finance-card {
-            background-color: #fff;
-            padding: 16px;
-            border-radius: 8px;
-            transition: box-shadow 0.3s;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            transition: box-shadow 0.3s, transform 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
           }
           .finance-card:hover {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
             cursor: pointer;
           }
           .finance-card p {
             color: #595959;
+            font-size: 14px;
+          }
+          .finance-card-title {
+            color: #52c41a;
+          }
+          .finance-container {
+            background-color: #f0f2f5;
+            padding: 24px;
+            border-radius: 8px;
           }
         `}</style>
       </div>
