@@ -309,19 +309,10 @@ export default function Page() {
                           <Title level={5} style={{ margin: "20px 0", fontSize: '12px' }}>{aset}</Title>
                         )}
                       </div>
-
-                      {/* Asset and Branch info */}
-                      {/* <div>
-                        <Flex justify="space-between" className="mb-0">
-                          <Title level={5} style={{ margin: "5px 0", textAlign: "left", fontSize: '12px' }}>A/N: {cabang}</Title>
-                        </Flex>
-                      </div> */}
-
-                      {/* Table */}
                       <div>
                         <Divider className="mb-1 pb-0"></Divider>
                       </div>
-                      
+
                       <Table
                         size="small"
                         bordered
@@ -332,32 +323,16 @@ export default function Page() {
                         pagination={false} // Disable pagination for printing purposes
                         style={{ fontSize: '10px' }} // Reduce table font size
                       />
-
-
-                      {/* Container for main content and bottom-right aligned session name */}
-
-                      {/* Main content */}
-                      {/* <div> */}
-                      {/* Your main content goes here */}
-                      {/* </div> */}
                     </div>
-                    {/* Username at the bottom-right */}
-                    {/* <div style={{ textAlign: "right", alignSelf: "flex-end", marginTop: "auto" }}>
-                      <Text type="secondary" style={{ fontSize: "10px" }}>
-                        {session?.user?.name}: {dayjs().format("DD-MM-YYYY HH:mm")}
-                      </Text>
-                    </div> */}
                   </div>
 
-            {/* Footer with User and Date */}
-            <div className="print-footer">
-                <Text style={{ fontSize: '10px', color: 'grey' }}>{session?.user?.name} - {dayjs().format('DD MMMM YYYY, HH:mm')}</Text>
-                {/* <br /> */}
-                {/* <Text style={{ fontSize: '10px', color: 'grey' }}>{dayjs().format('DD MMMM YYYY')}</Text> */}
-            </div>
+                  {/* Footer with User and Date */}
+                  <div className="print-footer">
+                    <Text style={{ fontSize: '10px', color: 'grey' }}>{session?.user?.name} - {dayjs().format('DD MMMM YYYY, HH:mm')}</Text>
+                  </div>
                   {/* Page break for printing */}
                   <div className="page-break">
-        
+
                   </div>
                 </>
               );

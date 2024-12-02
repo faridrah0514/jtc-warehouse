@@ -52,12 +52,12 @@ export async function POST(req: Request) {
       // Arus Kas (By Period) Report
       results = await db.query(
         `SELECT c.id as cabang_id, c.nama_perusahaan, c.kota, 
-                        cf.description, cf.amount, cf.date, cf_category.type as category_type, cf.category_id, cf_category.name as category_name, cf.nama_toko
-                 FROM cash_flow cf
-                 INNER JOIN cabang c ON cf.cabang_id = c.id
-                 INNER JOIN cash_flow_category cf_category ON cf.category_id = cf_category.id
-                 WHERE cf.cabang_id IN (?) AND cf.date BETWEEN ? AND ? 
-                 ORDER BY cf.date`,
+            cf.description, cf.amount, cf.date, cf_category.type as category_type, cf.category_id, cf_category.name as category_name, cf.nama_toko
+             FROM cash_flow cf
+             INNER JOIN cabang c ON cf.cabang_id = c.id
+             INNER JOIN cash_flow_category cf_category ON cf.category_id = cf_category.id
+             WHERE cf.cabang_id IN (?) AND cf.date BETWEEN ? AND ? 
+             ORDER BY cf_category.type, cf.date`,
         [cabangIds, period_start, period_end]
       );
     } else if (report_type === "category") {
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
                  INNER JOIN cabang c ON cf.cabang_id = c.id
                  INNER JOIN cash_flow_category cf_category ON cf.category_id = cf_category.id
                  WHERE cf.cabang_id IN (?) AND cf_category.id IN (?) AND cf.date BETWEEN ? AND ? 
-                 ORDER BY cf.date`,
+                 ORDER BY cf_category.type, cf.date`,
         [cabangIds, categories, period_start, period_end]
       );
     }

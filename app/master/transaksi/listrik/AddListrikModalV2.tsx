@@ -25,7 +25,7 @@ export default function AddListrikModalV2(props: Status) {
   const [meteranAkhir, setMeteranAkhir] = useState<number | undefined>(undefined)
 
   async function getAllData() {
-    const sewa = await fetch('/api/master/transaksi/sewa', { method: 'GET', cache: 'no-store' })
+    // const sewa = await fetch('/api/master/transaksi/sewa', { method: 'GET', cache: 'no-store' })
     if (props.isEdit && props.openModal) {
       setPemakaian({ awal: props.form.getFieldValue("meteran_awal"), akhir: props.form.getFieldValue("meteran_akhir") })
     }
@@ -43,6 +43,7 @@ export default function AddListrikModalV2(props: Status) {
   async function addTagihanListrik(value: any) {
     setUploading(true)
     value.bln_thn = value.bln_thn.format("MM-YYYY").toString()
+    value.id_sewa = value.id
     const requestType = (props.isEdit) ? 'edit' : 'add'
     fetch('/api/master/transaksi/listrik', {
       method: 'POST', body:
@@ -137,9 +138,12 @@ export default function AddListrikModalV2(props: Status) {
                     picker='month'
                     onChange={(date, dateString) => {
                       try {
-                        const get_max = props.tagihanListrik
-                          .map(value => dayjs(value.bln_thn, "MM-YYYY"))?.reduce((max, current) => current.isAfter(max) ? current : max, dayjs("01-01-1970", "DD-MM-YYYY")).format("MM-YYYY") || 0
-                        const meteran_akhir = props.tagihanListrik.filter((value: any) => value.bln_thn == get_max)[0]['meteran_akhir'] || 0
+                        const selectedDate = date.subtract(1, 'month').format("MM-YYYY");
+                        const previousMonthData = props.tagihanListrik.find((value: any) => value.bln_thn === selectedDate);
+                        // const get_max = props.tagihanListrik
+                        //   .map(value => dayjs(value.bln_thn, "MM-YYYY"))?.reduce((max, current) => current.isAfter(max) ? current : max, dayjs("01-01-1970", "DD-MM-YYYY")).format("MM-YYYY") || 0
+                        // const meteran_akhir = props.tagihanListrik.filter((value: any) => value.bln_thn == get_max)[0]['meteran_akhir'] || 0
+                        const meteran_akhir = previousMonthData?.meteran_akhir || 0
                         setMeteranAkhir(meteranAkhir => meteran_akhir)
                         setPemakaian({ awal: meteran_akhir, akhir: pemakaian.akhir })
                         props.form.setFieldValue("meteran_awal", meteran_akhir)
@@ -152,7 +156,8 @@ export default function AddListrikModalV2(props: Status) {
                       try {
                         const bulanAwal = props.form.getFieldValue("start_date_sewa")
                         const bulanAkhir = props.form.getFieldValue("end_date_sewa")
-                        return current <= dayjs(bulanAwal, "DD-MM-YYYY") || current > dayjs(bulanAkhir, "DD-MM-YYYY") || current <= dayjs(Math.max(...props.tagihanListrik.map(value => dayjs(value.bln_thn, "MM-YYYY")).map(value => value.valueOf()))).add(1, 'month')
+                        // return current <= dayjs(bulanAwal, "DD-MM-YYYY") || current > dayjs(bulanAkhir, "DD-MM-YYYY") || current <= dayjs(Math.max(...props.tagihanListrik.map(value => dayjs(value.bln_thn, "MM-YYYY")).map(value => value.valueOf()))).add(1, 'month')
+                        return current <= dayjs(bulanAwal, "DD-MM-YYYY").subtract(2, 'month').endOf('month') || current >= dayjs(bulanAkhir, "DD-MM-YYYY").add(2, 'month').endOf('month')
                       } catch (e) { return false }
                     }}
                   />

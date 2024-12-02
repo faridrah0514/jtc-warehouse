@@ -1,7 +1,9 @@
 'use client';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Button, ConfigProvider, Flex, Form, Popconfirm, Table, Tag } from 'antd';
+import { Button, ConfigProvider, Flex, Form, Popconfirm, Spin, Table, Tag } from 'antd';
 import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
+dayjs.extend(isBetween);
 import Link from 'next/link';
 import AddListrikModalV2 from './AddListrikModalV2';
 import { getTanggalEntriColumn } from '@/app/utils/dateColumns';
@@ -29,11 +31,14 @@ const columnSewa = [
 
 export default function Page() {
   const [tagihanListrikData, setTagihanListrik] = useState<any[]>([]);
+  const [subTagihanListrikData, setSubTagihanListrik] = useState<any[]>([]);
+  // const [] = useState<any[]>([]);
   const [dataSewa, setDataSewa] = useState<any[]>([]);
   const [openModal, setOpenModal] = useState<boolean>(false);
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [form] = Form.useForm();
+  const [loading, setLoading] = useState(true);
 
   const printRef = useRef<ReceiptPrintHandle | null>(null);
   const handlePrint = useReactToPrint({
@@ -84,7 +89,7 @@ export default function Page() {
       id_pelanggan: `PL-${transactionRecord.id_pelanggan.toString().padStart(4, '0')}`,
       periode: dayjs(transactionRecord.bln_thn, 'MM-YYYY').locale('id').format('MMMM YYYY'),
       nama_pelanggan: transactionRecord.nama_pelanggan,
-      alamat: transactionRecord.alamat_pelanggan,
+      alamat: transactionRecord.alamat,
       tagihan: (transactionRecord.meteran_akhir - transactionRecord.meteran_awal) * transactionRecord.kwh_rp,
       terbilang: convertCurrencyToBahasa((transactionRecord.meteran_akhir - transactionRecord.meteran_awal) * transactionRecord.kwh_rp),
 
@@ -122,6 +127,7 @@ export default function Page() {
             : 'Non-Aktif';
       });
       setDataSewa(dataSewa.data.filter((value: any) => value.is_pln === 0));
+      setLoading(false);
     }
   }
 
@@ -133,120 +139,151 @@ export default function Page() {
     <>
 
       <Title level={3}>Halaman Data Master Transaksi - Listrik</Title>
-      <AddListrikModalV2 form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} tagihanListrik={tagihanListrikData} />
-      <Table
-        className='overflow-auto'
-        size='small'
-        columns={[
-          ...columnSewa,
-          {
-            title: "Status Sewa",
-            key: "status_sewa",
-            render: (_, record: any) => (
-              <Tag color={record.statusSewa === 'Aktif' ? 'success' : record.statusSewa === 'Akan Datang' ? 'processing' : 'default'}>
-                {record.statusSewa}
-              </Tag>
-            ),
-          },
-          {
-            title: "Action",
-            key: "action",
-            render: (_, record: any) => (
-              <Flex gap="small">
-                <Button
-                  type="primary"
-                  ghost
-                  size="small"
-                  disabled={record.statusSewa !== 'Aktif'}
-                  onClick={() => {
-                    setOpenModal(true);
-                    setIsEdit(false);
-                    form.setFieldsValue(record);
-                    setTriggerRefresh(!triggerRefresh);
-                  }}
-                >
-                  + Transaksi Tagihan Listrik
-                </Button>
-              </Flex>
-            ),
-          },
-        ]}
-        dataSource={dataSewa.map((item: any, index: number) => ({ ...item, key: index }))}
-        expandable={{
-          expandedRowRender: (record) => (
-            <Table
-              size='small'
-              columns={[
-                ...column,
-                {
-                  title: "Action",
-                  key: "action",
-                  render: (_, transactionRecord: any) => (
-                    <Flex gap="small">
-                      <Button
-                        type="default"
-                        size="small"
-                        onClick={() => printReceipt(transactionRecord)}
-                      >
-                        Print
-                      </Button>
-                      <ConfigProvider
-                        theme={{
-                          components: {
-                            Button: { colorPrimary: '#00b96b', colorPrimaryHover: '#00db7f' },
-                          },
-                        }}
-                      >
-                        <Button type="primary" ghost size="small">
-                          <Link href={`/master/transaksi/listrik/view/${transactionRecord.id}`}>View</Link>
-                        </Button>
-                      </ConfigProvider>
-                      <RoleProtected allowedRoles={['admin', 'supervisor']} actionType='edit' createdAt={transactionRecord.created_at}>
-                        <Button
-                          type="primary"
-                          ghost
-                          size="small"
-                          onClick={() => {
-                            setOpenModal(true);
-                            setIsEdit(true);
-                            transactionRecord.bln_thn = dayjs(transactionRecord.bln_thn, 'MM-YYYY');
-                            form.setFieldsValue(transactionRecord);
-                            setTriggerRefresh(!triggerRefresh);
-                          }}
-                        >
-                          Edit
-                        </Button>
-                      </RoleProtected>
+      <AddListrikModalV2 form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} tagihanListrik={subTagihanListrikData} />
+      {(loading) ?
+        <div className="flex justify-center items-center">
+          <Spin size="large" />
+        </div>
+        :
+        <Table
+          className='overflow-auto'
+          size='small'
+          columns={[
+            ...columnSewa,
+            {
+              title: "Status Sewa",
+              key: "status_sewa",
+              render: (_, record: any) => (
+                <Tag color={record.statusSewa === 'Aktif' ? 'success' : record.statusSewa === 'Akan Datang' ? 'processing' : 'default'}>
+                  {record.statusSewa}
+                </Tag>
+              ),
+            },
+            {
+              title: "Action",
+              key: "action",
+              render: (_, record: any) => (
+                <Flex gap="small">
+                  <Button
+                    type="primary"
+                    ghost
+                    size="small"
+                    disabled={record.statusSewa !== 'Aktif'}
+                    onClick={() => {
+                      setOpenModal(true);
+                      setIsEdit(false);
+                      const relatedData = tagihanListrikData.filter((v: any) => (
+                        v.id_aset === record.id_aset && v.id_cabang === record.id_cabang && v.id_pelanggan === record.id_pelanggan 
+                        ));
 
-                      <RoleProtected allowedRoles={['admin']} actionType='delete'>
-                        <Popconfirm
-                          title="sure to delete?"
-                          onConfirm={async () => {
-                            const result = await fetch('/api/master/transaksi/listrik', {
-                              method: "POST",
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ requestType: 'delete', data: { id: transactionRecord.id } }),
-                            });
-                            if (result.status === 200) {
-                              setTriggerRefresh(!triggerRefresh);
-                            }
+                      setSubTagihanListrik(relatedData)
+                      form.setFieldsValue(record);
+                      setTriggerRefresh(!triggerRefresh);
+                    }}
+                  >
+                    + Tagihan Listrik
+                  </Button>
+                  <Button
+                  type="default"
+                  size="small"
+                  onClick={() => {
+                    const relatedData = tagihanListrikData.filter((v: any) => (
+                    v.id_aset === record.id_aset && v.id_cabang === record.id_cabang && v.id_pelanggan === record.id_pelanggan 
+                    && dayjs(v.bln_thn, 'MM-YYYY').isBetween(dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY'), 'month', '[]')
+                    ));
+
+                    relatedData.forEach((data: any) => {
+                      data.start_date_sewa = record.start_date_sewa;
+                      data.end_date_sewa = record.end_date_sewa;
+                    });
+                  }}
+                  >
+                  Get Data
+                  </Button>
+                </Flex>
+              ),
+            },
+          ]}
+          dataSource={dataSewa.map((item: any, index: number) => ({ ...item, key: index }))}
+          expandable={{
+            expandedRowRender: (record) => (
+              <Table
+                size='small'
+                columns={[
+                  ...column,
+                  {
+                    title: "Action",
+                    key: "action",
+                    render: (_, transactionRecord: any) => (
+                      <Flex gap="small">
+                        <Button
+                          type="default"
+                          size="small"
+                          onClick={() => printReceipt(transactionRecord)}
+                        >
+                          Print
+                        </Button>
+                        <ConfigProvider
+                          theme={{
+                            components: {
+                              Button: { colorPrimary: '#00b96b', colorPrimaryHover: '#00db7f' },
+                            },
                           }}
                         >
-                          <Button size="small" danger>Delete</Button>
-                        </Popconfirm>
-                      </RoleProtected>
-                    </Flex>
-                  ),
-                },
-              ]}
-              dataSource={tagihanListrikData.filter((v: any) => (
-                v.id_aset === record.id_aset && v.id_cabang === record.id_cabang && v.id_pelanggan === record.id_pelanggan
-              ))}
-              pagination={false}
-            />
-          ),
-        }}
-      />
+                          <Button type="primary" ghost size="small">
+                            <Link href={`/master/transaksi/listrik/view/${transactionRecord.id}`}>View</Link>
+                          </Button>
+                        </ConfigProvider>
+                        <RoleProtected allowedRoles={['admin', 'supervisor']} actionType='edit' createdAt={transactionRecord.created_at}>
+                          <Button
+                            type="primary"
+                            ghost
+                            size="small"
+                            onClick={() => {
+                              setOpenModal(true);
+                              setIsEdit(true);
+                              transactionRecord.bln_thn = dayjs(transactionRecord.bln_thn, 'MM-YYYY');
+                              form.setFieldsValue(transactionRecord);
+                              setTriggerRefresh(!triggerRefresh);
+                            }}
+                          >
+                            Edit
+                          </Button>
+                        </RoleProtected>
+
+                        <RoleProtected allowedRoles={['admin']} actionType='delete'>
+                          <Popconfirm
+                            title="sure to delete?"
+                            onConfirm={async () => {
+                              const result = await fetch('/api/master/transaksi/listrik', {
+                                method: "POST",
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ requestType: 'delete', data: { id: transactionRecord.id } }),
+                              });
+                              if (result.status === 200) {
+                                setTriggerRefresh(!triggerRefresh);
+                              }
+                            }}
+                          >
+                            <Button size="small" danger>Delete</Button>
+                          </Popconfirm>
+                        </RoleProtected>
+                      </Flex>
+                    ),
+                  },
+                ]}
+                dataSource={tagihanListrikData.filter((v: any) => (
+                  v.id_aset === record.id_aset && v.id_cabang === record.id_cabang && v.id_pelanggan === record.id_pelanggan 
+                  // && dayjs(v.bln_thn, 'MM-YYYY').isBetween(dayjs(record.start_date_sewa, 'DD-MM-YYYY'), dayjs(record.end_date_sewa, 'DD-MM-YYYY'), 'month', '[]')
+                  && v.id_sewa === record.id
+                )).map((item: any, index: number) => ({ ...item, key: index }))}
+                pagination={false}
+              />
+            ),
+          }}
+        />
+      }
+
       {/* Hidden component for printing */}
       <div style={{ display: 'none' }}>
         <ReceiptPrint ref={printRef} />

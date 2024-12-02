@@ -5,7 +5,7 @@ var connection: ConnectionOptions = {
     user: process.env.MYSQL_USERNAME,
     password: process.env.MYSQL_PWD,
     database: process.env.MYSQL_DATABASE,
-    port: 3306,
+    port: process.env.MYSQL_PORT ? parseInt(process.env.MYSQL_PORT) : 3306,
 }
 
 export function openDB() {

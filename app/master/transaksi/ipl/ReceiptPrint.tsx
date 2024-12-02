@@ -41,15 +41,21 @@ const ReceiptPrint = forwardRef<ReceiptPrintHandle>((_, ref) => {
         padding: '10px',
         width: '11cm',
         height: '14cm',
-        fontFamily: 'Arial, sans-serif',
+        paddingRight: '1.5cm',
         border: '1px solid #000',
         color: '#0044cc'
       }}
     >
       <style>
         {`
+          #receipt-print .ant-typography {
+            font-family: 'Times New Roman', Times, serif !important;
+          }
           @media print {
             @page {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+              padding-right: 1.5cm;
               size: 11cm 14cm;
               margin: 0;
             }
@@ -103,7 +109,7 @@ const ReceiptPrint = forwardRef<ReceiptPrintHandle>((_, ref) => {
 
         <Text>Jumlah</Text>
         <Text>:</Text>
-        <Text strong>Rp. {_renderCurrency(data.jumlah)}</Text>
+        <Text strong>{_renderCurrency(data.jumlah)}</Text>
 
         <Text>Terbilang</Text>
         <Text>:</Text>
@@ -113,7 +119,7 @@ const ReceiptPrint = forwardRef<ReceiptPrintHandle>((_, ref) => {
       {/* Footer Section */}
       <div style={{ textAlign: 'right', marginTop: '20px' }}>
         <Text>Jambi, {dayjs().locale('id').format('DD MMMM YYYY')}</Text> <br />
-        <Text>Admin</Text> <br />
+        <Text>Admin</Text> <br /><br />
         <div style={{ marginTop: '30px' }}>
           <Text>____________________</Text>
         </div>

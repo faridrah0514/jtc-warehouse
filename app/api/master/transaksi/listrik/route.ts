@@ -30,8 +30,8 @@ export async function POST(request: Request) {
     if (value.requestType == "add") {
       await conn.query(
         `insert into transaksi_listrik (
-          id_aset, id_cabang, id_pelanggan, bln_thn, meteran_awal, meteran_akhir
-        ) values (?,?,?,?,?,?)
+          id_aset, id_cabang, id_pelanggan, bln_thn, meteran_awal, meteran_akhir, id_sewa
+        ) values (?,?,?,?,?,?,?)
       `,
         [
           data.id_aset,
@@ -39,14 +39,15 @@ export async function POST(request: Request) {
           data.id_pelanggan,
           data.bln_thn,
           data.meteran_awal,
-          data.meteran_akhir
+          data.meteran_akhir,
+          data.id_sewa
         ]
       );
     } else if (value.requestType == 'edit') {
       await conn.query(
         `
           update transaksi_listrik set
-          id_aset = ?, id_cabang = ?, id_pelanggan = ?, bln_thn = ?, meteran_awal = ?, meteran_akhir = ?
+          id_aset = ?, id_cabang = ?, id_pelanggan = ?, bln_thn = ?, meteran_awal = ?, meteran_akhir = ?, id_sewa = ?
           where id = ?
         `,
         [
@@ -56,6 +57,7 @@ export async function POST(request: Request) {
           data.bln_thn,
           data.meteran_awal,
           data.meteran_akhir,
+          data.id_sewa,
           data.id
         ]
       )

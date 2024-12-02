@@ -107,21 +107,28 @@ CREATE TABLE `transaksi_sewa` (
 );
 
 -- jtc_warehouse.transaksi_listrik definition
+
 CREATE TABLE `transaksi_listrik` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `id_aset` int NOT NULL,
-  `id_cabang` int NOT NULL,
-  `id_pelanggan` int NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_aset` int(11) NOT NULL,
+  `id_cabang` int(11) NOT NULL,
+  `id_pelanggan` int(11) NOT NULL,
   `bln_thn` varchar(12) DEFAULT NULL,
-  `meteran_awal` float DEFAULT NULL,
-  `meteran_akhir` float DEFAULT NULL,
-  `created_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `meteran_awal` decimal(10,2) DEFAULT NULL,
+  `meteran_akhir` decimal(10,2) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `id_sewa` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`id_cabang`) REFERENCES `cabang` (`id`),
-  FOREIGN KEY (`id_aset`) REFERENCES `aset` (`id`),
-  FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id`)
-);
+  KEY `id_cabang` (`id_cabang`),
+  KEY `id_aset` (`id_aset`),
+  KEY `id_pelanggan` (`id_pelanggan`),
+  KEY `id_sewa` (`id_sewa`),
+  CONSTRAINT `transaksi_listrik_ibfk_1` FOREIGN KEY (`id_cabang`) REFERENCES `cabang` (`id`),
+  CONSTRAINT `transaksi_listrik_ibfk_2` FOREIGN KEY (`id_aset`) REFERENCES `aset` (`id`),
+  CONSTRAINT `transaksi_listrik_ibfk_3` FOREIGN KEY (`id_pelanggan`) REFERENCES `pelanggan` (`id`),
+  CONSTRAINT `transaksi_listrik_ibfk_4` FOREIGN KEY (`id_sewa`) REFERENCES `transaksi_sewa` (`id`)
+) 
 
 -- jtc_warehouse.transaksi_ipl definition
 CREATE TABLE `transaksi_ipl` (

@@ -1,0 +1,26 @@
+version: '3.6'
+services:
+  db:
+    image: mariadb:10.11.9
+    restart: always
+    container_name: jtc_warehouse_db
+    ports:
+      - '3308:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: jtc_warehouse
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    volumes:
+      - ./docker_mysql_init.sql:/docker-entrypoint-initdb.d/docker_mysql_init.sql
+      - app_db:/var/lib/mysql
+
+  db_ui:
+    image: adminer
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - '16543:16543'
+
+volumes:
+  app_db:

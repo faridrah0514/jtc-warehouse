@@ -14,11 +14,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: 'Missing date or period' }, { status: 400 });
   }
 
-
   try {
     const conn = await openDB();
+    const selectedDate = dayjs(date);
     const datePattern = period === 'monthly' ? `${date}-%` : `${date}-%-%`;
 
+    // Calculate totals for the selected month or year
     const [incomingRows] = await conn.query<RowDataPacket[]>(
       `SELECT SUM(cash_flow.amount) as total 
        FROM cash_flow 
@@ -35,15 +36,40 @@ export async function GET(req: NextRequest) {
       [datePattern]
     );
 
+    // Calculate cash remaining before the selected month or year
+    const startDate = period === 'monthly' 
+      ? selectedDate.startOf('month') 
+      : selectedDate.startOf('year');
+
+    const [incomingBefore] = await conn.query<RowDataPacket[]>(
+      `SELECT SUM(cash_flow.amount) as total 
+       FROM cash_flow 
+       LEFT JOIN cash_flow_category ON cash_flow.category_id = cash_flow_category.id 
+       WHERE cash_flow.date < ? AND cash_flow_category.type = 'incoming'`,
+      [startDate.format('YYYY-MM-DD')]
+    );
+
+    const [outgoingBefore] = await conn.query<RowDataPacket[]>(
+      `SELECT SUM(cash_flow.amount) as total 
+       FROM cash_flow 
+       LEFT JOIN cash_flow_category ON cash_flow.category_id = cash_flow_category.id 
+       WHERE cash_flow.date < ? AND cash_flow_category.type = 'outgoing'`,
+      [startDate.format('YYYY-MM-DD')]
+    );
+
     conn.end();
 
     const incomingTotal = incomingRows[0]?.total || 0;
     const outgoingTotal = outgoingRows[0]?.total || 0;
+    const remainingBefore = (incomingBefore[0]?.total || 0) - (outgoingBefore[0]?.total || 0);
+    const remainingAfter = remainingBefore + (Number(incomingTotal) - Number(outgoingTotal));
 
     const formattedResponse = {
       incomingTotal,
       outgoingTotal,
-      period: period === 'monthly' ? dayjs(date).format('MMMM YYYY') : dayjs(date).format('YYYY'),
+      remainingBefore,
+      remainingAfter,
+      period: period === 'monthly' ? selectedDate.format('MMMM YYYY') : selectedDate.format('YYYY'),
     };
 
     return NextResponse.json(formattedResponse, { status: 200 });

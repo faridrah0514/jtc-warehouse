@@ -35,19 +35,27 @@ const ReceiptPrint = forwardRef<ReceiptPrintHandle>((_, ref) => {
   if (!data) return null;
 
   return (
-    <div ref={printRef} style={{
+    <div
+    id="receipt-print" 
+    ref={printRef} style={{
       padding: '10px',
       width: '11cm',
       height: '14cm',
-      fontFamily: 'Arial, sans-serif',
+      paddingRight: '1.5cm',
       border: '1px solid #000',
       color: '#0044cc'
     }}>
       <style>
         {`
+          #receipt-print .ant-typography {
+            font-family: 'Times New Roman', Times, serif !important;
+          }
           @media print {
             @page {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
               size: 11cm 14cm;
+              padding-right: 1.5cm;
               margin: 0;
             }
             body {
@@ -89,7 +97,7 @@ const ReceiptPrint = forwardRef<ReceiptPrintHandle>((_, ref) => {
 
         <Text>Periode</Text>
         <Text>:</Text>
-        <Text strong>{dayjs(data.periode, 'YYYY-MM').locale('id').format('MMMM YYYY')}</Text>
+        <Text strong>{data.periode}</Text>
 
         <Text>Nama Pelanggan</Text>
         <Text>:</Text>
@@ -110,7 +118,7 @@ const ReceiptPrint = forwardRef<ReceiptPrintHandle>((_, ref) => {
 
       {/* Footer Section */}
       <div style={{ textAlign: 'right', marginTop: '20px', paddingRight: '5px' }}>
-        <Text>Jambi, {dayjs().format('DD-MM-YYYY')}</Text><br /><br />
+        <Text>Jambi, {dayjs().format('DD-MM-YYYY')}</Text><br /><br /><br /><br />
         <Text>( Admin )</Text>
       </div>
     </div>

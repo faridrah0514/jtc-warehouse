@@ -12,6 +12,7 @@ import {
     FileDoneOutlined,
     AppstoreOutlined,
     SettingOutlined,
+    MoneyCollectOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import Link from 'next/link';
@@ -36,7 +37,10 @@ function getItem(
 export default function MenuItems({ userRole }: { userRole: string }) {
     const financeItems: MenuItem[] = [
         getItem(<Link href='/finance'>Finance</Link>, 'Finance', <LineChartOutlined />, [
-            getItem(<Link href='/finance/aruskas'>Arus Kas</Link>, 'Arus Kas', <LineChartOutlined />),
+            getItem(<Link href='/finance/aruskas'>Arus Kas</Link>, 'Arus Kas', <LineChartOutlined />,[
+                getItem(<Link href='/finance/aruskas/in'>Kas Masuk</Link>, 'Kas Masuk', <DollarCircleOutlined />),
+                getItem(<Link href='/finance/aruskas/out'>Kas Keluar</Link>, 'Kas Keluar', <MoneyCollectOutlined />), 
+            ]),
             getItem(<Link href='/finance/laporan'>Laporan</Link>, 'Laporan', <FileDoneOutlined />),
             getItem(<Link href='/finance/kategori'>Kategori</Link>, 'Kategori', <AppstoreOutlined />),
         ]),

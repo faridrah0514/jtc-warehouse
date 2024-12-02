@@ -51,3 +51,7 @@ upload/cashflow/*
 
 # db/
 notes/
+
+#env
+.env.local
+.env.production.local

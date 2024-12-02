@@ -828,7 +828,10 @@ export async function POST(request: Request, response: Response) {
         }
       } else if (data.jenis_laporan.toLowerCase() == "jatuh tempo") {
         let query = `
-          SELECT c.nama_perusahaan AS nama_cabang, a.nama_aset, p.nama AS nama_penyewa, ts.end_date_sewa AS jatuh_tempo
+          SELECT p.nama AS nama_penyewa, c.nama_perusahaan AS nama_cabang, a.nama_aset,  ts.end_date_sewa AS jatuh_tempo, 
+                      ts.start_date_sewa AS mulai, 
+            ts.end_date_sewa AS berakhir,
+            ts.total_biaya_sewa AS total_harga_sewa
           FROM transaksi_sewa ts
           LEFT JOIN cabang c ON ts.id_cabang = c.id
           LEFT JOIN aset a ON ts.id_aset = a.id
@@ -860,24 +863,19 @@ export async function POST(request: Request, response: Response) {
           jatuh_tempo: dayjs(data.jatuh_tempo, "DD-MM-YYYY").format(
             "DD MMMM YYYY"
           ), // Convert to month name in Bahasa Indonesia
+          masa_sewa: calculateMasa(data.mulai, data.berakhir), // Calculate Masa Sewa
+          total_harga_sewa: _renderCurrency(data.total_harga_sewa, false, true),
         }));
 
         // Extract column names
-        const columnNames = laporanFields
-          .map((fields: any) => fields.name)
-          .filter((fieldName) => fieldName != "id")
-          .map((val: any) => ({
-            title: val
-              .split("_")
-              .map(
-                (word: string) => word.charAt(0).toUpperCase() + word.slice(1)
-              )
-              .join(" "),
-            dataIndex: val,
-            key: val,
-          }));
-
-        columnNames.unshift({ title: "No", dataIndex: "no", key: "no" });
+        const columnNames = [
+          { title: "No", dataIndex: "no", key: "no" },
+          { title: "Nama Penyewa", dataIndex: "nama_penyewa", key: "nama_penyewa" },
+          { title: "Nama Aset", dataIndex: "nama_aset", key: "nama_aset" },
+          { title: "Masa Sewa", dataIndex: "masa_sewa", key: "masa_sewa" },
+          { title: "Jatuh Tempo", dataIndex: "jatuh_tempo", key: "jatuh_tempo" },
+          { title: "Total Harga Sewa", dataIndex: "total_harga_sewa", key: "total_harga_sewa" }
+        ];
 
         const jenis_laporan = "DAFTAR JATUH TEMPO TAHUN " + data.periode;
 

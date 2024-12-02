@@ -1,9 +1,9 @@
 'use client'
-import { Card, Col, Row, Statistic, Table, Tag } from 'antd';
+import { Card, Col, Divider, Row, Statistic, Table, Tag } from 'antd';
 import Title from 'antd/es/typography/Title';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
-import CashFlowSummary from '@/app/components/aruskas/summary/CashFlowSummary'; // Adjust the import path as necessary
+import CashFlowSummary from '@/app/components/aruskas/summary/CashFlowSummary';
 
 export default function Page() {
   const [allData, setAllData] = useState<any>();
@@ -24,39 +24,34 @@ export default function Page() {
   return (
     <div style={{ padding: '24px' }}>
       <Title level={3} style={{ marginBottom: '24px', color: '#1890ff' }}>Data Master</Title>
+
+      {/* Top Row: Summary Cards */}
       <Row gutter={24} style={{ marginBottom: '32px' }}>
-        <Col span={8}>
-          <Card>
-            <Statistic value={allData ? allData.jumlahData[0].jumlahCabang : 0} title="Total Cabang" />
-            <div className="pt-2">
-              <Link href="/master/cabang" className="detail-link">See detail</Link>
-            </div>
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic value={allData ? allData.jumlahData[0].jumlahAset : 0} title="Total Aset" />
-            <div className="pt-2">
-              <Link href="/master/aset" className="detail-link">See detail</Link>
-            </div>
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic value={allData ? allData.jumlahData[0].jumlahPelanggan : 0} title="Total Pelanggan" />
-            <div className="pt-2">
-              <Link href="/master/pelanggan" className="detail-link">See detail</Link>
-            </div>
-          </Card>
-        </Col>
+        {[
+          { title: 'Total Cabang', value: allData?.jumlahData[0].jumlahCabang ?? 0, link: '/master/cabang' },
+          { title: 'Total Aset', value: allData?.jumlahData[0].jumlahAset ?? 0, link: '/master/aset' },
+          { title: 'Total Pelanggan', value: allData?.jumlahData[0].jumlahPelanggan ?? 0, link: '/master/pelanggan' },
+        ].map((item, index) => (
+          <Col span={8} key={index}>
+            <Card bordered style={{ borderColor: '#d9d9d9', borderRadius: '8px' }}>
+              <Statistic value={item.value} title={item.title} />
+              <div className="pt-2">
+                <Link href={item.link} className="detail-link">See detail</Link>
+              </div>
+            </Card>
+          </Col>
+        ))}
       </Row>
 
-      <Row gutter={24}>
-        <Col span={12}>
-          <div className="pt-5">
-            <Title level={3} style={{ color: '#1890ff' }}>Data Sewa Aset</Title>
-          </div>
-          <Card style={{ paddingTop: '16px', height: '100%' }} bodyStyle={{ height: '250px' }}>
+      {/* Option 1: Classic Grid Layout */}
+      <Row gutter={24} align="top" style={{ marginBottom: '32px' }}>
+        <Col span={24}>
+          <Title level={3} style={{ color: '#1890ff', marginBottom: '16px' }}>Data Sewa Aset</Title>
+          <Card
+            bordered
+            style={{ height: '100%', borderColor: '#d9d9d9', borderRadius: '8px' }}
+            bodyStyle={{ padding: '24px', height: '100%' }}
+          >
             <Table
               pagination={false}
               bordered
@@ -76,17 +71,19 @@ export default function Page() {
             </div>
           </Card>
         </Col>
-
-        <Col span={12}>
-          <div className="pt-5">
-            <Title level={3} style={{ color: '#1890ff' }}>Ringkasan Arus Kas</Title>
-          </div>
-          <Card style={{ paddingTop: '16px', height: '100%' }} bodyStyle={{ height: '250px' }}>
+      </Row>
+      <Row gutter={24} align="top" style={{ marginBottom: '32px' }}>
+        <Col span={24}>
+        <Title level={3} style={{ color: '#1890ff', marginBottom: '16px' }}>Ringkasan Arus Kas</Title>
+          <Card
+            bordered
+            style={{ height: '100%', borderColor: '#d9d9d9', borderRadius: '8px' }}
+            bodyStyle={{ padding: '24px', height: '100%' }}
+          >
             <CashFlowSummary />
           </Card>
         </Col>
       </Row>
-
       <style jsx>{`
         .pt-2 {
           padding-top: 8px;
@@ -102,12 +99,23 @@ export default function Page() {
           color: #40a9ff;
           text-decoration: underline;
         }
+        .ant-card {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
         .ant-card-body {
           padding: 24px;
         }
-        .ant-card {
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          .pt-5, .pt-2 {
+            padding-top: 16px;
+          }
+          .detail-link {
+            font-size: 14px;
+          }
+          .ant-card-body {
+            padding: 16px;
+          }
         }
       `}</style>
     </div>

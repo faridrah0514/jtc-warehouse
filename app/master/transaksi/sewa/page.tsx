@@ -251,15 +251,7 @@ export default function Page() {
         :
         <>
           <AddSewaModal sewaData={sewaData} maxId={maxId} form={form} isEdit={isEdit} setIsEdit={setIsEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} />
-          <div ref={componentRef} className='print-container'>
-            <div className='print-only mb-10'>
-              <Title level={3} style={{ margin: 0 }}>DATA ASET MILIK PT.JTC WAREHOUSE</Title>
-              <Title level={3} style={{ margin: 0 }}>Kantor pusat: xxxxxx, email: xxxx</Title>
-              <Title level={4} style={{ margin: 0 }}>No. tlp: 0812xxxxx</Title>
-              <Divider></Divider>
-            </div>
-            <div className='print-table-container'>
-              <Table className='overflow-auto'
+          <Table className='overflow-auto'
                 scroll={{ x: 2000 }}
                 columns={print ? column.filter(col => col.key != 'dokumen' && col.key != 'action' && col.key != 'no_akte' && col.key != 'notaris' && col.key != 'tanggal_akte') : column}
                 dataSource={sewaData?.map((item: any, index: number) => ({ ...item, key: index }))}
@@ -268,20 +260,6 @@ export default function Page() {
                 loading={sewaData ? false : true}
                 pagination={{ pageSize: 100 }}
               />
-            </div>
-          </div>
-          <style jsx global>{`
-            .print-only { display: none; }
-            .no-print { display: block; }
-            .print-table-container { display: block; width: 100%; overflow-x: auto; }
-            @media print {
-              @page { size: landscape; margin: 5mm; }
-              .print-only { display: block; text-align: center; }
-              .no-print { display: none; }
-              .print-table-container { margin: 0 auto; width: auto; max-width: 100%; }
-              .ant-table-pagination { display: none !important; }
-            }
-          `}</style>
         </>
       }
     </>
