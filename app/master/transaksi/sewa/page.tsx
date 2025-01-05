@@ -147,15 +147,16 @@ export default function Page() {
       filters: [{ text: 'Akan Datang', value: 'Akan Datang' }, { text: 'Aktif', value: 'Aktif' }, { text: 'Non-Aktif', value: 'Non-Aktif' }],
       onFilter: (val, record) => {
         const today = dayjs();
-        let status = '';
+        let status = 'Aktif';
         if (dayjs(record.start_date_sewa, "DD-MM-YYYY") > today)
           status = 'Akan Datang';
         else if (dayjs(record.start_date_sewa, "DD-MM-YYYY") <= today && today <= dayjs(record.end_date_sewa, "DD-MM-YYYY"))
           status = 'Aktif';
         else
           status = 'Non-Aktif';
-        return val === status;
-      }
+        return val === 'Aktif';
+      },
+      defaultFilteredValue: ['Aktif'], // Default filter set to "Aktif"
     },
     getTanggalEntriColumn(),
     {
@@ -238,6 +239,16 @@ export default function Page() {
     getData()
   }, [triggerRefresh])
 
+  const today = dayjs();
+  const filteredData = sewaData.filter(record => {
+    let status = 'Aktif';
+    if (dayjs(record.start_date_sewa, "DD-MM-YYYY") > today) status = 'Akan Datang';
+    else if (dayjs(record.start_date_sewa, "DD-MM-YYYY") <= today && today <= dayjs(record.end_date_sewa, "DD-MM-YYYY"))
+      status = 'Aktif';
+    else status = 'Non-Aktif';
+    return status === 'Aktif'; // Pre-filter for "Aktif" status
+  });
+
   return (
     <>
       <Title level={3}>Halaman Data Master Transaksi - Sewa</Title>
@@ -254,7 +265,7 @@ export default function Page() {
           <Table className='overflow-auto'
                 scroll={{ x: 2000 }}
                 columns={print ? column.filter(col => col.key != 'dokumen' && col.key != 'action' && col.key != 'no_akte' && col.key != 'notaris' && col.key != 'tanggal_akte') : column}
-                dataSource={sewaData?.map((item: any, index: number) => ({ ...item, key: index }))}
+                dataSource={filteredData?.map((item: any, index: number) => ({ ...item, key: index }))}
                 rowKey='id'
                 size='small'
                 loading={sewaData ? false : true}

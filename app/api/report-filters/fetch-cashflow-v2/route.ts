@@ -57,7 +57,7 @@ export async function POST(req: Request) {
              INNER JOIN cabang c ON cf.cabang_id = c.id
              INNER JOIN cash_flow_category cf_category ON cf.category_id = cf_category.id
              WHERE cf.cabang_id IN (?) AND cf.date BETWEEN ? AND ? 
-             ORDER BY cf_category.type, cf.date`,
+             ORDER BY cf_category.type, cf.date, cf.created_at`,
         [cabangIds, period_start, period_end]
       );
     } else if (report_type === "category") {
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
                  INNER JOIN cabang c ON cf.cabang_id = c.id
                  INNER JOIN cash_flow_category cf_category ON cf.category_id = cf_category.id
                  WHERE cf.cabang_id IN (?) AND cf_category.id IN (?) AND cf.date BETWEEN ? AND ? 
-                 ORDER BY cf_category.type, cf.date`,
+                 ORDER BY cf_category.type, cf.date, cf.created_at`,
         [cabangIds, categories, period_start, period_end]
       );
     }
@@ -86,6 +86,7 @@ export async function POST(req: Request) {
         acc[record.cabang_id] = {
           nama_perusahaan: record.nama_perusahaan,
           kota: record.kota,
+          period_start: period_start,
           saldo_awal: report_type === "period" ? saldoAwal : 0, // Initial balance before the period if report_type is 'period'
           total_incoming: saldoAwalMap[record.cabang_id]?.total_incoming || 0,
           total_outgoing: saldoAwalMap[record.cabang_id]?.total_outgoing || 0,

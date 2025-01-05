@@ -3,6 +3,7 @@ import { Modal, Form, Select, Radio, DatePicker, Button, message } from 'antd';
 import { CashFlowCategory } from '../../../types/master';
 import { useFetchCabang } from '../../../hooks/useFetchCabang';
 import { useFetchCategories } from '../../../hooks/useFetchCategories';
+import { Session } from 'next-auth';
 
 interface ReportFiltersModalProps {
   selectedCabang: number | null;
@@ -16,6 +17,7 @@ interface ReportFiltersModalProps {
   selectedPeriod: any;
   setSelectedPeriod: (value: any) => void;
   refreshConfigurations: () => void; // New prop to trigger data refresh
+  sessionData: Session | null
 }
 
 export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
@@ -30,6 +32,7 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
   selectedPeriod,
   setSelectedPeriod,
   refreshConfigurations, // Callback to refresh data
+  sessionData
 }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [reportType, setReportType] = useState<any>('period'); // Default to 'period' (Arus Kas)
@@ -44,7 +47,7 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
   const hideModal = () => {
     setIsModalVisible(false);
     form.resetFields(); // Reset form fields when the modal is hidden
-  
+
     // Reset state values to their initial state on modal close
     setSelectedCabang(null);
     setCashFlowType('both');
@@ -66,6 +69,35 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
         const cabang = cabangOptions.find(c => c.nama_perusahaan === nama_perusahaan);
         return cabang ? cabang.id : null;
       }).filter((id: number) => id !== null);
+
+      if (sessionData?.user?.role === 'finance-reporter') {
+        const username = sessionData.user.name;
+        if (!username) {
+          throw new Error('Username is required');
+        }
+        const response = await fetch(`/api/report-filters/finance-reporter-check/laporan?username=${encodeURIComponent(username)}&jenis_laporan=${values.reportType}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'You are not authorized to save filter configuration');
+        } else {
+          const response = await fetch('/api/report-filters/finance-reporter-check/laporan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: sessionData?.user.name,
+              reportType: values.reportType,
+            }),
+          });
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to save filter configuration');
+          }
+        }
+      }
 
       const response = await fetch('/api/report-filters', {
         method: 'POST',

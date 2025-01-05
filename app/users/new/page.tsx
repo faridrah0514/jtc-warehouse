@@ -101,6 +101,7 @@ const Page: React.FC = () => {
               <Option value="supervisor">Supervisor</Option>
               <Option value="reporter">Reporter</Option>
               <Option value="finance">Finance</Option>
+              <Option value="finance-reporter">Finance Reporter</Option>
             </Select>
           </Form.Item>
 

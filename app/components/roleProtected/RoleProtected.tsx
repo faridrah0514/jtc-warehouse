@@ -42,6 +42,7 @@ const RoleProtected = ({ allowedRoles, actionType, createdAt, children }: RolePr
   const isSupervisor = userRole === "supervisor";
   const isReporter = userRole === "reporter";
   const isFinance = userRole === "finance";
+  const isFinanceReporter = userRole === "finance-reporter";
   let disabled = false;
 
   // Default: disable if user doesn't have the correct role
@@ -66,7 +67,7 @@ const RoleProtected = ({ allowedRoles, actionType, createdAt, children }: RolePr
       }
       break;
     case "delete":
-      if (isSupervisor || isReporter) {
+      if (isSupervisor || isReporter || isFinanceReporter) {
         disabled = true; // Supervisors and reporters cannot delete
       }
       break;

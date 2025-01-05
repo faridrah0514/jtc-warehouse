@@ -12,6 +12,7 @@ import PeriodReport from './PeriodReport'
 import { useSession } from 'next-auth/react';
 
 const { Text } = Typography
+import 'dayjs/locale/id';
 
 export default function Page() {
   const [selectedCabang, setSelectedCabang] = useState<number | null>(null)
@@ -92,6 +93,31 @@ export default function Page() {
   // Handle print action
   const fetchCashFlowDataForPrint = async (record: any) => {
     try {
+
+      const userrole = session?.user?.role || '';
+      const username = session?.user?.name || '';
+      if (userrole === 'finance-reporter') {
+        const response = await fetch(`/api/report-filters/finance-reporter-check/print?username=${encodeURIComponent(username)}&print_id=${record.id}`, {});
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'You are not authorized to print this report');
+      } else {
+        const response = await fetch('/api/report-filters/finance-reporter-check/print', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: session?.user?.name,
+            print_id: record.id,
+          }),
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to print report');
+        }
+      }
+      }
+  
       let periodStart = '', periodEnd = '';
       const year = dayjs(record.period_date).year();
       const month = dayjs(record.period_date).month() + 1;
@@ -187,7 +213,7 @@ export default function Page() {
       key: 'period_date',
       width: '10%',
       render: (date: string, record: any) => {
-        if (record.period_type === 'monthly') return dayjs(date).format('MMMM YYYY')
+        if (record.period_type === 'monthly') return dayjs(date).locale('id').format('MMMM YYYY')
         if (record.period_type === 'yearly') return dayjs(date).format('YYYY')
         return date
       },
@@ -234,6 +260,7 @@ export default function Page() {
             selectedPeriod={selectedPeriod}
             setSelectedPeriod={setSelectedPeriod}
             refreshConfigurations={getData}
+            sessionData={session}
           />
 
           {/* Configurations Table */}

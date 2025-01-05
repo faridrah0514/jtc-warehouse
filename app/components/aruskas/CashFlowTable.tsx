@@ -106,10 +106,10 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
       key: 'actions',
       render: (_: any, record: CashFlow) => (
         <>
-        <RoleProtected allowedRoles={['finance', 'admin']} actionType='edit' createdAt={record.created_at}>
-          <Button type="link" onClick={() => onEdit(record)}>
-            Edit
-          </Button>
+          <RoleProtected allowedRoles={['finance', 'admin']} actionType='edit' createdAt={record.created_at}>
+            <Button type="link" onClick={() => onEdit(record)}>
+              Edit
+            </Button>
           </RoleProtected>
           <Popconfirm
             title="Are you sure to delete this record?"
@@ -117,15 +117,16 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
             okText="Yes"
             cancelText="No"
           >
-            <Button type="link" danger>
-              Delete
-            </Button>
+            <RoleProtected allowedRoles={['finance', 'admin']} actionType='delete' createdAt={record.created_at}>
+              <Button type="link" danger>
+                Delete
+              </Button>
+            </RoleProtected>
           </Popconfirm>
         </>
       ),
     },
   ];
-  
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">

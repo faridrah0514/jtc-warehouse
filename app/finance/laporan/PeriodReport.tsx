@@ -2,7 +2,7 @@ import React from 'react';
 import { Typography, Table } from 'antd';
 import dayjs from 'dayjs';
 import { ColumnType } from 'antd/es/table';
-
+import 'dayjs/locale/id';
 const { Title, Text } = Typography;
 
 interface PeriodReportProps {
@@ -101,7 +101,7 @@ const PeriodReport = React.forwardRef<HTMLDivElement, PeriodReportProps>(({ prin
               Arus Kas
             </Title>
             <Title level={4} style={{ textAlign: 'center', marginBottom: '10px', marginTop: '0px' }}>
-              {dayjs(cabangDetails.period_start).format('MMMM YYYY')}
+                {dayjs(cabangDetails.period_start).locale('id').format('MMMM YYYY')}
             </Title>
 
             {/* Transactions Table */}

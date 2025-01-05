@@ -4,7 +4,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { CashFlowCategory, CashFlow } from '@/app/types/master';
 import { CurrencyInput } from '@/app/components/currencyInput/currencyInput';
 import dayjs from 'dayjs';
-
+import { useSession } from 'next-auth/react';
 interface AddCashFlowModalProps {
   visible: boolean;
   categories: CashFlowCategory[];
@@ -31,8 +31,7 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [editFileList, setEditFileList] = useState<UploadFile[]>([])
-
-
+  const { data: session } = useSession();
 
   const handleOk = () => {
     form.submit();
@@ -161,7 +160,16 @@ const AddCashFlowModal: React.FC<AddCashFlowModalProps> = ({
           label="Tanggal"
           rules={[{ required: true, message: 'Please select the date' }]}
         >
-          <DatePicker format='DD-MM-YYYY' style={{ width: '100%' }} />
+          <DatePicker 
+            format='DD-MM-YYYY' 
+            style={{ width: '100%' }} 
+            disabledDate={(current) => {
+              if (session?.user?.role === 'finance-reporter') {
+                 return !current?.isSame(dayjs(), 'day')
+              }
+              return false;
+            }}
+          />
         </Form.Item>
         <Form.Item
           name="cabang_id"

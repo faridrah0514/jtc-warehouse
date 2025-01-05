@@ -126,7 +126,7 @@ export default function Page() {
             ? 'Aktif'
             : 'Non-Aktif';
       });
-      setDataSewa(dataSewa.data.filter((value: any) => value.is_pln === 0));
+      setDataSewa(dataSewa.data.filter((value: any) => value.is_pln === 0 && value.statusSewa === 'Aktif'));
       setLoading(false);
     }
   }

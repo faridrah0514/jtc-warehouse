@@ -7,6 +7,7 @@ import AddCategoryModal from './AddCategoryModal';
 import { useReactToPrint } from 'react-to-print';
 import dayjs from 'dayjs';
 import { useSession } from 'next-auth/react';
+import RoleProtected from '@/app/components/roleProtected/RoleProtected';
 
 const CategoryTable: React.FC = () => {
     const [categories, setCategories] = useState<CashFlowCategory[]>([]);
@@ -130,18 +131,22 @@ const CategoryTable: React.FC = () => {
             key: 'actions',
             render: (_: any, record: CashFlowCategory) => (
                 <div>
-                    <Button type="link" onClick={() => handleEditCategory(record)}>
-                        Edit
-                    </Button>
+                    <RoleProtected allowedRoles={['finance', 'admin']} actionType='edit'>
+                        <Button type="link" onClick={() => handleEditCategory(record)}>
+                            Edit
+                        </Button>
+                    </RoleProtected>
                     <Popconfirm
                         title="Are you sure to delete this category?"
                         onConfirm={() => handleDeleteCategory(record.id)}
                         okText="Yes"
                         cancelText="No"
                     >
-                        <Button type="link" danger>
-                            Delete
-                        </Button>
+                        <RoleProtected allowedRoles={['finance', 'admin']} actionType='delete'>
+                            <Button type="link" danger>
+                                Delete
+                            </Button>
+                        </RoleProtected>
                     </Popconfirm>
                 </div>
             ),

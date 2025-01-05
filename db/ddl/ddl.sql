@@ -166,13 +166,13 @@ CREATE TABLE `users` (
   `id` int NOT NULL AUTO_INCREMENT,
   `username` varchar(255) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `role` enum('admin','supervisor','reporter', 'finance') NOT NULL DEFAULT 'reporter',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `role` enum('admin','supervisor','reporter','finance','finance-reporter') NOT NULL DEFAULT 'reporter',
   `editable_until` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) 
+)
 
 CREATE TABLE cash_flow_category (
     id VARCHAR(50) PRIMARY KEY,               -- Category ID (e.g., 'CFI-001', 'CFO-001')
@@ -212,5 +212,19 @@ CREATE TABLE `report_filters` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `nama_cabang` varchar(250) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+)
+
+
+-- jtc_warehouse.user_actions definition
+
+CREATE TABLE `user_actions` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NOT NULL,
+  `tanggal` date NOT NULL DEFAULT curdate(),
+  `action` varchar(255) NOT NULL,
+  `jenis_laporan` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   PRIMARY KEY (`id`)
 )

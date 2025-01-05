@@ -14,8 +14,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next(); // Allow static assets to load without redirection
   }
 
-  // If the user has the "finance" role, redirect if they are not on a finance route
-  if (token?.role === 'finance' && !pathname.startsWith('/finance')) {
+  // If the user has the "finance" or "finance-reporter" role, redirect if they are not on a finance route
+  if ((token?.role === 'finance' || token?.role === 'finance-reporter') && !pathname.startsWith('/finance')) {
     return NextResponse.redirect(new URL('/finance', req.url));
   }
 

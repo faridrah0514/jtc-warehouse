@@ -66,6 +66,6 @@ export default function MenuItems({ userRole }: { userRole: string }) {
     ];
 
     // Return the items based on the role
-    const itemsToShow = userRole === 'finance' ? financeItems : [...defaultItems, ...financeItems, ...otherItems];
+    const itemsToShow = (userRole === 'finance' || userRole === 'finance-reporter') ? financeItems : [...defaultItems, ...financeItems, ...otherItems];
     return itemsToShow;
 }
