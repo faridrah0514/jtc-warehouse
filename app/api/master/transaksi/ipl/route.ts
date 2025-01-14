@@ -12,7 +12,7 @@ dayjs.extend(customParseFormat);
 export async function GET() {
   const conn = openDB();
   const query = `
-    SELECT ti.*, a.nama_aset, c.nama_perusahaan AS nama_cabang, p.nama AS nama_pelanggan, ts.ipl AS ipl, a.alamat as alamat_pelanggan 
+    SELECT ti.*, a.nama_aset, c.nama_perusahaan AS nama_cabang, p.nama AS nama_pelanggan, ts.ipl AS ipl, p.alamat as alamat_pelanggan 
     FROM transaksi_ipl ti
     LEFT JOIN aset a ON a.id = ti.id_aset
     LEFT JOIN cabang c ON c.id = ti.id_cabang

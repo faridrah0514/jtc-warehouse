@@ -90,9 +90,8 @@ export default function Page() {
       periode: dayjs(transactionRecord.bln_thn, 'MM-YYYY').locale('id').format('MMMM YYYY'),
       nama_pelanggan: transactionRecord.nama_pelanggan,
       alamat: transactionRecord.alamat,
-      tagihan: (transactionRecord.meteran_akhir - transactionRecord.meteran_awal) * transactionRecord.kwh_rp,
-      terbilang: convertCurrencyToBahasa((transactionRecord.meteran_akhir - transactionRecord.meteran_awal) * transactionRecord.kwh_rp),
-
+      tagihan: Math.round((transactionRecord.meteran_akhir - transactionRecord.meteran_awal) * transactionRecord.kwh_rp),
+      terbilang: convertCurrencyToBahasa(Math.round((transactionRecord.meteran_akhir - transactionRecord.meteran_awal) * transactionRecord.kwh_rp)),
     }
     // Set the data on printRef
     printRef.current?.setData(record);

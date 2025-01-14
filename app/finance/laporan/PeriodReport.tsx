@@ -101,7 +101,11 @@ const PeriodReport = React.forwardRef<HTMLDivElement, PeriodReportProps>(({ prin
               Arus Kas
             </Title>
             <Title level={4} style={{ textAlign: 'center', marginBottom: '10px', marginTop: '0px' }}>
-                {dayjs(cabangDetails.period_start).locale('id').format('MMMM YYYY')}
+                {printedData.period_type === 'monthly' 
+                  ? dayjs(printedData.period_date).locale('id').format('MMMM YYYY') 
+                  : printedData.period_type === 'yearly'
+                  ? dayjs(printedData.period_date).locale('id').format('YYYY')
+                  : `${dayjs(printedData.period_date).locale('id').format('DD MMMM YYYY')}`}
             </Title>
 
             {/* Transactions Table */}

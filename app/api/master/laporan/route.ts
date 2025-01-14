@@ -864,7 +864,8 @@ export async function POST(request: Request, response: Response) {
             "DD MMMM YYYY"
           ), // Convert to month name in Bahasa Indonesia
           masa_sewa: calculateMasa(data.mulai, data.berakhir), // Calculate Masa Sewa
-          total_harga_sewa: _renderCurrency(data.total_harga_sewa, false, true),
+          total_harga_sewa: _renderCurrency(data.total_harga_sewa, false, false),
+          harga_sewa: data.total_harga_sewa,
         }));
 
         // Extract column names
@@ -891,12 +892,13 @@ export async function POST(request: Request, response: Response) {
               result[nama_cabang] = {
                 laporan: [],
                 aset: new Set<string>(),
+                total_harga_sewa: 0,
               };
             }
-
             result[nama_cabang].laporan.push(row);
             result[nama_cabang].aset.add(nama_aset);
-
+            result[nama_cabang].total_harga_sewa += parseFloat(row.harga_sewa);
+          
             return result;
           }, {});
           const asetArray = Array.isArray(data.nama_aset)
@@ -915,6 +917,7 @@ export async function POST(request: Request, response: Response) {
                 aset: asetArray, // Empty aset array
                 cabang: cabangArray, // Empty cabang array
                 jenis_laporan, // jenis_laporan with provided year
+                total_harga_sewa: _renderCurrency(0, false, false), // Default total_harga_sewa
               },
             ]);
           }
@@ -926,6 +929,7 @@ export async function POST(request: Request, response: Response) {
             aset: Array.from(groupedLaporan[cabang].aset), // Convert Set to array
             cabang: [cabang], // Always an array
             jenis_laporan,
+            total_harga_sewa: _renderCurrency(groupedLaporan[cabang].total_harga_sewa, false, false), // Sum of total_harga_sewa
           }));
 
           return Response.json(response);

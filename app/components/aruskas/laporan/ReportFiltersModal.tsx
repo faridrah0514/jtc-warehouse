@@ -12,8 +12,8 @@ interface ReportFiltersModalProps {
   setCashFlowType: (value: 'incoming' | 'outgoing' | 'both') => void;
   selectedCategories: string[];
   setSelectedCategories: (value: string[]) => void;
-  periodType: 'monthly' | 'yearly';
-  setPeriodType: (value: 'monthly' | 'yearly') => void;
+  periodType: 'monthly' | 'yearly' | 'daily';
+  setPeriodType: (value: 'monthly' | 'yearly' | 'daily') => void;
   selectedPeriod: any;
   setSelectedPeriod: (value: any) => void;
   refreshConfigurations: () => void; // New prop to trigger data refresh
@@ -209,6 +209,7 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
           <Form.Item name="periodType" label="Tipe Period" initialValue={periodType}>
             <Radio.Group
               options={[
+                { label: 'Harian', value: 'daily' },
                 { label: 'Bulanan', value: 'monthly' },
                 { label: 'Tahunan', value: 'yearly' },
               ]}
@@ -221,8 +222,10 @@ export const ReportFiltersModal: React.FC<ReportFiltersModalProps> = ({
           <Form.Item name="period" label="Pilih Period" initialValue={selectedPeriod}>
             {periodType === 'monthly' ? (
               <DatePicker picker="month" />
-            ) : (
+            ) : periodType === 'yearly' ? (
               <DatePicker picker="year" />
+            ) : (
+              <DatePicker picker="date" />
             )}
           </Form.Item>
         </Form>

@@ -5,6 +5,7 @@ import Title from 'antd/es/typography/Title'
 import { useReactToPrint } from 'react-to-print'
 import { ReportFiltersModal } from '@/app/components/aruskas/laporan/ReportFiltersModal'
 import PrintableReport from '@/app/components/aruskas/laporan/PrintableReport'
+import RoleProtected from '@/app/components/roleProtected/RoleProtected';
 import dayjs from 'dayjs'
 import { Tooltip } from 'antd';
 import CategoryReport from './CategoryReport'
@@ -18,7 +19,7 @@ export default function Page() {
   const [selectedCabang, setSelectedCabang] = useState<number | null>(null)
   const [cashFlowType, setCashFlowType] = useState<'incoming' | 'outgoing' | 'both'>('both')
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [periodType, setPeriodType] = useState<'monthly' | 'yearly'>('monthly')
+  const [periodType, setPeriodType] = useState<'monthly' | 'yearly' | 'daily'>('monthly')
   const [selectedPeriod, setSelectedPeriod] = useState<any>(null)
   const [configurations, setConfigurations] = useState<any[]>([])
   const [allData, setAllData] = useState<any>()
@@ -99,25 +100,25 @@ export default function Page() {
       if (userrole === 'finance-reporter') {
         const response = await fetch(`/api/report-filters/finance-reporter-check/print?username=${encodeURIComponent(username)}&print_id=${record.id}`, {});
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'You are not authorized to print this report');
-      } else {
-        const response = await fetch('/api/report-filters/finance-reporter-check/print', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: session?.user?.name,
-            print_id: record.id,
-          }),
-        });
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to print report');
+          throw new Error(errorData.error || 'You are not authorized to print this report');
+        } else {
+          const response = await fetch('/api/report-filters/finance-reporter-check/print', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: session?.user?.name,
+              print_id: record.id,
+            }),
+          });
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to print report');
+          }
         }
       }
-      }
-  
+
       let periodStart = '', periodEnd = '';
       const year = dayjs(record.period_date).year();
       const month = dayjs(record.period_date).month() + 1;
@@ -129,6 +130,9 @@ export default function Page() {
         const lastDayOfMonth = dayjs(`${year}-${month}`).daysInMonth();
         periodStart = `${year}-${month.toString().padStart(2, '0')}-01`;
         periodEnd = `${year}-${month.toString().padStart(2, '0')}-${lastDayOfMonth}`;
+      } else if (record.period_type === 'daily') {
+        periodStart = dayjs(record.period_date).format('YYYY-MM-DD');
+        periodEnd = dayjs(record.period_date).format('YYYY-MM-DD');
       }
 
       const payload = {
@@ -150,9 +154,10 @@ export default function Page() {
       if (!response.ok) throw new Error('Failed to fetch cash flow data');
 
       let result = await response.json();
-      
+
       result.report_type = record.report_type;
       result.period_date = record.period_date
+      result.period_type = record.period_type
 
       setPrintedData(result);
       setPrint(true); // Trigger print
@@ -215,6 +220,7 @@ export default function Page() {
       render: (date: string, record: any) => {
         if (record.period_type === 'monthly') return dayjs(date).locale('id').format('MMMM YYYY')
         if (record.period_type === 'yearly') return dayjs(date).format('YYYY')
+        if (record.period_type === 'daily') return dayjs(date).locale('id').format('DD MMMM YYYY')
         return date
       },
     },
@@ -228,7 +234,9 @@ export default function Page() {
             title="Sure to delete?"
             onConfirm={() => handleDeleteConfiguration(record.id)}
           >
-            <Button type="link" danger>Delete</Button>
+            <RoleProtected allowedRoles={['finance', 'admin']} actionType='delete' createdAt={record.created_at}>
+              <Button type="link" danger>Delete</Button>
+            </RoleProtected>
           </Popconfirm>
         </div>
       ),
@@ -276,13 +284,13 @@ export default function Page() {
           {/* Printable Component */}
           <div style={{ display: 'none' }}>
             {printedData && (
-                <>
+              <>
                 {printedData?.report_type === 'category' ? (
-                  <CategoryReport ref={printRef} user={session?.user?.name || 'Unknown'} printedData={printedData} />              
+                  <CategoryReport ref={printRef} user={session?.user?.name || 'Unknown'} printedData={printedData} />
                 ) : (
                   <PeriodReport ref={printRef} user={session?.user?.name || 'Unknown'} printedData={printedData} />
                 )}
-                </>
+              </>
             )}
           </div>
         </>

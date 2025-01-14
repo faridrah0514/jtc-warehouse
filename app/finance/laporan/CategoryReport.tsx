@@ -95,7 +95,11 @@ const CategoryReport = React.forwardRef<HTMLDivElement, CategoryReportProps>(({ 
                         {/* Period Date */}
                         <div style={{ marginBottom: '5px' }}>
                             <Title level={3} style={{ textAlign: 'center', marginBottom: '10px' }}>
-                                {dayjs(filteredPrintedData.period_date).format('MMMM YYYY')}
+                                {printedData.period_type === 'daily' 
+                                    ? dayjs(printedData.period_date).locale('id').format('DD MMMM YYYY') 
+                                    : printedData.period_type === 'monthly' 
+                                    ? dayjs(printedData.period_date).locale('id').format('MMMM YYYY') 
+                                    : dayjs(printedData.period_date).locale('id').format('YYYY')}
                             </Title>
                         </div>
 

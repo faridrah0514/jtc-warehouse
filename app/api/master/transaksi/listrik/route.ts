@@ -8,8 +8,8 @@ import { RowDataPacket } from "mysql2";
 export async function GET() {
     const conn = openDB()
     const query = `
-      select tl.*, p.nama nama_pelanggan, c.nama_perusahaan nama_cabang, a.nama_aset nama_aset, p.alamat alamat_pelanggan,
-      c.alamat, c.kota, c.kwh_rp, 
+      select tl.*, p.nama nama_pelanggan, c.nama_perusahaan nama_cabang, a.nama_aset nama_aset, p.alamat alamat,
+      c.alamat alamat_cabang, c.kota, c.kwh_rp, 
       c.rek_bank_1, c.rek_norek_1, c.rek_atas_nama_1,
       c.rek_bank_2, c.rek_norek_2, c.rek_atas_nama_2
       from transaksi_listrik tl

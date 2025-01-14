@@ -187,6 +187,15 @@ export default function Page() {
                     IPL: item.totalIPL, // Use totalIPL from backend if applicable
                   },
                 ];
+              } else if (item.jenis_laporan.startsWith("DAFTAR JATUH TEMPO")) {
+                dataSourceWithTotal = [
+                  ...dataSourceWithTotal,
+                  {
+                    key: "total",// Empty for column merging
+                    nama_penyewa: "Total Harga Sewa", // Label for total row
+                    total_harga_sewa: item.total_harga_sewa, // Display total_harga_sewa from response
+                  },
+                ];
               }
 
               // Adjust column rendering for merging all except 'harga_sewa' and 'IPL' for the total row
@@ -199,11 +208,11 @@ export default function Page() {
                         return {
                           children: (
                             <div style={{ textAlign: "right", fontWeight: "bold" }}>
-                              {item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK" ? "Total Harga Sewa" : "Total"}
+                              {(item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK" || item.jenis_laporan.startsWith("DAFTAR JATUH TEMPO")) ? "Total Harga Sewa" : "Total"}
                             </div>
                           ),
                           props: {
-                            colSpan: item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK"
+                            colSpan: (item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK" || item.jenis_laporan.startsWith("DAFTAR JATUH TEMPO"))
                               ? item.columnNames.length - 1 // Merge all columns except 'harga_sewa' for DAFTAR PENYEWA PER-BLOK
                               : item.columnNames.length - 2, // Merge all columns except 'harga_sewa' and 'IPL' for DAFTAR PENYEWA PER-TAHUN
                           },
@@ -251,7 +260,7 @@ export default function Page() {
               });
 
               columnsWithMerge = columnsWithMerge.map((col: any) => {
-                if (col.dataIndex === 'harga_sewa' || col.dataIndex === 'IPL' || col.dataIndex === 'total_biaya' || col.dataIndex === 'kwh_rp') {
+                if (col.dataIndex === 'harga_sewa' || col.dataIndex === 'IPL' || col.dataIndex === 'total_biaya' || col.dataIndex === 'kwh_rp' || col.dataIndex === 'total_harga_sewa') {
                   return {
                     ...col,
                     render: (text: any, record: any) => {

@@ -207,7 +207,7 @@ CREATE TABLE `report_filters` (
   `cabang_id` varchar(250) DEFAULT NULL,
   `cash_flow_type` enum('incoming','outgoing','both') DEFAULT NULL,
   `categories` json DEFAULT NULL,
-  `period_type` enum('monthly','yearly') DEFAULT NULL,
+  `period_type` enum('monthly','yearly', 'daily') DEFAULT NULL,
   `period_date` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
