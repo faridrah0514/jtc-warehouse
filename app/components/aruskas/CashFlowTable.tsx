@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { Table, Button, Popconfirm } from 'antd';
 import { CashFlow, CashFlowCategory } from '@/app/types/master'; // Import CashFlow and CashFlowCategory types
 import dayjs from 'dayjs'; // Import dayjs for date formatting
 import { ColumnsType } from 'antd/es/table';
 import { _renderCurrency } from '@/app/utils/renderCurrency';
 import RoleProtected from '../roleProtected/RoleProtected';
+import { useReactToPrint } from 'react-to-print';
+import ReceiptPrint, { ReceiptPrintHandle } from '../../master/aruskas/ReceiptPrint'; // Import ReceiptPrint component
 
 interface CashFlowTableProps {
   data: CashFlow[];
@@ -15,17 +17,41 @@ interface CashFlowTableProps {
   onDelete: (id: number) => void;
   onEdit: (record: CashFlow) => void; // New prop for edit
   onAdd: () => void;
-  title: string;
+  title: "Kas Keluar" | "Kas Masuk";
 }
 
 const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading, currentPage, onPageChange, onDelete, onEdit, onAdd, title }) => {
-  const pageSize = 10;
+  const pageSize = 100;
+  const printRef = useRef<ReceiptPrintHandle | null>(null);
 
   // Helper function to get category name with ID
   const getCategoryDisplayName = (categoryId: string) => {
     const category = categories.find(cat => cat.id === categoryId);
     return category ? `${category.id} - ${category.name}` : 'Unknown';
   };
+
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current?.print() || null,
+    onAfterPrint: () => { 
+      printRef.current?.setData(null);
+    } 
+  });
+
+  const printReceipt = useCallback((record: CashFlow) => {
+    if (printRef.current) {
+
+      printRef.current.setData({
+        cabang: record.nama_perusahaan,
+        tanggal: record.date,
+        items: [{ description: record.description, amount: record.amount }],
+        total: record.amount,
+        penerima: record.nama_toko || 'Unknown',
+        title: title,
+      });
+
+      setTimeout(handlePrint, 0);
+    }
+  }, [handlePrint]);
 
   const columns: ColumnsType<CashFlow> = [
     {
@@ -111,6 +137,13 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
               Edit
             </Button>
           </RoleProtected>
+          {/* <RoleProtected allowedRoles={['finance', 'admin']} actionType='print'> */}
+            <Button type="link" onClick={() => {
+              printReceipt(record)
+            }}>
+              Print
+            </Button>
+          {/* </RoleProtected> */}
           <Popconfirm
             title="Are you sure to delete this record?"
             onConfirm={() => onDelete(record.id)}
@@ -148,6 +181,9 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
         size="small"
         scroll={{ x: 'max-content' }} // Add horizontal scroll
       />
+      <div style={{ display: 'none' }}>
+        <ReceiptPrint ref={printRef} />
+      </div>
     </div>
   );
 };

@@ -45,6 +45,7 @@ export default function Page() {
     },
     onAfterPrint: () => {
       setPrint(false)
+      setPrintedData(null)
     }
   })
 
@@ -230,14 +231,14 @@ export default function Page() {
       render: (_: any, record: any) => (
         <div style={{ display: 'flex', gap: '8px' }}>
           <Button type="link" onClick={() => fetchCashFlowDataForPrint(record)}>Print</Button>
+          <RoleProtected allowedRoles={['finance', 'admin']} actionType='delete' createdAt={record.created_at}>
           <Popconfirm
             title="Sure to delete?"
             onConfirm={() => handleDeleteConfiguration(record.id)}
           >
-            <RoleProtected allowedRoles={['finance', 'admin']} actionType='delete' createdAt={record.created_at}>
               <Button type="link" danger>Delete</Button>
-            </RoleProtected>
           </Popconfirm>
+          </RoleProtected>
         </div>
       ),
       width: '15%',
