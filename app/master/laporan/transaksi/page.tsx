@@ -197,7 +197,6 @@ export default function Page() {
                     total_harga_sewa: item.total_harga_sewa, // Display total_harga_sewa from response
                   },
                 ];
-                console.log(dataSourceWithTotal)
               } else if (item.jenis_laporan.startsWith("DATA PEMAKAIAN IPL ")) {
                 dataSourceWithTotal = [
                   ...dataSourceWithTotal,
@@ -208,9 +207,8 @@ export default function Page() {
                   },
                 ];
               } else if (!item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK TAHUN") && item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK")) {
-                console.log(dataSourceWithTotal)
                 dataSourceWithTotal.map((item: any) => {
-                  item.kwh_rp_1 = _renderCurrency(item?.kwh_rp, false, false)
+                  item.kwh_rp_1 = item?.kwh_rp
                 })
                 dataSourceWithTotal = [
                   ...dataSourceWithTotal,
@@ -221,7 +219,6 @@ export default function Page() {
                     kwh_rp_1: _renderCurrency(item?.kwh_rp, false, false),
                   },
                 ];
-                console.log(dataSourceWithTotal)
               }
 
               // Adjust column rendering for merging all except 'harga_sewa' and 'IPL' for the total row

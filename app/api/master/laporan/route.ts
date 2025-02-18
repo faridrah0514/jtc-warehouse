@@ -816,10 +816,10 @@ export async function POST(request: Request, response: Response) {
             jenis_laporan:
               "DATA PEMAKAIAN LISTRIK " +
               dayjs(data.periode, "MM-YYYY").format("MMMM YYYY"),
-            total: groupedLaporan[cabang].laporan.reduce((sum: number, row: any) => {
+            total: _renderCurrency(groupedLaporan[cabang].laporan.reduce((sum: number, row: any) => {
               const value = parseFloat(row.total_biaya.toString().replace(/\./g, "").replace(",", "."));
-              return _renderCurrency(sum + (isNaN(value) ? 0 : value), false, false);
-            }, 0)
+              return sum + (isNaN(value) ? 0 : value);
+            }, 0), false, false)
           }));
 
           return Response.json(response);
