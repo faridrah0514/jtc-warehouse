@@ -8,6 +8,7 @@ dayjs.locale("id");
 const { Text, Title } = Typography;
 
 interface ReceiptData {
+  no: string;
   cabang: string;
   tanggal: string;
   items: { description: string; amount: number | string }[];
@@ -62,6 +63,11 @@ const ReceiptPrint = forwardRef<ReceiptPrintHandle>((_, ref) => {
 
       {/* Header Section */}
       <div style={{ textAlign: 'left', paddingBottom: '10px' }}>
+        <div style={{ textAlign: 'right', marginTop: '-13px' }}>
+          <Text style={{ fontSize: '5px' }}>
+            {dayjs().format('DD MMMM YYYY HH:mm:ss')}
+          </Text>
+        </div>
         <Text style={{ fontWeight: 'bold' }}>CABANG: {data.cabang}</Text><br />
         <Text>{dayjs(data.tanggal).locale('id').format('DD MMMM YYYY')}</Text>
       </div>
@@ -70,26 +76,35 @@ const ReceiptPrint = forwardRef<ReceiptPrintHandle>((_, ref) => {
           {data.title === "Kas Masuk" ? "Bukti Pemasukan Kas" : "Bukti Pengeluaran Kas"}
         </Title>
         <hr style={{ margin: '4px 0', borderTop: '1px solid' }} />
-        <Text>&lt;KK-{Math.random().toString().slice(2, 10)}&gt;</Text>
+        <Text>&lt;KK-{data.no}&gt;</Text>
       </div>
 
       {/* Items Section */}
       <div style={{ padding: '10px 0' }}>
         {data.items.map((item, index) => (
           <div key={index} style={{ display: 'flex', justifyContent: 'space-between', paddingLeft: '40px', paddingRight: '40px' }}>
-            <Text>{index + 1}. {item.description}</Text>
-            <Text>{_renderCurrency(Number(item.amount))}</Text>
+            <div style={{ display: 'flex', flex: 1, marginRight: '20px' }}>
+              <Text style={{ width: '25px' }}>{index + 1}.</Text>
+              <Text style={{ flex: 1 }}>{item.description}</Text>
+            </div>
+            <Text style={{ minWidth: '120px', textAlign: 'right', flexShrink: 0 }}>
+              {_renderCurrency(Number(item.amount))}
+            </Text>
           </div>
         ))}
         <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginTop: '10px', paddingLeft: '40px', paddingRight: '40px' }}>
-          <Text>Total</Text>
-          <Text>{_renderCurrency(Number(data.total))}</Text>
+          <div style={{ marginLeft: '25px' }}>
+            <Text>Total</Text>
+          </div>
+          <Text style={{ minWidth: '120px', textAlign: 'right', flexShrink: 0 }}>
+            {_renderCurrency(Number(data.total))}
+          </Text>
         </div>
       </div>
 
       {/* Footer Section */}
       <div style={{ paddingTop: '40px', paddingLeft: '40px', paddingRight: '40px' }}>
-        {/* <Text>Kepada: {data.penerima}</Text><br /> */}
+        <Text>Kepada : {data.penerima}</Text><br />
         <Text>Tanda Tangan:</Text>
         <div style={{ marginTop: '40px'}}>
           <Text>____________________</Text>

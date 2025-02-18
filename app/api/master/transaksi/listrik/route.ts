@@ -27,6 +27,7 @@ export async function POST(request: Request) {
     const conn = openDB();
     const value = await request.json();
     const data = value.data;
+
     if (value.requestType == "add") {
       await conn.query(
         `insert into transaksi_listrik (
@@ -63,6 +64,8 @@ export async function POST(request: Request) {
       )
     } else if (value.requestType == 'delete') {
       await conn.query(`delete from transaksi_listrik where id = ?`, [data.id])
+    } else if (value.requestType == 'ubahStatusPembayaran') {
+      await conn.query(`update transaksi_listrik set status_pembayaran = ?, tanggal_pembayaran = ? where id = ?`, [data.status_pembayaran, data.tanggal_pembayaran, data.id])
     }
     conn.end();
     return Response.json({ status: 200 });

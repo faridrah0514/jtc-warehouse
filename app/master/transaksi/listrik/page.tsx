@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Button, ConfigProvider, Flex, Form, Popconfirm, Spin, Table, Tag } from 'antd';
+import { Button, ConfigProvider, DatePicker, Flex, Form, message, Modal, Popconfirm, Select, Spin, Table, Tag } from 'antd';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isBetween);
@@ -13,11 +13,20 @@ import { useReactToPrint } from 'react-to-print';
 import Title from 'antd/es/typography/Title';
 import 'dayjs/locale/id';
 
+const { Option } = Select;
+
 const column = [
   getTanggalEntriColumn(),
   { title: "Bln/Thn", dataIndex: 'bln_thn', key: 'bln_thn' },
   { title: "Meteran Awal", dataIndex: 'meteran_awal', key: 'meteran_awal' },
   { title: "Meteran Akhir", dataIndex: 'meteran_akhir', key: 'meteran_akhir' },
+  {
+    title: "Status Pembayaran",
+    key: "status_pembayaran",
+    dataIndex: "status_pembayaran",
+    render: (value: any) => <Tag color={value !== 'Lunas' ? 'red' : 'green'}>{value}</Tag>
+  },
+  { title: "Tanggal Pembayaran", key: "tanggal_pembayaran", dataIndex: "tanggal_pembayaran" },
 ];
 
 const columnSewa = [
@@ -27,6 +36,7 @@ const columnSewa = [
   { title: "Pelanggan", dataIndex: 'nama_pelanggan', key: 'nama_pelanggan' },
   { title: "Tanggal Awal Sewa", dataIndex: 'start_date_sewa', key: 'start_date_sewa' },
   { title: "Tanggal Akhir Sewa", dataIndex: 'end_date_sewa', key: 'end_date_sewa' },
+
 ];
 
 export default function Page() {
@@ -35,9 +45,11 @@ export default function Page() {
   // const [] = useState<any[]>([]);
   const [dataSewa, setDataSewa] = useState<any[]>([]);
   const [openModal, setOpenModal] = useState<boolean>(false);
+  const [ubahModal, setUbahModal] = useState<boolean>(false);
   const [triggerRefresh, setTriggerRefresh] = useState<boolean>(true);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [form] = Form.useForm();
+  const [formUbah] = Form.useForm();
   const [loading, setLoading] = useState(true);
 
   const printRef = useRef<ReceiptPrintHandle | null>(null);
@@ -130,6 +142,35 @@ export default function Page() {
     }
   }
 
+  async function ubahStatusPembayaran(value: any) {
+    const requestType = 'ubahStatusPembayaran'
+    value.tanggal_pembayaran = (value.status_pembayaran == 'Lunas') ? value.tanggal_pembayaran.format("DD-MM-YYYY") : ''
+    fetch('/api/master/transaksi/listrik', {
+      method: 'POST',
+      body: JSON.stringify({
+        requestType: requestType,
+        data: value
+      }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then((res) => res.json())
+      .then((res) => {
+        if (res.status === 200) {
+          message.success('Status pembayaran berhasil diubah');
+        } else {
+          message.error('Status pembayaran gagal diubah');
+        }
+      })
+      .catch((err) => {
+        message.error('Status pembayaran gagal diubah');
+      }).finally(() => {
+        setUbahModal(false);
+        formUbah.resetFields();
+        setTriggerRefresh(!triggerRefresh);
+      })
+  }
+
   useEffect(() => {
     getData();
   }, [triggerRefresh]);
@@ -138,6 +179,31 @@ export default function Page() {
     <>
 
       <Title level={3}>Halaman Data Master Transaksi - Listrik</Title>
+      <Modal open={ubahModal} closeIcon={null} footer={null} title='Form Ubah Status Pembayaran'>
+        <Form
+          name="addTipeAsetForm"
+          onFinish={ubahStatusPembayaran}
+          form={formUbah}
+          layout='horizontal'
+          labelAlign='left'
+          labelCol={{ span: 8 }}
+        >
+          <Form.Item name='id' label='id' />
+          <Form.Item name='status_pembayaran' label="Status Pembayaran">
+            <Select placeholder="Status Pembayaran" allowClear>
+              <Option value='Lunas'>Lunas</Option>
+              <Option value='Belum Lunas'>Belum Lunas</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name='tanggal_pembayaran' label="Tanggal Pembayaran">
+            <DatePicker format={'DD-MM-YYYY'} />
+          </Form.Item>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button onClick={() => setUbahModal(false)}>Cancel</Button>
+            <Button htmlType="submit" type="primary">Submit</Button>
+          </div>
+        </Form>
+      </Modal>
       <AddListrikModalV2 form={form} isEdit={isEdit} setOpenModal={setOpenModal} openModal={openModal} triggerRefresh={triggerRefresh} setTriggerRefresh={setTriggerRefresh} tagihanListrik={subTagihanListrikData} />
       {(loading) ?
         <div className="flex justify-center items-center">
@@ -222,7 +288,7 @@ export default function Page() {
                         >
                           Print
                         </Button>
-                        <ConfigProvider
+                        {/* <ConfigProvider
                           theme={{
                             components: {
                               Button: { colorPrimary: '#00b96b', colorPrimaryHover: '#00db7f' },
@@ -232,7 +298,18 @@ export default function Page() {
                           <Button type="primary" ghost size="small">
                             <Link href={`/master/transaksi/listrik/view/${transactionRecord.id}`}>View</Link>
                           </Button>
-                        </ConfigProvider>
+                        </ConfigProvider> */}
+                          <Button
+                            type="primary"
+                            ghost
+                            size="small"
+                            onClick={() => {
+                              setUbahModal(true);
+                              formUbah.setFieldValue('id', transactionRecord.id)
+                            }}
+                          >
+                            Ubah Status Pembayaran
+                          </Button>
                         <RoleProtected allowedRoles={['admin', 'supervisor']} actionType='edit' createdAt={transactionRecord.created_at}>
                           <Button
                             type="primary"

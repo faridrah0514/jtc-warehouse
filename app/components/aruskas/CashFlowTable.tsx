@@ -7,6 +7,7 @@ import { _renderCurrency } from '@/app/utils/renderCurrency';
 import RoleProtected from '../roleProtected/RoleProtected';
 import { useReactToPrint } from 'react-to-print';
 import ReceiptPrint, { ReceiptPrintHandle } from '../../master/aruskas/ReceiptPrint'; // Import ReceiptPrint component
+import 'dayjs/locale/id'; // Import Indonesian locale
 
 interface CashFlowTableProps {
   data: CashFlow[];
@@ -39,9 +40,13 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
 
   const printReceipt = useCallback((record: CashFlow) => {
     if (printRef.current) {
-
+      const rowNumber = ((currentPage - 1) * pageSize) + data.findIndex(item => item.id === record.id) + 1;
+      const formattedNumber = rowNumber.toString().padStart(6, '0'); // Format to 6 digits with leading zeros
       printRef.current.setData({
+        no: (formattedNumber),
         cabang: record.nama_perusahaan,
+
+        // tanggal: dayjs().locale('id').format('DD MMMM YYYY HH:mm'),
         tanggal: record.date,
         items: [{ description: record.description, amount: record.amount }],
         total: record.amount,
@@ -51,7 +56,7 @@ const CashFlowTable: React.FC<CashFlowTableProps> = ({ data, categories, loading
 
       setTimeout(handlePrint, 0);
     }
-  }, [handlePrint]);
+  }, [handlePrint, currentPage, data, pageSize, title]);
 
   const columns: ColumnsType<CashFlow> = [
     {

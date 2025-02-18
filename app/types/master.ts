@@ -70,6 +70,7 @@ export interface CashFlow {
   nama_toko?: string
   files?: string[]; // List of file names 
   created_at?: string
+  no?: number
 }
 
 export interface CashFlowCategory {

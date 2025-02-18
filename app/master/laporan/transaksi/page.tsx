@@ -8,6 +8,7 @@ import { useReactToPrint } from 'react-to-print'
 import { useSession } from 'next-auth/react'
 import dayjs from 'dayjs';
 import { Typography } from 'antd';
+import { _renderCurrency } from '@/app/utils/renderCurrency'
 
 const { Text } = Typography;
 
@@ -196,6 +197,31 @@ export default function Page() {
                     total_harga_sewa: item.total_harga_sewa, // Display total_harga_sewa from response
                   },
                 ];
+                console.log(dataSourceWithTotal)
+              } else if (item.jenis_laporan.startsWith("DATA PEMAKAIAN IPL ")) {
+                dataSourceWithTotal = [
+                  ...dataSourceWithTotal,
+                  {
+                    key: "total",
+                    nama_cabang: "Total",
+                    IPL: item.total,
+                  },
+                ];
+              } else if (!item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK TAHUN") && item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK")) {
+                console.log(dataSourceWithTotal)
+                dataSourceWithTotal.map((item: any) => {
+                  item.kwh_rp_1 = _renderCurrency(item?.kwh_rp, false, false)
+                })
+                dataSourceWithTotal = [
+                  ...dataSourceWithTotal,
+                  {
+                    key: "total",
+                    nama_aset: "Total",
+                    total_biaya: item.total,
+                    kwh_rp_1: _renderCurrency(item?.kwh_rp, false, false),
+                  },
+                ];
+                console.log(dataSourceWithTotal)
               }
 
               // Adjust column rendering for merging all except 'harga_sewa' and 'IPL' for the total row
@@ -212,7 +238,7 @@ export default function Page() {
                             </div>
                           ),
                           props: {
-                            colSpan: (item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK" || item.jenis_laporan.startsWith("DAFTAR JATUH TEMPO"))
+                            colSpan: (item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK" || item.jenis_laporan.startsWith("DAFTAR JATUH TEMPO") || item.jenis_laporan.startsWith("DATA PEMAKAIAN IPL ") || item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK"))
                               ? item.columnNames.length - 1 // Merge all columns except 'harga_sewa' for DAFTAR PENYEWA PER-BLOK
                               : item.columnNames.length - 2, // Merge all columns except 'harga_sewa' and 'IPL' for DAFTAR PENYEWA PER-TAHUN
                           },
@@ -260,7 +286,7 @@ export default function Page() {
               });
 
               columnsWithMerge = columnsWithMerge.map((col: any) => {
-                if (col.dataIndex === 'harga_sewa' || col.dataIndex === 'IPL' || col.dataIndex === 'total_biaya' || col.dataIndex === 'kwh_rp' || col.dataIndex === 'total_harga_sewa') {
+                if (col.dataIndex === 'harga_sewa' || col.dataIndex === 'IPL' || col.dataIndex === 'total_biaya' || col.dataIndex === 'kwh_rp' || col.dataIndex === 'total_harga_sewa' || col.dataIndex === 'total' ) {
                   return {
                     ...col,
                     render: (text: any, record: any) => {
@@ -296,7 +322,7 @@ export default function Page() {
                   };
                 }
                 return col;
-              });
+              })
 
               const cabang = Array.isArray(item.cabang) ? item.cabang.join(", ") : item.cabang;
               const aset = Array.isArray(item.aset) ? item.aset.join(", ") : item.aset;

@@ -261,6 +261,14 @@ export async function POST(request: Request, response: Response) {
           const response = Object.keys(groupedLaporan)
             .map((cabang) => {
               return Object.keys(groupedLaporan[cabang]).map((aset) => {
+                // Calculate total by summing up IPL values
+                const total = groupedLaporan[cabang][aset]
+                  .reduce((sum: number, item: any) => {
+                    // Parse the IPL value by removing currency formatting
+                    const iplValue = parseFloat(item.IPL.replace(/\./g, "").replace(",", "."));
+                    return sum + (isNaN(iplValue) ? 0 : iplValue);
+                  }, 0);
+
                 return {
                   laporan: groupedLaporan[cabang][aset].map((item: any, idx: any) => ({
                     ...item,
@@ -270,6 +278,7 @@ export async function POST(request: Request, response: Response) {
                   aset: [aset], // Always an array
                   cabang: [cabang], // Always an array
                   jenis_laporan,
+                  total: _renderCurrency(total, false, false), // Format the total as currency
                 };
               });
             })
@@ -285,6 +294,13 @@ export async function POST(request: Request, response: Response) {
             ? data.nama_cabang.split(", ")
             : [data.nama_cabang]; // Ensure cabang is an array
 
+          // Calculate total by summing up IPL values
+          const total = laporanArray.reduce((sum: number, item: any) => {
+            // Parse the IPL value by removing currency formatting
+            const iplValue = parseFloat(item.IPL.replace(/\./g, "").replace(",", "."));
+            return sum + (isNaN(iplValue) ? 0 : iplValue);
+          }, 0);
+
           return Response.json([
             {
               laporan: laporanArray,
@@ -292,6 +308,7 @@ export async function POST(request: Request, response: Response) {
               aset: asetArray,
               cabang: cabangArray,
               jenis_laporan,
+              total: _renderCurrency(total, false, false), // Add formatted total
             },
           ]);
         }
@@ -327,7 +344,7 @@ export async function POST(request: Request, response: Response) {
           }
         }
 
-        query += " ORDER BY STR_TO_DATE(ti.bln_thn, '%m-%Y') ASC";
+        query += " ORDER BY STR_TO_DATE(tl.bln_thn, '%m-%Y') ASC";
         let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
           query,
           queryParams
@@ -765,8 +782,8 @@ export async function POST(request: Request, response: Response) {
             }
             return {
               title: title,
-              dataIndex: val,
-              key: val,
+              dataIndex: val === 'kwh_rp' ? 'kwh_rp_1' : val,
+              key: val === 'kwh_rp' ? 'kwh_rp_1' : val,
             };
           });
 
@@ -792,13 +809,17 @@ export async function POST(request: Request, response: Response) {
           }, {});
 
           const response = Object.keys(groupedLaporan).map((cabang) => ({
-            laporan: groupedLaporan[cabang].laporan, // Always an array
+            laporan: groupedLaporan[cabang].laporan,
             columnNames,
-            aset: Array.from(groupedLaporan[cabang].aset), // Convert Set to array
-            cabang: [cabang], // Always an array
+            aset: Array.from(groupedLaporan[cabang].aset),
+            cabang: [cabang],
             jenis_laporan:
               "DATA PEMAKAIAN LISTRIK " +
               dayjs(data.periode, "MM-YYYY").format("MMMM YYYY"),
+            total: groupedLaporan[cabang].laporan.reduce((sum: number, row: any) => {
+              const value = parseFloat(row.total_biaya.toString().replace(/\./g, "").replace(",", "."));
+              return _renderCurrency(sum + (isNaN(value) ? 0 : value), false, false);
+            }, 0)
           }));
 
           return Response.json(response);
@@ -808,13 +829,13 @@ export async function POST(request: Request, response: Response) {
             "DATA PEMAKAIAN LISTRIK " +
             dayjs(data.periode, "MM-YYYY").format("MMMM YYYY");
 
-          const laporanArray = Array.isArray(laporan) ? laporan : [laporan]; // Ensure laporan is always an array
+          const laporanArray = Array.isArray(laporan) ? laporan : [laporan];
           const asetArray = Array.isArray(data.nama_aset)
             ? data.nama_aset.split(", ")
-            : [data.nama_aset]; // Ensure aset is an array
+            : [data.nama_aset];
           const cabangArray = Array.isArray(data.nama_cabang)
             ? data.nama_cabang.split(", ")
-            : [data.nama_cabang]; // Ensure cabang is an array
+            : [data.nama_cabang];
 
           return Response.json([
             {
@@ -823,6 +844,10 @@ export async function POST(request: Request, response: Response) {
               aset: asetArray,
               cabang: cabangArray,
               jenis_laporan,
+              total: laporanArray.reduce((sum: number, row: any) => {
+                const value = parseFloat(row.total_biaya.toString().replace(/\./g, "").replace(",", "."));
+                return sum + (isNaN(value) ? 0 : value);
+              }, 0)
             },
           ]);
         }
@@ -1075,6 +1100,155 @@ export async function POST(request: Request, response: Response) {
 
         // Send the response
         return Response.json([response]);
+      } else if (data.jenis_laporan.toLowerCase() == "transaksi ipl bulanan") {
+        let query = `
+          SELECT c.nama_perusahaan nama_cabang, a.nama_aset, p.nama nama_pelanggan, 
+                 ti.periode_pembayaran, ti.status_pembayaran, ti.tanggal_pembayaran, ts.ipl IPL
+          FROM transaksi_ipl ti
+          LEFT JOIN cabang c ON ti.id_cabang = c.id
+          LEFT JOIN aset a ON ti.id_aset = a.id
+          LEFT JOIN pelanggan p ON ti.id_pelanggan = p.id
+          LEFT JOIN transaksi_sewa ts ON ts.id_cabang = ti.id_cabang 
+                                       AND ts.id_aset = ti.id_aset 
+                                       AND ts.id_pelanggan = ti.id_pelanggan
+          WHERE LEFT(ti.periode_pembayaran, 7) = ?
+        `;
+
+        const param = dayjs(data.periode, "MM-YYYY").format("YYYY-MM");
+        const queryParams = [param];
+
+        // Adjust for 'Semua Cabang'
+        if (
+          data.nama_cabang &&
+          data.nama_cabang.toLowerCase() !== "semua cabang"
+        ) {
+          if (data.nama_aset && data.nama_aset.toLowerCase() !== "semua aset") {
+            query += " AND c.nama_perusahaan IN (?) AND a.nama_aset IN (?)";
+            queryParams.push(
+              data.nama_cabang.split(", "),
+              data.nama_aset.split(", ")
+            );
+          } else {
+            query += " AND c.nama_perusahaan IN (?)";
+            queryParams.push(data.nama_cabang.split(", "));
+          }
+        }
+
+        // Add ORDER BY clause here to make it apply regardless of conditions
+        query += " ORDER BY STR_TO_DATE(ti.periode_pembayaran, '%m-%Y') ASC";
+
+        let [laporan, laporanFields] = await conn.query<RowDataPacket[]>(
+          query,
+          queryParams
+        );
+        const columnNames = laporanFields
+          .map((fields: any) => fields.name)
+          .filter((fieldName) => fieldName != "id")
+          .map((val: any) => {
+            let title = val
+              .split("_")
+              .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ");
+  
+            // Special case for harga_sewa
+            if (val === "harga_sewa") {
+              title = "Harga Sewa (Rp)";
+            } else if (val === "IPL") {
+              title = "IPL (Rp)";
+            }
+  
+            return {
+              title: title,
+              dataIndex: val,
+              key: val,
+            };
+          });
+        columnNames.unshift({
+          title: "Nomor",
+          dataIndex: "nomor",
+          key: "nomor",
+        });
+
+        laporan = laporan
+          .map((item, idx) => ({
+            ...item,
+            nomor: idx + 1,
+            IPL: _renderCurrency(item.IPL, false, false),
+          }))
+          .map((item: any) => ({
+            ...item,
+            periode_pembayaran: dayjs(item.periode_pembayaran).format(
+              "MMMM YYYY"
+            ),
+          }));
+
+        const jenis_laporan = "DATA PEMAKAIAN IPL BULANAN " + data.periode;
+
+        if (
+          data.nama_cabang &&
+          data.nama_cabang.toLowerCase() === "semua cabang"
+        ) {
+          const groupedLaporan = laporan.reduce((result: any, row) => {
+            const { nama_cabang, nama_aset } = row;
+
+            if (!result[nama_cabang]) {
+              result[nama_cabang] = {};
+            }
+
+            if (!result[nama_cabang][nama_aset]) {
+              result[nama_cabang][nama_aset] = [];
+            }
+
+            result[nama_cabang][nama_aset].push(row);
+            return result;
+          }, {});
+
+          const response = Object.keys(groupedLaporan)
+            .map((cabang) => {
+              return Object.keys(groupedLaporan[cabang]).map((aset) => {
+                // Calculate total by summing up IPL values
+                const total = groupedLaporan[cabang][aset]
+                  .reduce((sum: number, item: any) => {
+                    // Parse the IPL value by removing currency formatting
+                    const iplValue = parseFloat(item.IPL.replace(/\./g, "").replace(",", "."));
+                    return sum + (isNaN(iplValue) ? 0 : iplValue);
+                  }, 0);
+
+                return {
+                  laporan: groupedLaporan[cabang][aset].map((item: any, idx: any) => ({
+                    ...item,
+                    nomor: idx + 1,
+                  })),
+                  columnNames,
+                  aset: [aset], // Always an array
+                  cabang: [cabang], // Always an array
+                  jenis_laporan,
+                  total: _renderCurrency(total, false, false), // Format the total as currency
+                };
+              });
+            })
+            .flat();
+          return Response.json(response);
+        } else {
+          // For specific cabang, ensure single objects are arrays
+          const laporanArray = Array.isArray(laporan) ? laporan : [laporan]; // Ensure laporan is always an array
+          const asetArray = Array.isArray(data.nama_aset)
+            ? data.nama_aset.split(", ")
+            : [data.nama_aset]; // Ensure aset is an array
+          const cabangArray = Array.isArray(data.nama_cabang)
+            ? data.nama_cabang.split(", ")
+            : [data.nama_cabang]; // Ensure cabang is an array
+
+          return Response.json([
+            {
+              laporan: laporanArray,
+              columnNames,
+              aset: asetArray,
+              cabang: cabangArray,
+              jenis_laporan,
+            },
+          ]);
+        }
       }
     } else if (value.requestType == "delete_laporan") {
       await conn.query(`delete from laporan where id  = ?`, data.id);

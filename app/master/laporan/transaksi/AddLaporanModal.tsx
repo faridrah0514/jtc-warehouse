@@ -68,7 +68,7 @@ export default function AddLaporanModal(props: Status) {
     }
 
     // Handle the period formatting
-    if (value.jenis_laporan === 'transaksi_listrik_bulanan') {
+    if (value.jenis_laporan === 'transaksi_listrik_bulanan' || value.jenis_laporan === 'transaksi_ipl_bulanan') {
       value.periode = dayjs(value.periode).format('MM-YYYY'); // Format as month-year
     } else if (value.jenis_laporan === 'daftar_penyewa_per_blok') {
       value.periode = null
@@ -121,7 +121,8 @@ export default function AddLaporanModal(props: Status) {
             <Option value='jatuh_tempo'>Jatuh Tempo</Option>
             <Option value='transaksi_listrik_bulanan'>Transaksi Listrik Bulanan</Option>
             <Option value='transaksi_listrik_tahunan'>Transaksi Listrik Tahunan</Option>
-            <Option value='transaksi_ipl'>Transaksi IPL</Option>
+            <Option value='transaksi_ipl'>Transaksi IPL Tahunan</Option>
+            <Option value='transaksi_ipl_bulanan'>Transaksi IPL Bulanan</Option>
             <Option value='daftar_penyewa_per_blok'>Daftar Penyewa Per-Blok</Option>
             <Option value='daftar_penyewa_per_tahun'>Daftar Penyewa Per-Tahun</Option>
           </Select>
@@ -213,8 +214,8 @@ export default function AddLaporanModal(props: Status) {
           }
         ]}>
           <DatePicker
-            picker={jenisLaporan !== 'transaksi_listrik_bulanan' ? 'year' : 'month'}
-            format={jenisLaporan !== 'transaksi_listrik_bulanan' ? 'YYYY' : 'MM-YYYY'}
+            picker={jenisLaporan !== 'transaksi_listrik_bulanan' && jenisLaporan !== 'transaksi_ipl_bulanan' ? 'year' : 'month'}
+            format={jenisLaporan !== 'transaksi_listrik_bulanan' && jenisLaporan !== 'transaksi_ipl_bulanan' ? 'YYYY' : 'MM-YYYY'}
             disabled={jenisLaporan === 'daftar_penyewa_per_blok'} // Disable DatePicker if jenisLaporan is 'daftar_penyewa_per_blok'
           />
         </Form.Item>

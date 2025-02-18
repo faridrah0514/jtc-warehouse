@@ -119,6 +119,8 @@ CREATE TABLE `transaksi_listrik` (
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `id_sewa` int(11) DEFAULT NULL,
+  `status_pembayaran` varchar(50) DEFAULT NULL,
+  `tanggal_pembayaran` varchar(12) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `id_cabang` (`id_cabang`),
   KEY `id_aset` (`id_aset`),
