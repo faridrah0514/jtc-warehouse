@@ -12,7 +12,14 @@ dayjs.extend(customParseFormat);
 export async function GET() {
   const conn = openDB();
   const query = `
-    SELECT ti.*, a.nama_aset, c.nama_perusahaan AS nama_cabang, p.nama AS nama_pelanggan, ts.ipl AS ipl, p.alamat as alamat_pelanggan 
+    SELECT ti.*, a.nama_aset, c.nama_perusahaan AS nama_cabang, p.nama AS nama_pelanggan, 
+    case 
+      when
+        ti.ipl is not null then ti.ipl
+      else
+        ts.ipl
+    end AS ipl,    
+    p.alamat as alamat_pelanggan 
     FROM transaksi_ipl ti
     LEFT JOIN aset a ON a.id = ti.id_aset
     LEFT JOIN cabang c ON c.id = ti.id_cabang
@@ -90,8 +97,8 @@ export async function POST(request: Request, response: Response) {
         nonExist.forEach((e) => {
           conn.query(
             `
-            insert into transaksi_ipl (periode_pembayaran, id_cabang, id_pelanggan, id_aset, status_pembayaran)
-            values (?,?,?,?,?)
+            insert into transaksi_ipl (periode_pembayaran, id_cabang, id_pelanggan, id_aset, status_pembayaran, ipl)
+            values (?,?,?,?,?,?)
             `,
             [
               data.bulan_ipl,
@@ -99,6 +106,7 @@ export async function POST(request: Request, response: Response) {
               e.id_pelanggan,
               e.id_aset,
               "Belum Lunas",
+              e.ipl
             ]
           );
         });

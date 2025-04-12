@@ -174,27 +174,30 @@ export default function Page() {
       dataIndex: 'nama_cabang',
       key: 'nama_cabang',
       render: (nama_cabang: string[]) => (
-        <Text strong>{nama_cabang.join(', ')}</Text>
+        <Text strong style={{ whiteSpace: 'nowrap' }}>{nama_cabang.join(', ')}</Text>
       ),
-      width: '20%',
+      width: 200,
+      ellipsis: true,
     },
     {
       title: 'Tipe Laporan',
       dataIndex: 'report_type',
       key: 'report_type',
       render: (type: string) => (
-        <Text>{type === 'category' ? 'Kategori' : 'Periode'}</Text>
+        <Text style={{ whiteSpace: 'nowrap' }}>{type === 'category' ? 'Kategori' : 'Periode'}</Text>
       ),
-      width: '15%',
+      width: 120,
+      ellipsis: true,
     },
     {
       title: 'Tipe Kas',
       dataIndex: 'cash_flow_type',
       key: 'cash_flow_type',
       render: (type: string) => (
-        <Text>{type === 'both' ? 'Kas Masuk dan Keluar' : type.charAt(0).toUpperCase() + type.slice(1)}</Text>
+        <Text style={{ whiteSpace: 'nowrap' }}>{type === 'both' ? 'Kas Masuk dan Keluar' : type.charAt(0).toUpperCase() + type.slice(1)}</Text>
       ),
-      width: '15%',
+      width: 150,
+      ellipsis: true,
     },
     {
       title: 'Kategori',
@@ -202,34 +205,47 @@ export default function Page() {
       key: 'categories',
       render: (categories: string[]) => (
         <Tooltip title={categories.join(', ')}>
-          {categories.slice(0, 3).join(', ')}
-          {categories.length > 3 ? ', ...' : ''}
+          <Text style={{ whiteSpace: 'nowrap' }}>
+            {categories.slice(0, 3).join(', ')}
+            {categories.length > 3 ? ', ...' : ''}
+          </Text>
         </Tooltip>
       ),
+      width: 200,
+      ellipsis: true,
     },
     {
       title: 'Periode',
       dataIndex: 'period_type',
       key: 'period_type',
-      width: '10%',
+      width: 100,
+      ellipsis: true,
+      render: (text: string) => (
+        <Text style={{ whiteSpace: 'nowrap' }}>{text}</Text>
+      ),
     },
     {
       title: 'Tanggal/Tahun Periode',
       dataIndex: 'period_date',
       key: 'period_date',
-      width: '10%',
+      width: 150,
+      ellipsis: true,
       render: (date: string, record: any) => {
-        if (record.period_type === 'monthly') return dayjs(date).locale('id').format('MMMM YYYY')
-        if (record.period_type === 'yearly') return dayjs(date).format('YYYY')
-        if (record.period_type === 'daily') return dayjs(date).locale('id').format('DD MMMM YYYY')
-        return date
+        const formattedDate = record.period_type === 'monthly' 
+          ? dayjs(date).locale('id').format('MMMM YYYY')
+          : record.period_type === 'yearly' 
+            ? dayjs(date).format('YYYY')
+            : record.period_type === 'daily' 
+              ? dayjs(date).locale('id').format('DD MMMM YYYY')
+              : date;
+        return <Text style={{ whiteSpace: 'nowrap' }}>{formattedDate}</Text>;
       },
     },
     {
       title: 'Actions',
       key: 'actions',
       render: (_: any, record: any) => (
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', whiteSpace: 'nowrap' }}>
           <Button type="link" onClick={() => fetchCashFlowDataForPrint(record)}>Print</Button>
           <RoleProtected allowedRoles={['finance', 'admin']} actionType='delete' createdAt={record.created_at}>
           <Popconfirm
@@ -241,7 +257,8 @@ export default function Page() {
           </RoleProtected>
         </div>
       ),
-      width: '15%',
+      width: 120,
+      ellipsis: true,
     }
   ]
 
@@ -275,7 +292,7 @@ export default function Page() {
           {/* Configurations Table */}
           <Table
             bordered
-            pagination={{ pageSize: 10 }}
+            pagination={{ pageSize: 50 }}
             size="small"
             columns={columns}
             dataSource={allData?.data.map((item: any, index: number) => ({ ...item, key: index + 1 }))}

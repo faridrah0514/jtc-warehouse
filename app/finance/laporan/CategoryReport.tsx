@@ -25,16 +25,17 @@ const CategoryReport = React.forwardRef<HTMLDivElement, CategoryReportProps>(({ 
             title: 'Tanggal',
             dataIndex: 'date',
             key: 'date',
-            width: '20%',
+            width: 100,
+            // ellipsis: true,
             render: (text: string) => (
-                <Text>{new Date(text).toLocaleDateString('id-ID')}</Text>
+                <Text style={{ whiteSpace: 'nowrap' }}>{new Date(text).toLocaleDateString('id-ID')}</Text>
             ),
         },
         {
             title: 'Nama Toko',
             dataIndex: 'nama_toko',
             key: 'nama_toko',
-            width: '20%',
+            // width: '15%',
             render: (text: string) => (
                 <Text>{text}</Text>
             ),
@@ -46,14 +47,14 @@ const CategoryReport = React.forwardRef<HTMLDivElement, CategoryReportProps>(({ 
             render: (_: any, record: any) => (
                 <Text>{record.description}</Text>
             ),
-            width: '40%',
+            // width: '35%',
         },
         {
             title: 'Jumlah (Rp)',
             dataIndex: 'amount',
             key: 'amount',
             align: 'right',
-            width: '20%',
+            // width: '20%',
             render: (amount: number) => <Text>{formatCurrency(amount)}</Text>,
         },
     ];

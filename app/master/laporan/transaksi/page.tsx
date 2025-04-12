@@ -9,6 +9,7 @@ import { useSession } from 'next-auth/react'
 import dayjs from 'dayjs';
 import { Typography } from 'antd';
 import { _renderCurrency } from '@/app/utils/renderCurrency'
+import { stat } from 'fs'
 
 const { Text } = Typography;
 
@@ -197,7 +198,7 @@ export default function Page() {
                     total_harga_sewa: item.total_harga_sewa, // Display total_harga_sewa from response
                   },
                 ];
-              } else if (item.jenis_laporan.startsWith("DATA PEMAKAIAN IPL ")) {
+              } else if (item.jenis_laporan.startsWith("DAFTAR IPL ")) {
                 dataSourceWithTotal = [
                   ...dataSourceWithTotal,
                   {
@@ -207,19 +208,21 @@ export default function Page() {
                   },
                 ];
               } else if (!item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK TAHUN") && item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK")) {
-                dataSourceWithTotal.map((item: any) => {
-                  item.kwh_rp_1 = item?.kwh_rp
-                })
                 dataSourceWithTotal = [
                   ...dataSourceWithTotal,
                   {
-                    key: "total",
+                    no: "total",
+                    key: "total_semua",
                     nama_aset: "Total",
+                    nama_pelanggan: "Total",
+                    status_pembayaran: "Total",
+                    tanggal_pembayaran: "Total",
+                    kwh_rp: "Total",
                     total_biaya: item.total,
-                    kwh_rp_1: _renderCurrency(item?.kwh_rp, false, false),
                   },
                 ];
               }
+
 
               // Adjust column rendering for merging all except 'harga_sewa' and 'IPL' for the total row
               let columnsWithMerge = item.columnNames.map((col: any) => {
@@ -228,6 +231,7 @@ export default function Page() {
                     ...col,
                     render: (text: any, record: any) => {
                       if (record.key === "total") {
+                        
                         return {
                           children: (
                             <div style={{ textAlign: "right", fontWeight: "bold" }}>
@@ -235,7 +239,7 @@ export default function Page() {
                             </div>
                           ),
                           props: {
-                            colSpan: (item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK" || item.jenis_laporan.startsWith("DAFTAR JATUH TEMPO") || item.jenis_laporan.startsWith("DATA PEMAKAIAN IPL ") || item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK"))
+                            colSpan: (item.jenis_laporan === "DAFTAR PENYEWA PER-BLOK" || item.jenis_laporan.startsWith("DAFTAR JATUH TEMPO") || item.jenis_laporan.startsWith("DAFTAR IPL ") || item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK"))
                               ? item.columnNames.length - 1 // Merge all columns except 'harga_sewa' for DAFTAR PENYEWA PER-BLOK
                               : item.columnNames.length - 2, // Merge all columns except 'harga_sewa' and 'IPL' for DAFTAR PENYEWA PER-TAHUN
                           },
@@ -278,11 +282,15 @@ export default function Page() {
                     },
                   };
                 }
-
+                
                 return col;
               });
 
               columnsWithMerge = columnsWithMerge.map((col: any) => {
+
+                if (!item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK TAHUN") && item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK")) {
+                  return col
+                }
                 if (col.dataIndex === 'harga_sewa' || col.dataIndex === 'IPL' || col.dataIndex === 'total_biaya' || col.dataIndex === 'kwh_rp' || col.dataIndex === 'total_harga_sewa' || col.dataIndex === 'total' ) {
                   return {
                     ...col,
@@ -297,6 +305,9 @@ export default function Page() {
                 }
                 return col; // Make sure to return the column if it's not 'harga_sewa' or 'IPL'
               }).map((col: any) => {
+                if (!item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK TAHUN") && item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK")) {
+                  return col
+                }
                 if (col.dataIndex === 'nomor' || col.dataIndex === 'no') {
                   return {
                     ...col,
@@ -320,6 +331,54 @@ export default function Page() {
                 }
                 return col;
               })
+
+              if (!item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK TAHUN") && item.jenis_laporan.startsWith("DATA PEMAKAIAN LISTRIK")) {
+                columnsWithMerge = columnsWithMerge.map((col: any) => {
+                  if (col.key === 'no') {
+                    return {
+                      ...col,
+                      render: (text: any, record: any) => {
+                        if (record.key === "total_semua") {
+                          return {
+                            children: <strong>Total</strong>,
+                            props: { colSpan: 5, align: "right" }
+                          };
+                        }
+                        return text;
+                      }
+                    };
+                  } 
+                  
+                  if (col.key === 'total_biaya') {
+                    return {
+                      ...col,
+                      render: (text: any, record: any) => {
+                        if (record.key === "total_semua") {
+                          return {
+                            children: <div style={{ textAlign: "right" }}><strong>{text}</strong></div>,
+                            props: { colSpan: 1 }
+                          };
+                        }
+                        return <div style={{ textAlign: "right" }}>{text}</div>;
+                      }
+                    };
+                  }
+
+                  return {
+                    ...col,
+                    render: (text: any, record: any) => {
+                      if (record.key === "total_semua") {
+                        return {
+                          children: text,
+                          props: { colSpan: 0 }
+                        };
+                      }
+                      return text;
+                    }
+                  };
+                });
+              }
+              
 
               const cabang = Array.isArray(item.cabang) ? item.cabang.join(", ") : item.cabang;
               const aset = Array.isArray(item.aset) ? item.aset.join(", ") : item.aset;

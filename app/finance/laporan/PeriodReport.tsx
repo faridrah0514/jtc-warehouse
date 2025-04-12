@@ -25,6 +25,7 @@ const PeriodReport = React.forwardRef<HTMLDivElement, PeriodReportProps>(({ prin
       title: 'Tanggal',
       dataIndex: 'date',
       key: 'date',
+      width: 100,
       render: (text: string) => <Text>{dayjs(text).format('DD/MM/YYYY')}</Text>, // Format date
     },
     {

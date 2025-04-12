@@ -27,6 +27,12 @@ const calculateMasa = (start: string, end: string) => {
   return `${years} tahun ${months} bulan`;
 };
 
+const sortByIndonesianMonth = (a: any, b: any) => {
+  const monthA = dayjs(a.periode_pembayaran, "MMMM YYYY");
+  const monthB = dayjs(b.periode_pembayaran, "MMMM YYYY");
+  return monthA.diff(monthB);
+};
+
 export async function GET() {
   const conn = openDB();
   const [cabangData] = await conn.execute("select * from cabang");
@@ -159,15 +165,24 @@ export async function POST(request: Request, response: Response) {
       } else if (data.jenis_laporan.toLowerCase() == "transaksi ipl") {
         let query = `
           SELECT c.nama_perusahaan nama_cabang, a.nama_aset, p.nama nama_pelanggan, 
-                 ti.periode_pembayaran, ti.status_pembayaran, ti.tanggal_pembayaran, ts.ipl IPL
+                 ti.periode_pembayaran, ti.status_pembayaran, ti.tanggal_pembayaran,  
+                 case
+                    when 
+                      ti.ipl is not null then ti.ipl
+                    else
+                      ts.ipl
+                end as IPL
           FROM transaksi_ipl ti
-          LEFT JOIN cabang c ON ti.id_cabang = c.id
-          LEFT JOIN aset a ON ti.id_aset = a.id
-          LEFT JOIN pelanggan p ON ti.id_pelanggan = p.id
-          LEFT JOIN transaksi_sewa ts ON ts.id_cabang = ti.id_cabang 
+          JOIN cabang c ON ti.id_cabang = c.id
+          JOIN aset a ON ti.id_aset = a.id
+          JOIN pelanggan p ON ti.id_pelanggan = p.id
+          JOIN transaksi_sewa ts ON ts.id_cabang = ti.id_cabang 
                                        AND ts.id_aset = ti.id_aset 
                                        AND ts.id_pelanggan = ti.id_pelanggan
-          WHERE LEFT(ti.periode_pembayaran, 4) = ?
+          WHERE ts.ipl > 0 AND LEFT(ti.periode_pembayaran, 4) = ?
+              AND STR_TO_DATE(CONCAT(ti.periode_pembayaran, '-01'), '%Y-%m-%d') 
+              BETWEEN STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y')
+              AND STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
         `;
 
         const queryParams = [data.periode];
@@ -237,7 +252,7 @@ export async function POST(request: Request, response: Response) {
             ),
           }));
 
-        const jenis_laporan = "DATA PEMAKAIAN IPL TAHUN " + data.periode;
+        const jenis_laporan = "DAFTAR IPL TAHUN " + data.periode;
 
         if (
           data.nama_cabang &&
@@ -270,7 +285,7 @@ export async function POST(request: Request, response: Response) {
                   }, 0);
 
                 return {
-                  laporan: groupedLaporan[cabang][aset].map((item: any, idx: any) => ({
+                  laporan: groupedLaporan[cabang][aset].sort(sortByIndonesianMonth).map((item: any, idx: any) => ({
                     ...item,
                     nomor: idx + 1,
                   })),
@@ -317,7 +332,9 @@ export async function POST(request: Request, response: Response) {
       ) {
         let query = `
           SELECT c.nama_perusahaan nama_cabang, a.nama_aset, p.nama nama_pelanggan, 
-          tl.bln_thn Bulan, tl.meteran_awal, tl.meteran_akhir, tl.meteran_akhir - meteran_awal pemakaian, c.kwh_rp
+          tl.bln_thn Bulan, tl.meteran_awal, tl.meteran_akhir, 
+          ROUND(tl.meteran_akhir - meteran_awal, 2) pemakaian, 
+          c.kwh_rp
           FROM transaksi_listrik tl
           LEFT JOIN pelanggan p ON tl.id_pelanggan = p.id
           LEFT JOIN cabang c ON tl.id_cabang = c.id
@@ -716,11 +733,17 @@ export async function POST(request: Request, response: Response) {
         data.jenis_laporan.toLowerCase() == "transaksi listrik bulanan"
       ) {
         let query = `
-          SELECT c.nama_perusahaan AS nama_cabang, a.nama_aset, p.nama AS nama_pelanggan, 
-          tl.bln_thn AS Bulan, tl.meteran_awal, tl.meteran_akhir, 
-          tl.meteran_akhir - tl.meteran_awal AS pemakaian, 
-          c.kwh_rp, 
-          (tl.meteran_akhir - tl.meteran_awal) * c.kwh_rp AS total_biaya
+          SELECT 
+         -- c.nama_perusahaan AS nama_cabang, 
+          a.nama_aset, 
+          p.nama AS nama_pelanggan, 
+          -- tl.meteran_awal, 
+          -- tl.meteran_akhir, 
+          -- ROUND(tl.meteran_akhir - tl.meteran_awal, 2) AS pemakaian, 
+          -- c.kwh_rp, 
+          tl.status_pembayaran,
+          tl.tanggal_pembayaran,
+          ROUND((tl.meteran_akhir - tl.meteran_awal) * c.kwh_rp, 2) AS total_biaya
           FROM transaksi_listrik tl
           LEFT JOIN pelanggan p ON tl.id_pelanggan = p.id
           LEFT JOIN cabang c ON tl.id_cabang = c.id
@@ -755,8 +778,9 @@ export async function POST(request: Request, response: Response) {
         );
 
         // Apply currency formatting
-        laporan = laporan.map((row) => ({
+        laporan = laporan.map((row: any, idx: number) => ({
           ...row,
+          no: idx + 1,
           kwh_rp: _renderCurrency(row.kwh_rp, false, false),
           total_biaya: _renderCurrency(row.total_biaya, false,false),
         }));
@@ -787,6 +811,13 @@ export async function POST(request: Request, response: Response) {
             };
           });
 
+
+        columnNames.unshift({
+          title: "Nomor",
+          dataIndex: "no",
+          key: "no",
+        });
+
         // If nama_cabang is 'Semua Cabang', group by cabang and aggregate aset names
         if (
           data.nama_cabang &&
@@ -811,7 +842,7 @@ export async function POST(request: Request, response: Response) {
           const response = Object.keys(groupedLaporan).map((cabang) => ({
             laporan: groupedLaporan[cabang].laporan,
             columnNames,
-            aset: Array.from(groupedLaporan[cabang].aset),
+            aset: (data.nama_aset.toLowerCase() === "semua aset") ? ["Semua Aset"] : Array.from(groupedLaporan[cabang].aset),
             cabang: [cabang],
             jenis_laporan:
               "DATA PEMAKAIAN LISTRIK " +
@@ -841,13 +872,13 @@ export async function POST(request: Request, response: Response) {
             {
               laporan: laporanArray,
               columnNames,
-              aset: asetArray,
+              aset: (data.nama_aset.toLowerCase() === "semua aset") ? ["Semua Aset"] : asetArray,
               cabang: cabangArray,
               jenis_laporan,
-              total: laporanArray.reduce((sum: number, row: any) => {
+              total: _renderCurrency(laporanArray.reduce((sum: number, row: any) => {
                 const value = parseFloat(row.total_biaya.toString().replace(/\./g, "").replace(",", "."));
                 return sum + (isNaN(value) ? 0 : value);
-              }, 0)
+              }, 0), false, false)
             },
           ]);
         }
@@ -1103,15 +1134,24 @@ export async function POST(request: Request, response: Response) {
       } else if (data.jenis_laporan.toLowerCase() == "transaksi ipl bulanan") {
         let query = `
           SELECT c.nama_perusahaan nama_cabang, a.nama_aset, p.nama nama_pelanggan, 
-                 ti.periode_pembayaran, ti.status_pembayaran, ti.tanggal_pembayaran, ts.ipl IPL
+                ti.status_pembayaran, ti.tanggal_pembayaran, 
+          case
+            when 
+              ti.ipl is not null then ti.ipl
+            else
+              ts.ipl
+          end as IPL
           FROM transaksi_ipl ti
-          LEFT JOIN cabang c ON ti.id_cabang = c.id
-          LEFT JOIN aset a ON ti.id_aset = a.id
-          LEFT JOIN pelanggan p ON ti.id_pelanggan = p.id
-          LEFT JOIN transaksi_sewa ts ON ts.id_cabang = ti.id_cabang 
+          JOIN cabang c ON ti.id_cabang = c.id
+          JOIN aset a ON ti.id_aset = a.id
+          JOIN pelanggan p ON ti.id_pelanggan = p.id
+          JOIN transaksi_sewa ts ON ts.id_cabang = ti.id_cabang 
                                        AND ts.id_aset = ti.id_aset 
                                        AND ts.id_pelanggan = ti.id_pelanggan
-          WHERE LEFT(ti.periode_pembayaran, 7) = ?
+          WHERE ts.ipl > 0 AND LEFT(ti.periode_pembayaran, 7) = ?
+              AND STR_TO_DATE(CONCAT(ti.periode_pembayaran, '-01'), '%Y-%m-%d') 
+           BETWEEN STR_TO_DATE(ts.start_date_sewa, '%d-%m-%Y')
+            AND STR_TO_DATE(ts.end_date_sewa, '%d-%m-%Y')
         `;
 
         const param = dayjs(data.periode, "MM-YYYY").format("YYYY-MM");
@@ -1174,15 +1214,9 @@ export async function POST(request: Request, response: Response) {
             ...item,
             nomor: idx + 1,
             IPL: _renderCurrency(item.IPL, false, false),
-          }))
-          .map((item: any) => ({
-            ...item,
-            periode_pembayaran: dayjs(item.periode_pembayaran).format(
-              "MMMM YYYY"
-            ),
           }));
 
-        const jenis_laporan = "DATA PEMAKAIAN IPL BULANAN " + data.periode;
+        const jenis_laporan = "DAFTAR IPL BULANAN " + data.periode;
 
         if (
           data.nama_cabang &&
@@ -1246,6 +1280,15 @@ export async function POST(request: Request, response: Response) {
               aset: asetArray,
               cabang: cabangArray,
               jenis_laporan,
+              total: _renderCurrency(
+                laporanArray.reduce((sum: number, item: any) => {
+                  // Parse the IPL value by removing currency formatting
+                  const iplValue = parseFloat(item.IPL.replace(/\./g, "").replace(",", "."));
+                  return sum + (isNaN(iplValue) ? 0 : iplValue);
+                }, 0),
+                false,
+                false
+              ),
             },
           ]);
         }
